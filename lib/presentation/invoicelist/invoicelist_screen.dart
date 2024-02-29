@@ -5,7 +5,6 @@ import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicelist/components/invoice_list_loading_tile.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
-import 'package:searchbar_animation/searchbar_animation.dart';
 
 import 'controllers/invoicelist_controller.dart';
 
@@ -122,28 +121,6 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                       }
                     });
               }),
-            ),
-            SearchBarAnimation(
-              isOriginalAnimation: true,
-              buttonBorderColour: Colors.black45,
-              onFieldSubmitted: (String value) =>
-                  controller.initialSearch(value),
-              textEditingController: controller.searchController,
-              textInputType: TextInputType.text,
-              isSearchBoxOnRightSide: true,
-              onCollapseComplete: () => controller.searchController.text = '',
-              buttonWidget: const Icon(
-                Icons.search,
-                color: Colors.black,
-              ),
-              secondaryButtonWidget: const Icon(
-                Icons.close,
-                color: Colors.black,
-              ),
-              trailingWidget: const Icon(
-                Icons.close,
-                color: Colors.black,
-              ),
             ),
           ],
         ),
