@@ -32,6 +32,7 @@ class CustomFormField extends StatelessWidget {
       this.enableInteractiveSelection = true,
       this.enableSuggestions = true,
       this.onTap,
+      this.onEditingComplete,
       this.suffix,
       this.prefixIcon,
       this.onSaved,
@@ -58,6 +59,7 @@ class CustomFormField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final Function(String?)? onSaved;
   final Function(String?)? onChanged;
+  final Function()? onEditingComplete;
   final TextInputAction textInputAction;
 
   @override
@@ -79,6 +81,7 @@ class CustomFormField extends StatelessWidget {
         controller: controller,
         onSaved: onSaved,
         onChanged: onChanged,
+        onEditingComplete: onEditingComplete,
         validator: validator,
         obscureText: obscureText,
         keyboardType: keyboardType,

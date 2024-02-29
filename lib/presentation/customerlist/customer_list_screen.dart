@@ -1,16 +1,19 @@
+import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/customerlist/components/customer_list_loading_tile.dart';
-import 'package:searchbar_animation/searchbar_animation.dart';
+import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 
 import 'controllers/customer_list_controller.dart';
 
 class CustomerlistScreen extends GetView<CustomerlistController> {
   const CustomerlistScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final debouncer = Debouncer(delay: const Duration(milliseconds: 500));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
@@ -27,6 +30,16 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
+            CustomFormField(
+                name: 'search',
+                labelText: 'Search',
+                suffix: const Icon(Icons.search),
+                controller: controller.searchController,
+                onChanged: (string) {
+                  debouncer(() {
+                    controller.initialSearch(string!);
+                  });
+                }),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
@@ -83,28 +96,6 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                       }),
                 );
               }),
-            ),
-            SearchBarAnimation(
-              isOriginalAnimation: true,
-              buttonBorderColour: Colors.black45,
-              onFieldSubmitted: (String value) =>
-                  controller.initialSearch(value),
-              textEditingController: controller.searchController,
-              textInputType: TextInputType.text,
-              isSearchBoxOnRightSide: true,
-              onCollapseComplete: () => controller.searchController.text = '',
-              buttonWidget: const Icon(
-                Icons.search,
-                color: Colors.black,
-              ),
-              secondaryButtonWidget: const Icon(
-                Icons.close,
-                color: Colors.black,
-              ),
-              trailingWidget: const Icon(
-                Icons.close,
-                color: Colors.black,
-              ),
             ),
           ],
         ),

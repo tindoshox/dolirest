@@ -21,7 +21,8 @@ class CustomerlistController extends GetxController {
     scrollController.addListener(() {
       if (scrollController.position.maxScrollExtent ==
               scrollController.offset &&
-          isLastPage == false) {
+          !isLastPage &&
+          !isLoadingMore.value) {
         _loadMore();
       }
     });

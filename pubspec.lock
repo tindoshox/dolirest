@@ -560,14 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.4"
-  searchbar_animation:
+  searchable_listview:
     dependency: "direct main"
     description:
-      name: searchbar_animation
-      sha256: "8c9b82e666dae343f8ec34137da18f0de3f019da42691ec8b2c492ee434cc0ba"
+      name: searchable_listview
+      sha256: "5cd3cd87e0cbd4e6685f6798a9bb4bcc170df20fb92beb662b978f5fccded634"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.4"
+    version: "2.10.2"
   shimmer:
     dependency: "direct main"
     description:

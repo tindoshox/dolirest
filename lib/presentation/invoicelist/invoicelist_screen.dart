@@ -1,8 +1,10 @@
+import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicelist/components/invoice_list_loading_tile.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 import 'package:searchbar_animation/searchbar_animation.dart';
 
 import 'controllers/invoicelist_controller.dart';
@@ -11,6 +13,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
   const InvoicelistScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final debouncer = Debouncer(delay: const Duration(milliseconds: 500));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoices'),
@@ -19,6 +22,16 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
+            CustomFormField(
+                name: 'search',
+                labelText: 'Search',
+                suffix: const Icon(Icons.search),
+                controller: controller.searchController,
+                onChanged: (string) {
+                  debouncer(() {
+                    controller.initialSearch(string!);
+                  });
+                }),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
