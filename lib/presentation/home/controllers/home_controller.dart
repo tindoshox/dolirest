@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
 
 class HomeController extends GetxController {
   var currentUser = DolibarrUserModel().obs;
@@ -27,7 +26,7 @@ class HomeController extends GetxController {
       } else {
         isLoading.value = false;
         debugPrint('Home: Settings');
-        Get.offAndToNamed(Routes.SETTINGS);
+        // Get.offAndToNamed(Routes.SETTINGS);
       }
     });
   }

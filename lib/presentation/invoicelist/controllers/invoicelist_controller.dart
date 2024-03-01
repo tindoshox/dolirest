@@ -1,11 +1,11 @@
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 
 class InvoicelistController extends GetxController {
-  var invoices = <InvoiceList>[].obs;
+  var invoices = <InvoiceModel>[].obs;
   var isLoading = false.obs;
   var isLoadingMore = false.obs;
   var isLastPage = false;
@@ -32,7 +32,7 @@ class InvoicelistController extends GetxController {
 
   void initialSearch(String text) {
     pageNumber = 0;
-    invoices.value = <InvoiceList>[];
+    invoices.value = <InvoiceModel>[];
     isLoading(true);
     searchString = '%${text.trim()}%';
     _fetchInvoices();

@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -156,17 +156,15 @@ class CreateinvoiceController extends GetxController {
   Future _createInvoice() async {
     /// Generate product line
     var line = Line(
-            qty: '1',
-            subprice: priceController.text,
-            fkProduct: selectedProduct.value.id,
-            desc: freetextController.text,
-            description: freetextController.text,
-            fkProductType: stockType.value == 0 ? stockType.value : null)
-        .toMap();
-    line.removeWhere((key, value) => value == null || value == '');
+        qty: '1',
+        subprice: priceController.text,
+        fkProduct: selectedProduct.value.id,
+        desc: freetextController.text,
+        description: freetextController.text,
+        fkProductType: stockType.value == 0 ? stockType.value : null);
 
     /// Generate main draft
-    var invoice = InvoiceById(
+    var invoice = InvoiceModel(
         socid: customer.value.id,
         date: int.parse(dateTimeToInt(invoiceDate.value)),
         refClient: refController.text,
@@ -174,11 +172,8 @@ class CreateinvoiceController extends GetxController {
         dateLimReglement: int.parse(dateTimeToInt(dueDate.value)),
         condReglementCode: 'RECEP',
         modeReglementCode: 'LIQ',
-        lines: []).toMap();
-    invoice.removeWhere((key, value) => value == '' || value == null);
+        lines: [line]);
 
-    /// Combine
-    invoice.update('lines', (value) => value = [line]);
     var body = jsonEncode(invoice);
 
     /// Submit for draft creation

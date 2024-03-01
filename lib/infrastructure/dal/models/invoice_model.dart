@@ -1,16 +1,15 @@
 // To parse this JSON data, do
 //
-//     final invoice = invoiceFromJson(jsonString);
+//     final invoiceModel = invoiceModelFromJson(jsonString);
 
 import 'dart:convert';
 
-List<InvoiceList> invoiceFromJson(String str) => List<InvoiceList>.from(
-    json.decode(str).map((x) => InvoiceList.fromJson(x)));
+InvoiceModel invoiceModelFromJson(String str) =>
+    InvoiceModel.fromJson(json.decode(str));
 
-String invoiceToJson(List<InvoiceList> data) =>
-    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String invoiceModelToJson(InvoiceModel data) => json.encode(data.toJson());
 
-class InvoiceList {
+class InvoiceModel {
   dynamic brouillon;
   dynamic socid;
   dynamic userAuthor;
@@ -41,7 +40,7 @@ class InvoiceList {
   dynamic posSource;
   dynamic fkFacRecSource;
   dynamic fkFactureSource;
-  List<dynamic>? linkedObjects;
+  dynamic linkedObjects;
   dynamic dateLimReglement;
   dynamic condReglementCode;
   dynamic condReglementDoc;
@@ -49,7 +48,7 @@ class InvoiceList {
   dynamic fkBank;
   List<Line>? lines;
   dynamic line;
-  List<dynamic>? extraparams;
+  dynamic extraparams;
   dynamic facRec;
   dynamic datePointoftax;
   dynamic fkMulticurrency;
@@ -61,8 +60,8 @@ class InvoiceList {
   dynamic situationCycleRef;
   dynamic situationCounter;
   dynamic situationFinal;
-  List<dynamic>? tabPreviousSituationInvoice;
-  List<dynamic>? tabNextSituationInvoice;
+  dynamic tabPreviousSituationInvoice;
+  dynamic tabNextSituationInvoice;
   dynamic retainedWarranty;
   dynamic retainedWarrantyDateLimit;
   dynamic retainedWarrantyFkCondReglement;
@@ -82,9 +81,9 @@ class InvoiceList {
   dynamic id;
   dynamic entity;
   dynamic importKey;
-  List<dynamic>? arrayOptions;
+  dynamic arrayOptions;
   dynamic arrayLanguages;
-  List<dynamic>? contactsIds;
+  dynamic contactsIds;
   dynamic linkedObjectsIds;
   dynamic oldref;
   dynamic fkProject;
@@ -129,14 +128,14 @@ class InvoiceList {
   dynamic specimen;
   dynamic labelStatus;
   dynamic showphotoOnPopup;
-  List<dynamic>? nb;
+  dynamic nb;
   dynamic output;
   dynamic fkIncoterms;
   dynamic labelIncoterms;
   dynamic locationIncoterms;
   dynamic nom;
 
-  InvoiceList({
+  InvoiceModel({
     this.brouillon,
     this.socid,
     this.userAuthor,
@@ -263,7 +262,7 @@ class InvoiceList {
     this.nom,
   });
 
-  factory InvoiceList.fromJson(Map<String, dynamic> json) => InvoiceList(
+  factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
         brouillon: json["brouillon"],
         socid: json["socid"],
         userAuthor: json["user_author"],
@@ -635,7 +634,7 @@ class Line {
   dynamic module;
   dynamic entity;
   dynamic importKey;
-  List<dynamic>? arrayOptions;
+  dynamic arrayOptions;
   dynamic arrayLanguages;
   dynamic contactsIds;
   dynamic linkedObjects;
@@ -670,9 +669,9 @@ class Line {
   dynamic specimen;
   dynamic labelStatus;
   dynamic showphotoOnPopup;
-  List<dynamic>? nb;
+  dynamic nb;
   dynamic output;
-  List<dynamic>? extraparams;
+  dynamic extraparams;
   dynamic codeVentilation;
 
   Line({

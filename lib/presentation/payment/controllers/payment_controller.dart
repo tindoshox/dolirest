@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -31,7 +30,7 @@ class PaymentController extends GetxController {
   var payDate = DateTime.now().obs;
   var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
-  var invoice = InvoiceById().obs;
+  var invoice = InvoiceModel().obs;
   var customer = ThirdPartyModel().obs;
 
   var amount = ''.obs;
@@ -59,7 +58,7 @@ class PaymentController extends GetxController {
 
   void clearInvoice() {
     customer(ThirdPartyModel());
-    invoice(InvoiceById());
+    invoice(InvoiceModel());
     payDateController.text = dateTimeToString(payDate.value);
     dueDateController.text = dateTimeToString(dueDate.value);
   }
@@ -182,7 +181,7 @@ class PaymentController extends GetxController {
             backgroundColor: const Color.fromARGB(255, 186, 255, 97),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP);
-        invoice.value = InvoiceById();
+        invoice.value = InvoiceModel();
         customer.value = ThirdPartyModel();
       } else {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
@@ -208,16 +207,16 @@ class PaymentController extends GetxController {
   }
 
   Future _updateDueDate(String invoiceId) async {
-    var update =
-        InvoiceById(dateLimReglement: dateTimeToInt(dueDate.value)).toMap();
-    update.removeWhere((key, value) => value == null || value == '');
+    var update = InvoiceModel(dateLimReglement: dateTimeToInt(dueDate.value));
+    //.toMap();
+    //update.removeWhere((key, value) => value == null || value == '');
     String body = jsonEncode(update);
 
     await RemoteServices.updateInvoice(invoiceId, body);
   }
 
   Future fetchInvoices(String searchString) async {
-    List<InvoiceList> invoices = List.empty();
+    List<InvoiceModel> invoices = List.empty();
 
     var response = await RemoteServices.fetchInvoiceList('%$searchString%', 0);
 

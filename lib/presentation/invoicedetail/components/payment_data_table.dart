@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_list_model.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -7,7 +7,7 @@ class PaymentsDataTable extends StatelessWidget {
   const PaymentsDataTable(
       {super.key, required this.payments, required this.invoice});
   final List<Payment> payments;
-  final InvoiceById invoice;
+  final InvoiceModel invoice;
 
   @override
   Widget build(Object context) {

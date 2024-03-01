@@ -1,8 +1,8 @@
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -53,7 +53,7 @@ class PaymentScreen extends GetView<PaymentController> {
                       if (controller.fromHomeScreen)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: FormBuilderSearchableDropdown<InvoiceList>(
+                          child: FormBuilderSearchableDropdown<InvoiceModel>(
                             name: 'find_invoice',
                             compareFn: (item1, item2) => item1 == item2,
                             clearButtonProps:
@@ -75,7 +75,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                 borderSide: BorderSide(color: Colors.red),
                               ),
                             ),
-                            itemAsString: (InvoiceList? invoice) =>
+                            itemAsString: (InvoiceModel? invoice) =>
                                 invoice?.ref,
                             popupProps: PopupProps.modalBottomSheet(
                                 modalBottomSheetProps: ModalBottomSheetProps(
@@ -92,7 +92,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold)),
                                 isFilterOnline: true,
-                                itemBuilder: (context, InvoiceList? invoice,
+                                itemBuilder: (context, InvoiceModel? invoice,
                                     isSelected) {
                                   return ListTile(
                                       title: Row(
@@ -143,7 +143,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                         child: Text('Invoice not found'))),
                                 showSearchBox: true),
                             asyncItems: (String searchString) async {
-                              List<InvoiceList> invoices =
+                              List<InvoiceModel> invoices =
                                   await controller.fetchInvoices(searchString);
                               return invoices;
                             },

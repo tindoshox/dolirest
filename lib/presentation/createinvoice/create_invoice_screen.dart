@@ -65,9 +65,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                             itemAsString: (ThirdPartyModel? customer) =>
                                 customer!.name,
                             popupProps: PopupProps.modalBottomSheet(
-                                modalBottomSheetProps:
-                                    const ModalBottomSheetProps(
-                                        shape: RoundedRectangleBorder()),
+                                modalBottomSheetProps: ModalBottomSheetProps(
+                                    backgroundColor: Theme.of(context)
+                                        .scaffoldBackgroundColor,
+                                    shape: const RoundedRectangleBorder()),
                                 title: const Text('Search Customer',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(

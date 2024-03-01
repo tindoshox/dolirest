@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_list_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -20,7 +20,7 @@ class InvoiceDetailController extends GetxController
       [const Tab(text: 'Details'), const Tab(text: 'Payments')].obs;
   var tabIndex = 0.obs;
 
-  var invoice = InvoiceById().obs;
+  var invoice = InvoiceModel().obs;
   var customer = ThirdPartyModel().obs;
   var isLoading = false.obs;
 
@@ -129,17 +129,17 @@ class InvoiceDetailController extends GetxController
   }
 
   setDueDate() async {
-    DateTime? pickedDate = await showDatePicker(
+    DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
         initialDate: intToDateTime(invoice.value.dateLimReglement),
         firstDate: intToDateTime(invoice.value.dateLimReglement),
         lastDate: DateTime(DateTime.now().year + 1));
 
-    if (pickedDate != null &&
-        pickedDate != selectedDate.value &&
-        pickedDate.isAfter(DateTime.now())) {
-      selectedDate.value = pickedDate;
-      _updateDueDate(dateTimeToInt(pickedDate));
+    if (newDueDate != null &&
+        newDueDate != selectedDate.value &&
+        newDueDate.isAfter(DateTime.now())) {
+      selectedDate.value = newDueDate;
+      _updateDueDate(dateTimeToInt(newDueDate));
     } else {
       Get.snackbar('Due Date', 'Not updated. New date must be in the future.',
           backgroundColor: Colors.grey[900],
@@ -151,14 +151,15 @@ class InvoiceDetailController extends GetxController
   Future _updateDueDate(String selectedDate) async {
     DialogHelper.showLoading('Updating Due Date');
 
-    var update = InvoiceById(dateLimReglement: selectedDate).toMap();
-    update.removeWhere((key, value) => value == null || value == '');
+    var update = InvoiceModel(dateLimReglement: selectedDate);
+
     String body = jsonEncode(update);
 
     await RemoteServices.updateInvoice(invoiceId, body).then((value) {
       DialogHelper.hideLoading();
       if (!value.hasError) {
-        invoice(value.data);
+        SnackBarHelper.successSnackbar(
+            title: 'Due date changes', message: 'Reload invoice to rechanges');
       } else {
         Get.snackbar('Error', 'Update Failed');
       }

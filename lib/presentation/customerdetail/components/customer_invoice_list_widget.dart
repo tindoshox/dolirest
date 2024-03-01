@@ -1,7 +1,7 @@
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/utils.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -11,7 +11,7 @@ class InvoiceListWidget extends StatelessWidget {
     required this.invoices,
   });
 
-  final List<InvoiceList> invoices;
+  final List<InvoiceModel> invoices;
 
   @override
   Widget build(BuildContext context) {
