@@ -50,14 +50,16 @@ class EditcustomerController extends GetxController {
     final FormBuilderState form = customerFormKey.currentState!;
     if (form.validate()) {
       var customer = ThirdPartyModel(
-          client: 1,
-          codeClient: 'auto',
-          name: nameController.text,
-          address: addressController.text,
-          town: townController.text,
-          phone: phoneController.text,
-          fax: faxController.text,
-          stateId: selectedGroup.value.id);
+              client: 1,
+              codeClient: 'auto',
+              name: nameController.text,
+              address: addressController.text,
+              town: townController.text,
+              phone: phoneController.text,
+              fax: faxController.text,
+              stateId: selectedGroup.value.id)
+          .toJson();
+      customer.removeWhere((key, value) => value == null);
 
       if (customerId.isEmpty) {
         _createCustomer(jsonEncode(customer));

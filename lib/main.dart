@@ -18,7 +18,8 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    box.read("apikey");
+    String? apikey = box.read("apikey");
+    final initialRoute = apikey == null ? Routes.SETTINGS : Routes.HOME;
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
@@ -30,7 +31,7 @@ class Main extends StatelessWidget {
         colorScheme: const ColorScheme.dark(),
         useMaterial3: true,
       ),
-      initialRoute: Routes.HOME,
+      initialRoute: initialRoute,
       getPages: Nav.routes,
     );
   }

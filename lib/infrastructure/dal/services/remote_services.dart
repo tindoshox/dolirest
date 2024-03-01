@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
@@ -18,12 +20,10 @@ import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
 class RemoteServices {
-  //static final _client = http.Client();
   static final _client = RetryClient(http.Client());
   static const timeout = Duration(seconds: 20);
-  static const url = 'dolibarr.ts'; //box.read('url');
-  static const apikey =
-      '19fbba5958b1f9e739825d69f813e655b8802e57'; //box.read('apikey');
+  static final url = box.read('url');
+  static final apikey = box.read('apikey');
 
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
@@ -39,7 +39,7 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.customers, queryParameters),
+        Uri.https(url, ApiRoutes.customers, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -104,7 +104,7 @@ class RemoteServices {
 
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.invoices, queryParameters),
+        Uri.https(url, ApiRoutes.invoices, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -154,7 +154,7 @@ class RemoteServices {
   static Future<DataOrException> fetchThirdPartyById(String customerId) async {
     try {
       var response = await _client.get(
-        Uri.http(url, '${ApiRoutes.customers}/$customerId'),
+        Uri.https(url, '${ApiRoutes.customers}/$customerId'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -206,7 +206,7 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.invoices, queryParameters),
+        Uri.https(url, ApiRoutes.invoices, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -253,7 +253,7 @@ class RemoteServices {
       String invoiceId) async {
     try {
       var response = await _client.get(
-        Uri.http(url, '${ApiRoutes.invoices}/$invoiceId/payments'),
+        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/payments'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -297,7 +297,7 @@ class RemoteServices {
   static Future<DataOrException> fetchInvoiceById(String invoiceId) async {
     try {
       var response = await _client.get(
-        Uri.http(url, '${ApiRoutes.invoices}/$invoiceId'),
+        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -342,7 +342,7 @@ class RemoteServices {
       String invoiceId, String body) async {
     try {
       var response = await _client.put(
-        Uri.http(url, '${ApiRoutes.invoices}/$invoiceId'),
+        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -387,7 +387,7 @@ class RemoteServices {
   static Future<DataOrException> createCustomer(String body) async {
     try {
       var response = await _client.post(
-        Uri.http(url, ApiRoutes.customers),
+        Uri.https(url, ApiRoutes.customers),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -433,7 +433,7 @@ class RemoteServices {
       String body, String customerId) async {
     try {
       var response = await _client.put(
-        Uri.http(url, '${ApiRoutes.customers}/$customerId'),
+        Uri.https(url, '${ApiRoutes.customers}/$customerId'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -483,7 +483,7 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.groups, queryParameters),
+        Uri.https(url, ApiRoutes.groups, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -527,7 +527,7 @@ class RemoteServices {
   static Future<DataOrException> fetchUserInfo() async {
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.users),
+        Uri.https(url, ApiRoutes.users),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -573,7 +573,7 @@ class RemoteServices {
     var serverURL = url;
     try {
       var response = await _client.post(
-        Uri.http(serverURL, '${ApiRoutes.invoices}/paymentsdistributed'),
+        Uri.https(serverURL, '${ApiRoutes.invoices}/paymentsdistributed'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -623,7 +623,7 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.http(url, ApiRoutes.products, queryParameters),
+        Uri.https(url, ApiRoutes.products, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -667,7 +667,7 @@ class RemoteServices {
   static Future<DataOrException> checkStock(String productId) async {
     try {
       var response = await _client.get(
-        Uri.http(url, '${ApiRoutes.products}/$productId/stock'),
+        Uri.https(url, '${ApiRoutes.products}/$productId/stock'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -711,7 +711,7 @@ class RemoteServices {
   static Future<DataOrException> createInvoice(String body) async {
     try {
       var response = await _client.post(
-        Uri.http(url, ApiRoutes.invoices),
+        Uri.https(url, ApiRoutes.invoices),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -759,7 +759,7 @@ class RemoteServices {
       String body, String invoiceId) async {
     try {
       var response = await _client.post(
-        Uri.http(url, '${ApiRoutes.invoices}/$invoiceId/validate'),
+        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/validate'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -804,7 +804,7 @@ class RemoteServices {
   static Future<DataOrException> buildDocument(String body) async {
     try {
       var response = await _client.put(
-        Uri.http(url, ApiRoutes.buildDocument),
+        Uri.https(url, ApiRoutes.buildDocument),
         body: body,
         headers: {
           'Content-Type': 'application/json',
@@ -849,7 +849,7 @@ class RemoteServices {
   static Future<DataOrException> buildReport(String body) async {
     try {
       var response = await _client.put(
-        Uri.http(url, ApiRoutes.buildReport),
+        Uri.https(url, ApiRoutes.buildReport),
         body: body,
         headers: {
           'Content-Type': 'application/json',

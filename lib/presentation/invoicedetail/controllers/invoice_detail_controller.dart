@@ -130,8 +130,8 @@ class InvoiceDetailController extends GetxController
   setDueDate() async {
     DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
-        initialDate: intToDateTime(invoice.value.dateLimReglement),
-        firstDate: intToDateTime(invoice.value.dateLimReglement),
+        initialDate: DateTime.now().add(const Duration(days: 1)),
+        firstDate: DateTime.now().add(const Duration(days: 1)),
         lastDate: DateTime(DateTime.now().year + 1));
 
     if (newDueDate != null &&
@@ -150,7 +150,8 @@ class InvoiceDetailController extends GetxController
   Future _updateDueDate(String selectedDate) async {
     DialogHelper.showLoading('Updating Due Date');
 
-    var update = InvoiceModel(dateLimReglement: selectedDate);
+    var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
+    update.removeWhere((key, value) => value == null);
 
     String body = jsonEncode(update);
 

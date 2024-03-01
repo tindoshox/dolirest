@@ -143,7 +143,7 @@ class CreateinvoiceController extends GetxController {
             .then((value) {
           if (value.hasError) {
             DialogHelper.hideLoading();
-            SnackBarHelper.errorSnackbar(message: value.errorMessage);
+            SnackBarHelper.errorSnackbar(message: 'Product has no stock');
           }
 
           _createInvoice();
@@ -172,7 +172,9 @@ class CreateinvoiceController extends GetxController {
         dateLimReglement: int.parse(dateTimeToInt(dueDate.value)),
         condReglementCode: 'RECEP',
         modeReglementCode: 'LIQ',
-        lines: [line]);
+        lines: [line]).toJson();
+
+    invoice.removeWhere((key, value) => value == null);
 
     var body = jsonEncode(invoice);
 
