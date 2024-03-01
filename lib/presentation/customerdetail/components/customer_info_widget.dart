@@ -1,13 +1,13 @@
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/utils/utils.dart';
 
 class CustomerInfo extends StatelessWidget {
   const CustomerInfo({super.key, required this.customer});
-  final ThirdPartyById customer;
+  final ThirdPartyModel customer;
   @override
   Widget build(BuildContext context) {
     var children = [

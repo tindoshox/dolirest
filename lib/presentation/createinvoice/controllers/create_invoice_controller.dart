@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
@@ -19,7 +19,7 @@ import 'package:intl/intl.dart';
 class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
-  var customer = ThirdPartyById().obs;
+  var customer = ThirdPartyModel().obs;
 
   final createInvoiceKey = GlobalKey<FormBuilderState>();
 

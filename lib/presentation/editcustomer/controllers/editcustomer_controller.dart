@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -20,7 +20,7 @@ class EditcustomerController extends GetxController {
 
   var isLoading = false.obs;
 
-  var customerToEdit = ThirdPartyById().obs;
+  var customerToEdit = ThirdPartyModel().obs;
   String customerId = Get.arguments['customerId'];
 
   var selectedGroup = GroupModel().obs;
@@ -49,7 +49,7 @@ class EditcustomerController extends GetxController {
   void validateAndSave() async {
     final FormBuilderState form = customerFormKey.currentState!;
     if (form.validate()) {
-      var customer = ThirdPartyById(
+      var customer = ThirdPartyModel(
               client: 1,
               codeClient: 'auto',
               name: nameController.text,

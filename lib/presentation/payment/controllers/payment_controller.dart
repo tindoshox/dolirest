@@ -1,10 +1,10 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -32,7 +32,7 @@ class PaymentController extends GetxController {
   var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
   var invoice = InvoiceById().obs;
-  var customer = ThirdPartyById().obs;
+  var customer = ThirdPartyModel().obs;
 
   var amount = ''.obs;
   var receipt = ''.obs;
@@ -58,7 +58,7 @@ class PaymentController extends GetxController {
   }
 
   void clearInvoice() {
-    customer(ThirdPartyById());
+    customer(ThirdPartyModel());
     invoice(InvoiceById());
     payDateController.text = dateTimeToString(payDate.value);
     dueDateController.text = dateTimeToString(dueDate.value);
@@ -183,7 +183,7 @@ class PaymentController extends GetxController {
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP);
         invoice.value = InvoiceById();
-        customer.value = ThirdPartyById();
+        customer.value = ThirdPartyModel();
       } else {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,

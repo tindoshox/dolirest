@@ -1,15 +1,15 @@
 // To parse this JSON data, do
 //
-//     final thirdPartyById = thirdPartyByIdFromMap(jsonString);
+//     final thirdPartyModel = thirdPartyModelFromMap(jsonString);
 
 import 'dart:convert';
 
-ThirdPartyById thirdPartyByIdFromMap(String str) =>
-    ThirdPartyById.fromMap(json.decode(str));
+ThirdPartyModel thirdPartyModelFromMap(String str) =>
+    ThirdPartyModel.fromMap(json.decode(str));
 
-String thirdPartyByIdToMap(ThirdPartyById data) => json.encode(data.toMap());
+String thirdPartyModelToMap(ThirdPartyModel data) => json.encode(data.toMap());
 
-class ThirdPartyById {
+class ThirdPartyModel {
   dynamic module;
   List<dynamic>? supplierCategories;
   dynamic prefixCustomerIsRequired;
@@ -160,7 +160,7 @@ class ThirdPartyById {
   dynamic absoluteDiscount;
   dynamic absoluteCreditnote;
 
-  ThirdPartyById({
+  ThirdPartyModel({
     this.module,
     this.supplierCategories,
     this.prefixCustomerIsRequired,
@@ -312,7 +312,7 @@ class ThirdPartyById {
     this.absoluteCreditnote,
   });
 
-  factory ThirdPartyById.fromMap(Map<String, dynamic> json) => ThirdPartyById(
+  factory ThirdPartyModel.fromMap(Map<String, dynamic> json) => ThirdPartyModel(
         module: json["module"],
         supplierCategories: json["SupplierCategories"] == null
             ? []

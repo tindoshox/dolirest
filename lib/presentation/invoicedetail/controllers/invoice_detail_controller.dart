@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_list_model.dart';
@@ -21,7 +21,7 @@ class InvoiceDetailController extends GetxController
   var tabIndex = 0.obs;
 
   var invoice = InvoiceById().obs;
-  var customer = ThirdPartyById().obs;
+  var customer = ThirdPartyModel().obs;
   var isLoading = false.obs;
 
   final invoiceId = Get.arguments['invoiceId'];

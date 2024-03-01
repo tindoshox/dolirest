@@ -3,11 +3,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_response_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
@@ -164,7 +164,7 @@ class RemoteServices {
 
       if (response.statusCode == 200) {
         return DataOrException(
-          data: thirdPartyByIdFromMap(response.body),
+          data: thirdPartyModelFromMap(response.body),
           statusCode: response.statusCode,
         );
       } else {
@@ -454,7 +454,7 @@ class RemoteServices {
 
       if (response.statusCode == 200) {
         return DataOrException(
-          data: thirdPartyByIdFromMap(response.body),
+          data: thirdPartyModelFromMap(response.body),
           statusCode: response.statusCode,
         );
       } else {

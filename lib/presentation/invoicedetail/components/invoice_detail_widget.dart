@@ -1,5 +1,5 @@
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -11,7 +11,7 @@ class InvoiceDetailWidget extends StatelessWidget {
       required this.invoice});
 
   final InvoiceById invoice;
-  final ThirdPartyById customer;
+  final ThirdPartyModel customer;
   final Function() onPressed;
   @override
   Widget build(BuildContext context) {

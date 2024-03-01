@@ -1,6 +1,6 @@
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_list_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -15,7 +15,7 @@ class CustomerdetailController extends GetxController
   late TabController tabController;
 
   var invoices = <InvoiceList>[].obs;
-  var customer = ThirdPartyById().obs;
+  var customer = ThirdPartyModel().obs;
   var isLoading = false.obs;
 
   @override
