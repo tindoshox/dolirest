@@ -1,6 +1,7 @@
 //Dolibarr api
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
@@ -8,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_response_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
@@ -49,8 +49,11 @@ class RemoteServices {
       ).timeout(timeout);
 
       if (response.statusCode == 200) {
+        final customers = List<ThirdPartyModel>.from(
+            json.decode(response.body).map((x) => ThirdPartyModel.fromJson(x)));
+
         return DataOrException(
-          data: thirdPartyFromMap(response.body),
+          data: customers,
           statusCode: response.statusCode,
         );
       } else {

@@ -1,8 +1,8 @@
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
@@ -45,7 +45,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                       if (controller.fromHomeScreen)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: DropdownSearch<ThirdParty>(
+                          child: DropdownSearch<ThirdPartyModel>(
                             onChanged: (customer) {
                               controller.fetchCustomerById(customer!.id);
                             },
@@ -62,7 +62,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                 ),
                               ),
                             ),
-                            itemAsString: (ThirdParty? customer) =>
+                            itemAsString: (ThirdPartyModel? customer) =>
                                 customer!.name,
                             popupProps: PopupProps.modalBottomSheet(
                                 modalBottomSheetProps:
@@ -74,8 +74,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold)),
                                 isFilterOnline: true,
-                                itemBuilder: (context, ThirdParty? customer,
-                                    isSelected) {
+                                itemBuilder: (context,
+                                    ThirdPartyModel? customer, isSelected) {
                                   return ListTile(
                                     title: Text(
                                       customer!.name,
@@ -97,7 +97,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                     ),
                                 showSearchBox: true),
                             asyncItems: (String searchString) async {
-                              List<ThirdParty> customers =
+                              List<ThirdPartyModel> customers =
                                   await controller.searchCustomer(searchString);
                               return customers;
                             },

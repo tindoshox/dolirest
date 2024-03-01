@@ -5,7 +5,6 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_by_id_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -223,7 +222,7 @@ class CreateinvoiceController extends GetxController {
   ///
   ///Customer search for DropDown
   Future searchCustomer(String searchString) async {
-    List<ThirdParty> customers = [];
+    List<ThirdPartyModel> customers = [];
 
     var response =
         await RemoteServices.fetchThirdPartyList('%$searchString%', '1', 0);

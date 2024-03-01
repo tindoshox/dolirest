@@ -1,10 +1,10 @@
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_list_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 
 class CustomerlistController extends GetxController {
-  var customers = <ThirdParty>[].obs;
+  var customers = <ThirdPartyModel>[].obs;
   var isLoading = false.obs;
   var isLoadingMore = false.obs;
   var isLastPage = false;
@@ -31,7 +31,7 @@ class CustomerlistController extends GetxController {
 
   void initialSearch(String text) {
     pageNumber = 0;
-    customers.value = <ThirdParty>[];
+    customers.value = <ThirdPartyModel>[];
     isLoading(true);
     searchString = '%${text.trim()}%';
     _fetchCustomers();
