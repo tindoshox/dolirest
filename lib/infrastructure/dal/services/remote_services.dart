@@ -23,12 +23,12 @@ class RemoteServices {
   //static final _client = http.Client();
   static final _client = RetryClient(http.Client());
   static const timeout = Duration(seconds: 20);
+  static final url = box.read('url');
+  static final apikey = box.read('apikey');
 
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
       String sqlfilters, String mode, int page) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     final queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
@@ -87,8 +87,6 @@ class RemoteServices {
   /// invoiceList
   static Future<DataOrException> fetchInvoiceList(
       String sqlfilters, int page) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     final queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
@@ -150,8 +148,6 @@ class RemoteServices {
 
   /// Customers By Id
   static Future<DataOrException> fetchThirdPartyById(String customerId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.get(
         Uri.https(url, '${ApiRoutes.customers}/$customerId'),
@@ -197,8 +193,6 @@ class RemoteServices {
   /// invoice by customer
   static Future<DataOrException> fetchInvoicesByCustomerId(
       String customerId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     final queryParameters = {
       "sortfield": "t.rowid",
       "sortorder": "DESC",
@@ -251,8 +245,6 @@ class RemoteServices {
   /// Customer Payment List
   static Future<DataOrException> fetchPaymentsByInvoice(
       String invoiceId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.get(
         Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/payments'),
@@ -297,8 +289,6 @@ class RemoteServices {
 
   /// Invoice by ID
   static Future<DataOrException> fetchInvoiceById(String invoiceId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.get(
         Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
@@ -344,8 +334,6 @@ class RemoteServices {
   /// Update Invoice
   static Future<DataOrException> updateInvoice(
       String invoiceId, String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.put(
         Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
@@ -391,8 +379,6 @@ class RemoteServices {
 
   /// Create Customer
   static Future<DataOrException> createCustomer(String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.post(
         Uri.https(url, ApiRoutes.customers),
@@ -439,8 +425,6 @@ class RemoteServices {
   /// Update Customer
   static Future<DataOrException> updateCustomer(
       String body, String customerId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.put(
         Uri.https(url, '${ApiRoutes.customers}/$customerId'),
@@ -486,8 +470,6 @@ class RemoteServices {
 
   /// Fetch Groups
   static Future<DataOrException> fetchGroups(String searchString) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     final queryParameters = {
       "sortfield": "nom",
       "sortorder": "ASC",
@@ -537,9 +519,6 @@ class RemoteServices {
 
   /// Fetch User Info
   static Future<DataOrException> fetchUserInfo() async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
-
     try {
       var response = await _client.get(
         Uri.https(url, ApiRoutes.users),
@@ -585,8 +564,6 @@ class RemoteServices {
   /// Add Customer payment
 
   static Future<DataOrException> addpayment(String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     var serverURL = url;
     try {
       var response = await _client.post(
@@ -633,8 +610,6 @@ class RemoteServices {
 
   /// Fetch Products
   static Future<DataOrException> fetchProducts(String searchString) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     final queryParameters = {
       "sortfield": "label",
       "sortorder": "ASC",
@@ -684,8 +659,6 @@ class RemoteServices {
 
   /// Check stock Products
   static Future<DataOrException> checkStock(String productId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.get(
         Uri.https(url, '${ApiRoutes.products}/$productId/stock'),
@@ -730,8 +703,6 @@ class RemoteServices {
 
   /// Create Invoice
   static Future<DataOrException> createInvoice(String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.post(
         Uri.https(url, ApiRoutes.invoices),
@@ -780,8 +751,6 @@ class RemoteServices {
   /// Validate Invoice
   static Future<DataOrException> validateInvoice(
       String body, String invoiceId) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.post(
         Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/validate'),
@@ -827,8 +796,6 @@ class RemoteServices {
 
 //Build Document
   static Future<DataOrException> buildDocument(String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.put(
         Uri.https(url, ApiRoutes.buildDocument),
@@ -874,8 +841,6 @@ class RemoteServices {
 
   //Build Report
   static Future<DataOrException> buildReport(String body) async {
-    final url = box.read('url');
-    final apikey = box.read('apikey');
     try {
       var response = await _client.put(
         Uri.https(url, ApiRoutes.buildReport),
