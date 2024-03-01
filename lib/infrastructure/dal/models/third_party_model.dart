@@ -1,17 +1,18 @@
 // To parse this JSON data, do
 //
-//     final thirdPartyModel = thirdPartyModelFromMap(jsonString);
+//     final thirdPartyModel = thirdPartyModelFromJson(jsonString);
 
 import 'dart:convert';
 
-ThirdPartyModel thirdPartyModelFromMap(String str) =>
-    ThirdPartyModel.fromMap(json.decode(str));
+ThirdPartyModel thirdPartyModelFromJson(String str) =>
+    ThirdPartyModel.fromJson(json.decode(str));
 
-String thirdPartyModelToMap(ThirdPartyModel data) => json.encode(data.toMap());
+String thirdPartyModelToJson(ThirdPartyModel data) =>
+    json.encode(data.toJson());
 
 class ThirdPartyModel {
   dynamic module;
-  List<dynamic>? supplierCategories;
+  dynamic supplierCategories;
   dynamic prefixCustomerIsRequired;
   dynamic entity;
   dynamic name;
@@ -100,10 +101,10 @@ class ThirdPartyModel {
   dynamic fkMulticurrency;
   dynamic fkWarehouse;
   dynamic multicurrencyCode;
-  List<dynamic>? partnerships;
+  dynamic partnerships;
   dynamic bankAccount;
   dynamic id;
-  List<dynamic>? arrayOptions;
+  dynamic arrayOptions;
   dynamic arrayLanguages;
   dynamic contactsIds;
   dynamic linkedObjects;
@@ -147,18 +148,16 @@ class ThirdPartyModel {
   dynamic specimen;
   dynamic labelStatus;
   dynamic showphotoOnPopup;
-  List<dynamic>? nb;
+  dynamic nb;
   dynamic output;
-  List<dynamic>? extraparams;
+  dynamic extraparams;
   dynamic fkIncoterms;
   dynamic labelIncoterms;
   dynamic locationIncoterms;
-  List<dynamic>? socialnetworks;
+  dynamic socialnetworks;
   dynamic address;
   dynamic zip;
   dynamic town;
-  dynamic absoluteDiscount;
-  dynamic absoluteCreditnote;
 
   ThirdPartyModel({
     this.module,
@@ -308,11 +307,10 @@ class ThirdPartyModel {
     this.address,
     this.zip,
     this.town,
-    this.absoluteDiscount,
-    this.absoluteCreditnote,
   });
 
-  factory ThirdPartyModel.fromMap(Map<String, dynamic> json) => ThirdPartyModel(
+  factory ThirdPartyModel.fromJson(Map<String, dynamic> json) =>
+      ThirdPartyModel(
         module: json["module"],
         supplierCategories: json["SupplierCategories"] == null
             ? []
@@ -472,11 +470,9 @@ class ThirdPartyModel {
         address: json["address"],
         zip: json["zip"],
         town: json["town"],
-        absoluteDiscount: json["absolute_discount"],
-        absoluteCreditnote: json["absolute_creditnote"],
       );
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toJson() => {
         "module": module,
         "SupplierCategories": supplierCategories == null
             ? []
@@ -634,7 +630,5 @@ class ThirdPartyModel {
         "address": address,
         "zip": zip,
         "town": town,
-        "absolute_discount": absoluteDiscount,
-        "absolute_creditnote": absoluteCreditnote,
       };
 }

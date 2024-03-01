@@ -160,7 +160,7 @@ class RemoteServices {
 
       if (response.statusCode == 200) {
         return DataOrException(
-          data: thirdPartyModelFromMap(response.body),
+          data: thirdPartyModelFromJson(response.body),
           statusCode: response.statusCode,
         );
       } else {
@@ -438,7 +438,7 @@ class RemoteServices {
 
       if (response.statusCode == 200) {
         return DataOrException(
-          data: thirdPartyModelFromMap(response.body),
+          data: thirdPartyModelFromJson(response.body),
           statusCode: response.statusCode,
         );
       } else {
