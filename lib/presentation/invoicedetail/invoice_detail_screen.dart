@@ -53,9 +53,13 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                       onPressed: () => controller.setDueDate(),
                       customer: controller.customer.value,
                       invoice: controller.invoice.value),
-                  PaymentsDataTable(
-                      payments: controller.payments,
-                      invoice: controller.invoice.value),
+                  ListView(
+                    children: [
+                      PaymentsDataTable(
+                          payments: controller.payments,
+                          invoice: controller.invoice.value)
+                    ],
+                  ),
                 ],
               ),
       ),
