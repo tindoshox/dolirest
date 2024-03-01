@@ -15,18 +15,18 @@ class BuildDucumentResponseModel {
   String contentType;
   int filesize;
   String content;
-  String langcode;
-  String template;
-  String encoding;
+  String? langcode;
+  String? template;
+  String? encoding;
 
   BuildDucumentResponseModel({
     required this.filename,
     required this.contentType,
     required this.filesize,
     required this.content,
-    required this.langcode,
-    required this.template,
-    required this.encoding,
+    this.langcode = "",
+    this.template = "",
+    this.encoding = "base64",
   });
 
   factory BuildDucumentResponseModel.fromJson(Map<String, dynamic> json) =>

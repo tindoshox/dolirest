@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -25,8 +25,7 @@ class HomeController extends GetxController {
         isLoading.value = false;
       } else {
         isLoading.value = false;
-        debugPrint('Home: Settings');
-        // Get.offAndToNamed(Routes.SETTINGS);
+        SnackBarHelper.errorSnackbar(message: value.errorMessage);
       }
     });
   }

@@ -71,10 +71,9 @@ class InvoiceDetailController extends GetxController
 
     DialogHelper.showLoading();
     var body = json.encode(BuildDocumentRequestModel(
-        modulepart: 'invoice',
-        originalFile: '${invoice.value.ref}/${invoice.value.ref}.pdf',
-        doctemplate: '',
-        langcode: ''));
+      modulepart: 'invoice',
+      originalFile: '${invoice.value.ref}/${invoice.value.ref}.pdf',
+    ));
 
     if (permissionReady) {
       try {
@@ -86,7 +85,7 @@ class InvoiceDetailController extends GetxController
             });
           } else {
             DialogHelper.hideLoading();
-            Get.snackbar('Error', 'Download Failed');
+            SnackBarHelper.errorSnackbar(message: value.errorMessage);
           }
         });
       } catch (e) {

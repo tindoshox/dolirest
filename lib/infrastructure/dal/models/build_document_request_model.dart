@@ -3,14 +3,14 @@ import 'dart:convert';
 class BuildDocumentRequestModel {
   String modulepart;
   String originalFile;
-  String doctemplate;
-  String langcode;
+  String? doctemplate;
+  String? langcode;
 
   BuildDocumentRequestModel({
     required this.modulepart,
     required this.originalFile,
-    required this.doctemplate,
-    required this.langcode,
+    this.doctemplate = "",
+    this.langcode = "",
   });
 
   factory BuildDocumentRequestModel.fromRawJson(String str) =>
