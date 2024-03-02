@@ -1,5 +1,6 @@
 // ignore_for_file: use_super_parameters
 
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

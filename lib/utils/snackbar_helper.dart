@@ -5,41 +5,30 @@ import 'package:get/get.dart';
 class SnackBarHelper {
   /// Shows a success snackbar.
   ///
-  /// The [title] and [message] parameters are optional. If provided, they will
-  /// be displayed in the snackbar. The [statusCode] parameter is optional and
-  /// can be used to display the status code in the snackbar.
 
   static void successSnackbar(
-      {String title = '', String? message, String? statusCode}) {
+      {String title = 'Sucess', String? message, String? statusCode}) {
     Get.showSnackbar(GetSnackBar(
+      icon: const Icon(Icons.thumb_up_off_alt_sharp),
       duration: const Duration(seconds: 2),
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color.fromARGB(255, 191, 255, 153),
+      //snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color.fromARGB(255, 33, 78, 7),
       title: title,
-      messageText: ListTile(
-        title: Text(message ?? 'Operation Successful.'),
-        subtitle: statusCode == null ? null : Text('Status code: $statusCode'),
-      ),
+      messageText: Text(message ?? 'Operation was successful.'),
     ));
   }
 
   /// Shows an error snackbar.
-  ///
-  /// The [title] and [message] parameters are optional. If provided, they will
-  /// be displayed in the snackbar. The [statusCode] parameter is optional and
-  /// can be used to display the status code in the snackbar.
 
   static void errorSnackbar(
-      {String title = '', String? message, String? statusCode}) {
+      {String title = 'Error', String? message, String? statusCode}) {
     Get.showSnackbar(GetSnackBar(
+      icon: const Icon(Icons.error),
       duration: const Duration(seconds: 2),
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color.fromARGB(255, 255, 78, 78),
+      //snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color.fromARGB(255, 110, 13, 13),
       title: title,
-      messageText: ListTile(
-        title: Text(message ?? 'Unknown error occured.'),
-        subtitle: statusCode == null ? null : Text('Status code: $statusCode'),
-      ),
+      messageText: Text(message ?? 'An error occured.'),
     ));
   }
 }
