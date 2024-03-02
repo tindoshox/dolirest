@@ -36,13 +36,13 @@ class HomeScreen extends GetView<HomeController> {
                   ListTile(
                     title: Obx(() => Text(
                           controller.baseUrl.value.isEmpty
-                              ? 'loading...'
+                              ? ''
                               : 'DATABASE: ${subString(controller.baseUrl.value).toUpperCase()}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         )),
                     subtitle: Obx(() => Text(
                         controller.isLoading.value
-                            ? 'loading...'
+                            ? ''
                             : 'USER: ${controller.currentUser.value.lastname ?? controller.currentUser.value.login}',
                         style: const TextStyle(fontWeight: FontWeight.bold))),
                   ),

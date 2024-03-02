@@ -856,7 +856,7 @@ class RemoteServices {
           'Accept': 'application/json',
           'DOLAPIKEY': apikey
         },
-      ).timeout(timeout);
+      ).timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         return DataOrException(

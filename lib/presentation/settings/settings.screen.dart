@@ -59,13 +59,18 @@ class SettingsScreen extends GetView<SettingsController> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: CustomFormField(
+                    suffix: IconButton(
+                        onPressed: () => controller.getClipboardText(),
+                        icon: const Icon(Icons.paste_outlined)),
                     name: 'api_key',
                     labelText: 'API Key',
                     controller: controller.apiController,
                     textCapitalization: TextCapitalization.none,
                     textInputAction: TextInputAction.done,
-
+                    minLines: 3,
+                    maxLines: 5,
                     enableInteractiveSelection: true,
+                    keyboardType: TextInputType.multiline,
 
                     /// Returns an error message if the API key is empty.
                     validator: (apiKey) => GetUtils.isLengthEqualTo(apiKey, 0)

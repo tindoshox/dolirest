@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -63,5 +64,13 @@ class SettingsController extends GetxController {
   void _clearStorage() {
     box.write('url', "");
     box.write('apikey', "");
+  }
+
+  void getClipboardText() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    String? clipboardText = clipboardData?.text;
+    if (clipboardText != null) {
+      apiController.text = clipboardText;
+    }
   }
 }

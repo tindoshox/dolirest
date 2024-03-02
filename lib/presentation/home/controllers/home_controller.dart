@@ -1,4 +1,3 @@
-import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -23,9 +22,6 @@ class HomeController extends GetxController {
       if (!value.hasError) {
         currentUser(value.data);
         isLoading.value = false;
-      } else {
-        isLoading.value = false;
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
       }
     });
   }
