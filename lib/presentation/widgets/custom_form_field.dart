@@ -33,6 +33,7 @@ class CustomFormField extends StatelessWidget {
     this.enableSuggestions = true,
     this.onTap,
     this.onEditingComplete,
+    this.prefixText,
     this.suffix,
     this.prefixIcon,
     this.onSaved,
@@ -57,6 +58,7 @@ class CustomFormField extends StatelessWidget {
   final bool enableSuggestions;
   final bool obscureText;
   final Function()? onTap;
+  final String? prefixText;
   final Widget? prefixIcon;
   final Widget? suffix;
   final TextCapitalization textCapitalization;
@@ -98,6 +100,7 @@ class CustomFormField extends StatelessWidget {
             borderSide: BorderSide(color: Colors.red),
           ),
           prefixIcon: prefixIcon,
+          prefixText: prefixText,
           suffix: suffix,
           hintText: hintText,
           labelText: labelText,

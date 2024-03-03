@@ -24,6 +24,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
             CustomFormField(
                 name: 'search',
                 labelText: 'Search',
+                hintText: 'Search by name or invoice number',
                 suffix: const Icon(Icons.search),
                 textInputAction: TextInputAction.search,
                 controller: controller.searchController,

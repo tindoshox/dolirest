@@ -34,6 +34,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                 name: 'search',
                 labelText: 'Search',
                 textInputAction: TextInputAction.search,
+                hintText: 'Search by name, address or phone number',
                 suffix: const Icon(Icons.search),
                 controller: controller.searchController,
                 onChanged: (string) {

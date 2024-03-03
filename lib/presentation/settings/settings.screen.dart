@@ -35,6 +35,7 @@ class SettingsScreen extends GetView<SettingsController> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: CustomFormField(
+                    prefixText: 'https://',
                     name: 'server_url',
                     labelText: 'Server Url',
                     textCapitalization: TextCapitalization.none,
