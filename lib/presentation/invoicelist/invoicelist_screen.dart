@@ -25,6 +25,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                 name: 'search',
                 labelText: 'Search',
                 suffix: const Icon(Icons.search),
+                textInputAction: TextInputAction.search,
                 controller: controller.searchController,
                 onChanged: (string) {
                   debouncer(() {

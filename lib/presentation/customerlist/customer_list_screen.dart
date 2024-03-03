@@ -33,6 +33,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
             CustomFormField(
                 name: 'search',
                 labelText: 'Search',
+                textInputAction: TextInputAction.search,
                 suffix: const Icon(Icons.search),
                 controller: controller.searchController,
                 onChanged: (string) {
