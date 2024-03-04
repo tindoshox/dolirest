@@ -15,8 +15,6 @@ import 'package:dolirest/utils/utils.dart';
 class PaymentController extends GetxController {
   final payDateController = TextEditingController();
   final dueDateController = TextEditingController();
-  // final paymentTypeController = TextEditingController();
-  // final bankController = TextEditingController();
   final receiptController = TextEditingController();
   final amountController = TextEditingController();
   final invoiceController = TextEditingController();
@@ -131,19 +129,24 @@ class PaymentController extends GetxController {
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
       DialogHelper.showLoading('Processing Payment.');
-      var body = '''{
-  "arrayofamounts":{"${invoice.value.id}": {"amount": "${amount.value}", "multicurrency_amount": ""}},
-  "datepaye": "${dateTimeToInt(payDate.value)}",
-  "paymentid": 4,
-  "closepaidinvoices": "yes",
-  "accountid": 1,
-  "num_payment": "${receipt.value}",
-  "comment": "",
-  "chqemetteur": "",
-  "chqbank": "",
-  "ref_ext": "",
-  "accepthigherpayment": false
-}''';
+      var body = jsonEncode({
+        "arrayofamounts": {
+          "${invoice.value.id}": {
+            "amount": amount.value,
+            "multicurrency_amount": ""
+          }
+        },
+        "datepaye": dateTimeToInt(payDate.value),
+        "paymentid": 4,
+        "closepaidinvoices": "yes",
+        "accountid": 1,
+        "num_payment": receipt.value,
+        "comment": "",
+        "chqemetteur": "",
+        "chqbank": "",
+        "ref_ext": "",
+        "accepthigherpayment": false
+      });
 
       /// Processes the payment using the given payment data.
       _processPayment(body);
@@ -153,8 +156,12 @@ class PaymentController extends GetxController {
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
     String paymentId = '';
-    await _addPayment(body).then((value) => paymentId = value);
-    await _updateDueDate(invoice.value.id);
+    await _addPayment(body).then((value) async {
+      paymentId = value;
+      if (paymentId.isNotEmpty) {
+        await _updateDueDate(invoice.value.id);
+      }
+    });
 
     /// Validates the form and saves the payment data if the form is valid.
 
@@ -162,7 +169,7 @@ class PaymentController extends GetxController {
       var invoiceId = invoice.value.id;
       var customerId = invoice.value.socid;
       var customerName = customer.value.name;
-      clearInvoice();
+
       paymentFormKey.currentState?.reset();
       DialogHelper.hideLoading();
       if (fromHomeScreen) {
@@ -181,8 +188,7 @@ class PaymentController extends GetxController {
             backgroundColor: const Color.fromARGB(255, 186, 255, 97),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP);
-        invoice.value = InvoiceModel();
-        customer.value = ThirdPartyModel();
+        clearInvoice();
       } else {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
@@ -207,9 +213,10 @@ class PaymentController extends GetxController {
   }
 
   Future _updateDueDate(String invoiceId) async {
-    var update = InvoiceModel(dateLimReglement: dateTimeToInt(dueDate.value));
-    //.toMap();
-    //update.removeWhere((key, value) => value == null || value == '');
+    var update =
+        InvoiceModel(dateLimReglement: dateTimeToInt(dueDate.value)).toJson();
+    update.removeWhere((key, value) => value == null);
+
     String body = jsonEncode(update);
 
     await RemoteServices.updateInvoice(invoiceId, body);
