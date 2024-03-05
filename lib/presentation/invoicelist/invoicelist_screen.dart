@@ -12,7 +12,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
   const InvoicelistScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final debouncer = Debouncer(delay: const Duration(milliseconds: 500));
+    final debouncer = Debouncer(delay: const Duration(milliseconds: 1000));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoices'),
@@ -26,7 +26,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                 labelText: 'Search',
                 hintText: 'Search by name or invoice number',
                 suffix: const Icon(Icons.search),
-                textInputAction: TextInputAction.search,
+                textInputAction: TextInputAction.done,
                 controller: controller.searchController,
                 onChanged: (string) {
                   debouncer(() {

@@ -4,10 +4,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
@@ -26,12 +24,6 @@ class RemoteServices {
   static const _timeout = Duration(seconds: 20);
   static final _url = box.read('url');
   static final _apikey = box.read('apikey');
-  static final _dio = Dio();
-  static final _headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'DOLAPIKEY': _apikey
-  };
 
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
@@ -46,18 +38,17 @@ class RemoteServices {
           "(t.nom:like:'$sqlfilters') or (t.phone:like:'$sqlfilters') or (t.fax:like:'$sqlfilters') or (t.town:like:'$sqlfilters')or (t.address:like:'$sqlfilters')",
     };
     try {
-      Response response = await _dio.get('https://$_url${ApiRoutes.customers}',
-          queryParameters: queryParameters,
-          options: Options(
-            headers: _headers,
-            sendTimeout: _timeout,
-            receiveTimeout: _timeout,
-          ));
+      var response = await _client.get(
+        Uri.https(_url, ApiRoutes.customers, queryParameters),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'DOLAPIKEY': _apikey
+        },
+      ).timeout(_timeout);
 
-      debugPrint(response.statusCode.toString());
-      final customers = List<ThirdPartyModel>.from(json
-          .decode(response.data.toString())
-          .map((customer) => ThirdPartyModel.fromJson(customer)));
+      final customers = List<ThirdPartyModel>.from(
+          json.decode(response.body).map((x) => ThirdPartyModel.fromJson(x)));
 
       return DataOrException(
         data: customers,
@@ -112,21 +103,12 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        final invoices = List<InvoiceModel>.from(
-            json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
-        return DataOrException(
-          data: invoices,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          data: [],
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      final invoices = List<InvoiceModel>.from(
+          json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
+      return DataOrException(
+        data: invoices,
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -162,18 +144,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: thirdPartyModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: thirdPartyModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -214,20 +188,12 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        final invoices = List<InvoiceModel>.from(
-            json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
-        return DataOrException(
-          data: invoices,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      final invoices = List<InvoiceModel>.from(
+          json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
+      return DataOrException(
+        data: invoices,
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -261,18 +227,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: paymentFromMap(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: paymentFromMap(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -305,18 +263,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: invoiceModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: invoiceModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -351,18 +301,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: invoiceModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: invoiceModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -396,18 +338,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: response.body.replaceAll('"', ''),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: response.body.replaceAll('"', ''),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -442,18 +376,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: thirdPartyModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: thirdPartyModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -491,18 +417,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: groupModelFromMap(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: groupModelFromMap(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -535,18 +453,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: userModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: userModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -582,18 +492,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: response.body.replaceAll('"', ''),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: response.body.replaceAll('"', ''),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -631,18 +533,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: productFromMap(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: productFromMap(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -675,18 +569,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: response.statusCode,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: response.statusCode,
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -720,18 +606,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: response.body.replaceAll('"', ''),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: response.body.replaceAll('"', ''),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -768,18 +646,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: response.body.replaceAll('"', ''),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: response.body.replaceAll('"', ''),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -813,18 +683,10 @@ class RemoteServices {
         },
       ).timeout(_timeout);
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: buildDucumentResponseModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: buildDucumentResponseModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -858,18 +720,10 @@ class RemoteServices {
         },
       ).timeout(const Duration(seconds: 60));
 
-      if (response.statusCode == 200) {
-        return DataOrException(
-          data: buildReportResponseModelFromJson(response.body),
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: response.reasonPhrase,
-          hasError: true,
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: buildReportResponseModelFromJson(response.body),
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(

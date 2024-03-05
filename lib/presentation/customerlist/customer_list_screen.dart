@@ -13,7 +13,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
 
   @override
   Widget build(BuildContext context) {
-    final debouncer = Debouncer(delay: const Duration(milliseconds: 500));
+    final debouncer = Debouncer(delay: const Duration(milliseconds: 1000));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
@@ -33,7 +33,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
             CustomFormField(
                 name: 'search',
                 labelText: 'Search',
-                textInputAction: TextInputAction.search,
+                textInputAction: TextInputAction.done,
                 hintText: 'Search by name, address or phone number',
                 suffix: const Icon(Icons.search),
                 controller: controller.searchController,
