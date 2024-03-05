@@ -73,22 +73,20 @@ Future<String> createFileFromString(String encodedStr, String filename) async {
 
 /// Checks the status of the manageExternalStorage permission on Android and requests it if it is not granted.
 Future<bool> checkPermission(TargetPlatform? platform) async {
-  if (platform == TargetPlatform.android) {
-    final status = await Permission.manageExternalStorage.status;
-    if (status != PermissionStatus.granted) {
-      final result = await Permission.manageExternalStorage.request();
-      if (result == PermissionStatus.granted) {
-        return true;
-      }
-    } else {
-      return true;
-    }
-  } else {
-    return true;
+  if (platform != TargetPlatform.android) {
+    return true; // No need to check permissions for non-Android platforms.
   }
-  return false;
+
+  final status = await Permission.manageExternalStorage.status;
+  if (status.isGranted) {
+    return true; // Permission already granted.
+  }
+
+  final result = await Permission.manageExternalStorage.request();
+  return result.isGranted; // Returns true if granted, false otherwise.
 }
 
 String subString(String s) {
-  return s.substring(0, s.indexOf('.'));
+  final dotIndex = s.indexOf('.');
+  return dotIndex == -1 ? s : s.substring(0, dotIndex);
 }

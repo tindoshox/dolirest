@@ -1,3 +1,3 @@
 # dolirest
 
-A new Flutter project.
+A REST API client for Dolibarr CRM

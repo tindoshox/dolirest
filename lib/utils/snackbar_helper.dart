@@ -3,32 +3,49 @@ import 'package:get/get.dart';
 
 /// A helper class for showing snackbars.
 class SnackBarHelper {
-  /// Shows a success snackbar.
+  /// Shows a snackbar with customizable options.
   ///
-
-  static void successSnackbar(
-      {String title = 'Sucess', String? message, String? statusCode}) {
+  static void showSnackbar({
+    required String title,
+    String? message,
+    IconData icon = Icons.info,
+    Color backgroundColor = Colors.black,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     Get.showSnackbar(GetSnackBar(
-      icon: const Icon(Icons.thumb_up_off_alt_sharp),
-      duration: const Duration(seconds: 2),
-      //snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color.fromARGB(255, 33, 78, 7),
+      icon: Icon(icon),
+      duration: duration,
+      backgroundColor: backgroundColor,
       title: title,
-      messageText: Text(message ?? 'Operation was successful.'),
+      messageText: Text(message ?? ''),
     ));
   }
 
-  /// Shows an error snackbar.
-
-  static void errorSnackbar(
-      {String title = 'Error', String? message, String? statusCode}) {
-    Get.showSnackbar(GetSnackBar(
-      icon: const Icon(Icons.error),
-      duration: const Duration(seconds: 2),
-      //snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color.fromARGB(255, 110, 13, 13),
+  /// Shows a success snackbar.
+  ///
+  static void successSnackbar({
+    String title = 'Success',
+    String? message,
+  }) {
+    showSnackbar(
       title: title,
-      messageText: Text(message ?? 'An error occured.'),
-    ));
+      message: message ?? 'Operation was successful.',
+      icon: Icons.thumb_up_off_alt_sharp,
+      backgroundColor: const Color.fromARGB(255, 33, 78, 7),
+    );
+  }
+
+  /// Shows an error snackbar.
+  ///
+  static void errorSnackbar({
+    String title = 'Error',
+    String? message,
+  }) {
+    showSnackbar(
+      title: title,
+      message: message ?? 'An error occurred.',
+      icon: Icons.error,
+      backgroundColor: const Color.fromARGB(255, 110, 13, 13),
+    );
   }
 }
