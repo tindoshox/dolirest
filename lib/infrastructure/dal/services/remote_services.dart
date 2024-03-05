@@ -4,8 +4,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
@@ -21,9 +23,15 @@ import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
 class RemoteServices {
   static final _client = RetryClient(http.Client());
-  static const timeout = Duration(seconds: 20);
-  static final url = box.read('url');
-  static final apikey = box.read('apikey');
+  static const _timeout = Duration(seconds: 20);
+  static final _url = box.read('url');
+  static final _apikey = box.read('apikey');
+  static final _dio = Dio();
+  static final _headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'DOLAPIKEY': _apikey
+  };
 
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
@@ -38,31 +46,23 @@ class RemoteServices {
           "(t.nom:like:'$sqlfilters') or (t.phone:like:'$sqlfilters') or (t.fax:like:'$sqlfilters') or (t.town:like:'$sqlfilters')or (t.address:like:'$sqlfilters')",
     };
     try {
-      var response = await _client.get(
-        Uri.https(url, ApiRoutes.customers, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': apikey
-        },
-      ).timeout(timeout);
+      Response response = await _dio.get('https://$_url${ApiRoutes.customers}',
+          queryParameters: queryParameters,
+          options: Options(
+            headers: _headers,
+            sendTimeout: _timeout,
+            receiveTimeout: _timeout,
+          ));
 
-      if (response.statusCode == 200) {
-        final customers = List<ThirdPartyModel>.from(
-            json.decode(response.body).map((x) => ThirdPartyModel.fromJson(x)));
+      debugPrint(response.statusCode.toString());
+      final customers = List<ThirdPartyModel>.from(json
+          .decode(response.data.toString())
+          .map((customer) => ThirdPartyModel.fromJson(customer)));
 
-        return DataOrException(
-          data: customers,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return DataOrException(
-          errorMessage: 'Customer Not Found',
-          hasError: true,
-          data: [],
-          statusCode: response.statusCode,
-        );
-      }
+      return DataOrException(
+        data: customers,
+        statusCode: response.statusCode,
+      );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
@@ -104,13 +104,13 @@ class RemoteServices {
 
     try {
       var response = await _client.get(
-        Uri.https(url, ApiRoutes.invoices, queryParameters),
+        Uri.https(_url, ApiRoutes.invoices, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         final invoices = List<InvoiceModel>.from(
@@ -154,13 +154,13 @@ class RemoteServices {
   static Future<DataOrException> fetchThirdPartyById(String customerId) async {
     try {
       var response = await _client.get(
-        Uri.https(url, '${ApiRoutes.customers}/$customerId'),
+        Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -206,13 +206,13 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.https(url, ApiRoutes.invoices, queryParameters),
+        Uri.https(_url, ApiRoutes.invoices, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         final invoices = List<InvoiceModel>.from(
@@ -253,13 +253,13 @@ class RemoteServices {
       String invoiceId) async {
     try {
       var response = await _client.get(
-        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/payments'),
+        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/payments'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -297,13 +297,13 @@ class RemoteServices {
   static Future<DataOrException> fetchInvoiceById(String invoiceId) async {
     try {
       var response = await _client.get(
-        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
+        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -342,14 +342,14 @@ class RemoteServices {
       String invoiceId, String body) async {
     try {
       var response = await _client.put(
-        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId'),
+        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -387,14 +387,14 @@ class RemoteServices {
   static Future<DataOrException> createCustomer(String body) async {
     try {
       var response = await _client.post(
-        Uri.https(url, ApiRoutes.customers),
+        Uri.https(_url, ApiRoutes.customers),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -433,14 +433,14 @@ class RemoteServices {
       String body, String customerId) async {
     try {
       var response = await _client.put(
-        Uri.https(url, '${ApiRoutes.customers}/$customerId'),
+        Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -483,13 +483,13 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.https(url, ApiRoutes.groups, queryParameters),
+        Uri.https(_url, ApiRoutes.groups, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -527,13 +527,13 @@ class RemoteServices {
   static Future<DataOrException> fetchUserInfo() async {
     try {
       var response = await _client.get(
-        Uri.https(url, ApiRoutes.users),
+        Uri.https(_url, ApiRoutes.users),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -570,7 +570,7 @@ class RemoteServices {
   /// Add Customer payment
 
   static Future<DataOrException> addpayment(String body) async {
-    var serverURL = url;
+    var serverURL = _url;
     try {
       var response = await _client.post(
         Uri.https(serverURL, '${ApiRoutes.invoices}/paymentsdistributed'),
@@ -578,9 +578,9 @@ class RemoteServices {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -623,13 +623,13 @@ class RemoteServices {
     };
     try {
       var response = await _client.get(
-        Uri.https(url, ApiRoutes.products, queryParameters),
+        Uri.https(_url, ApiRoutes.products, queryParameters),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -667,13 +667,13 @@ class RemoteServices {
   static Future<DataOrException> checkStock(String productId) async {
     try {
       var response = await _client.get(
-        Uri.https(url, '${ApiRoutes.products}/$productId/stock'),
+        Uri.https(_url, '${ApiRoutes.products}/$productId/stock'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -711,14 +711,14 @@ class RemoteServices {
   static Future<DataOrException> createInvoice(String body) async {
     try {
       var response = await _client.post(
-        Uri.https(url, ApiRoutes.invoices),
+        Uri.https(_url, ApiRoutes.invoices),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -759,14 +759,14 @@ class RemoteServices {
       String body, String invoiceId) async {
     try {
       var response = await _client.post(
-        Uri.https(url, '${ApiRoutes.invoices}/$invoiceId/validate'),
+        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/validate'),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -804,14 +804,14 @@ class RemoteServices {
   static Future<DataOrException> buildDocument(String body) async {
     try {
       var response = await _client.put(
-        Uri.https(url, ApiRoutes.buildDocument),
+        Uri.https(_url, ApiRoutes.buildDocument),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
-      ).timeout(timeout);
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         return DataOrException(
@@ -849,12 +849,12 @@ class RemoteServices {
   static Future<DataOrException> buildReport(String body) async {
     try {
       var response = await _client.put(
-        Uri.https(url, ApiRoutes.buildReport),
+        Uri.https(_url, ApiRoutes.buildReport),
         body: body,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'DOLAPIKEY': apikey
+          'DOLAPIKEY': _apikey
         },
       ).timeout(const Duration(seconds: 60));
 
