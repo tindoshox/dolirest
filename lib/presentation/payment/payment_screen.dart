@@ -162,11 +162,12 @@ class PaymentScreen extends GetView<PaymentController> {
                                     ? 'Date cannot be in the future'
                                     : null,
                             controller: controller.payDateController,
-                            labelText: 'PayD ate', //'Payment Date',
+                            labelText: 'Pay Date', //'Payment Date',
                             suffix: IconButton(
                                 icon: const Icon(Icons.calendar_today),
                                 onPressed: () => controller.setPayDate()),
                           )),
+                      FormBuilderDateTimePicker(name: 'date_paid'),
 
                       ///
                       ///

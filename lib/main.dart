@@ -1,12 +1,14 @@
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'infrastructure/navigation/navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   await GetStorage.init();
 

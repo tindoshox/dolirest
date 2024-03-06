@@ -1,5 +1,5 @@
 name: dolirest
-description: "A new Flutter project."
+description: "A Dolibarr Rest API client."
 publish_to: 'none'
 version: 0.1.0
 
@@ -7,7 +7,6 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
-  dio: ^5.4.1
   double_back_to_close: ^2.0.0
   flutter:
     sdk: flutter
@@ -19,9 +18,9 @@ dependencies:
   get_storage: ^2.1.1
   http: ^1.2.1
   intl: ^0.18.1
+  lottie: ^3.1.0
   open_filex: ^4.4.0
   permission_handler: ^11.3.0
-  searchable_listview: ^2.10.2
   shimmer: ^3.0.0
   url_launcher: ^6.2.5
 
@@ -33,4 +32,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - images/smbi.png
+    - assets/images/smbi.png
+    - assets/images/splashscreen.gif
+

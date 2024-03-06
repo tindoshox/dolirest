@@ -50,7 +50,7 @@ class HomeScreen extends GetView<HomeController> {
                     height: 110,
                   ),
                   const Image(
-                    image: AssetImage('images/smbi.png'),
+                    image: AssetImage('assets/images/smbi.png'),
                   ),
                 ],
               ),

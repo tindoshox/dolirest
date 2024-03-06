@@ -16,9 +16,10 @@ class Routes {
   static const INVOICELIST = '/invoicelist';
   static const PAYMENT = '/payment';
   static const REPORTS = '/reports';
+  static const SETTINGS = '/settings';
   static const SPLASH_SCREEN = '/splash-screen';
   static const SUPPLIERDETAILS = '/supplierdetails';
   static const SUPPLIERINVOICEDETAILS = '/supplierinvoicedetails';
   static const SUPPLIERLIST = '/supplierlist';
-  static const SETTINGS = '/settings';
+  static const SPLASHSCREEN = '/splashscreen';
 }

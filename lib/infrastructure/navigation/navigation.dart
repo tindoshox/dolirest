@@ -1,3 +1,6 @@
+//import 'package:flutter/material.dart';
+
+import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/createinvoice_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerdetail_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerlist_controller_binding.dart';
@@ -17,32 +20,10 @@ import 'package:dolirest/presentation/invoicelist/invoicelist_screen.dart';
 import 'package:dolirest/presentation/payment/payment_screen.dart';
 import 'package:dolirest/presentation/reports/reports_screen.dart';
 import 'package:dolirest/presentation/settings/settings.screen.dart';
-import 'package:flutter/material.dart';
-
-import 'package:get/get.dart';
-
-import '../../config.dart';
 import 'bindings/controllers/reports.controller.binding.dart';
 import 'routes.dart';
 
 // ignore_for_file: use_key_in_widget_constructors
-
-class EnvironmentsBadge extends StatelessWidget {
-  final Widget child;
-  const EnvironmentsBadge({required this.child});
-  @override
-  Widget build(BuildContext context) {
-    var env = ConfigEnvironments.getEnvironments()['env'];
-    return env != Environments.PRODUCTION
-        ? Banner(
-            location: BannerLocation.topStart,
-            message: env!,
-            color: env == Environments.QAS ? Colors.blue : Colors.purple,
-            child: child,
-          )
-        : SizedBox(child: child);
-  }
-}
 
 const transition = Transition.fadeIn;
 const transitionDuration = Duration(milliseconds: 500);
