@@ -9,6 +9,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class EditcustomerController extends GetxController {
   final customerFormKey = GlobalKey<FormBuilderState>();
@@ -25,12 +26,27 @@ class EditcustomerController extends GetxController {
 
   var selectedGroup = GroupModel().obs;
 
+  var addresses = <String>[];
+  var towns = <String>[];
+
   @override
-  void onReady() {
+  void onInit() async {
     if (customerId.isNotEmpty) {
-      _fetchCustomerById(customerId);
+      await _fetchCustomerById(customerId);
     }
-    super.onReady();
+    await getSuggestions();
+    super.onInit();
+  }
+
+  getSuggestions() async {
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    List<ThirdPartyModel> customers = box.toMap().values.toList();
+    addresses = customers
+        .map((customer) => customer.address.toString())
+        .toSet()
+        .toList();
+    towns =
+        customers.map((customer) => customer.town.toString()).toSet().toList();
   }
 
   Future<List<GroupModel>> fetchGroups(searchString) async {
@@ -50,7 +66,7 @@ class EditcustomerController extends GetxController {
     final FormBuilderState form = customerFormKey.currentState!;
     if (form.validate()) {
       var customer = ThirdPartyModel(
-              client: 1,
+              client: "1",
               codeClient: 'auto',
               name: nameController.text,
               address: addressController.text,
@@ -72,7 +88,7 @@ class EditcustomerController extends GetxController {
   Future _createCustomer(String body) async {
     DialogHelper.showLoading('Saving Customer.');
 
-    await RemoteServices.createCustomer(body).then((value) {
+    await RemoteServices.createCustomer(body).then((value) async {
       if (value.hasError) {
         SnackBarHelper.errorSnackbar(message: value.errorMessage);
       }
@@ -83,32 +99,24 @@ class EditcustomerController extends GetxController {
       faxController.text = '';
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': value.data});
+          arguments: {'customerId': value.data, 'refresh': true});
     });
   }
 
   Future _fetchCustomerById(String id) async {
-    DialogHelper.showLoading('Loading Customer');
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
 
-    await RemoteServices.fetchThirdPartyById(id).then((value) {
-      DialogHelper.hideLoading();
-
-      if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
-      }
-
-      customerToEdit(value.data);
-      nameController.text = customerToEdit.value.name;
-      addressController.text = customerToEdit.value.address;
-      townController.text = customerToEdit.value.town;
-      phoneController.text = customerToEdit.value.phone ?? '';
-      faxController.text = customerToEdit.value.fax ?? '';
-    });
+    customerToEdit.value = box.get(id)!;
+    nameController.text = customerToEdit.value.name!;
+    addressController.text = customerToEdit.value.address ?? '';
+    townController.text = customerToEdit.value.town ?? '';
+    phoneController.text = customerToEdit.value.phone ?? '';
+    faxController.text = customerToEdit.value.fax ?? '';
   }
 
   Future _updateCustomer(String body, String id) async {
     DialogHelper.showLoading('Updating Customer');
-    await RemoteServices.updateCustomer(body, id).then((value) {
+    await RemoteServices.updateCustomer(body, id).then((value) async {
       DialogHelper.hideLoading();
 
       if (value.hasError) {
@@ -118,8 +126,12 @@ class EditcustomerController extends GetxController {
       SnackBarHelper.successSnackbar(
         message: 'Customer updated',
       );
+
+      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      box.put(customerId, value.data);
+
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': customerId});
+          arguments: {'customerId': customerId, 'refresh': true});
     });
   }
 }

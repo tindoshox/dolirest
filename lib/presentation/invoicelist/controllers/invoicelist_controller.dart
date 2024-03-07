@@ -1,61 +1,70 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class InvoicelistController extends GetxController {
   var invoices = <InvoiceModel>[].obs;
   var isLoading = false.obs;
-  var isLoadingMore = false.obs;
+
   var isLastPage = false;
 
   final searchController = TextEditingController();
   final scrollController = ScrollController();
-
-  int pageNumber = 0;
+  Box<InvoiceModel>? box;
+  int page = 0;
   String searchString = '';
 
   @override
-  void onInit() {
-    initialSearch(searchString);
-    scrollController.addListener(() {
-      if (scrollController.position.maxScrollExtent ==
-              scrollController.offset &&
-          !isLastPage &&
-          !isLoadingMore.value) {
-        _loadMore();
-      }
-    });
+  void onInit() async {
+    box = await Hive.openBox<InvoiceModel>('invoices');
+    var map = box!.toMap().values.toList();
+    if (map.isEmpty) {
+      getAllInvoices();
+    } else {
+      invoices.value = map;
+    }
+
     super.onInit();
   }
 
-  void initialSearch(String text) {
-    pageNumber = 0;
-    invoices.value = <InvoiceModel>[];
+  void search({String searchText = ""}) {
     isLoading(true);
-    searchString = '%${text.trim()}%';
-    _fetchInvoices();
+
+    if (searchText != "") {
+      invoices.value = box!
+          .toMap()
+          .values
+          .toList()
+          .where((invoice) =>
+              invoice.nom!.contains(searchText) ||
+              invoice.ref!.contains(searchText))
+          .toList();
+    } else {
+      invoices.value = box!.toMap().values.toList();
+    }
+
+    isLoading(false);
   }
 
-  Future<void> _loadMore() async {
-    isLoadingMore(true);
+  getAllInvoices() async {
+    isLoading(true);
 
-    pageNumber++;
-    await _fetchInvoices().then((value) => isLoadingMore(false));
-  }
-
-  Future _fetchInvoices() async {
-    await RemoteServices.fetchInvoiceList(searchString, pageNumber)
-        .then((value) {
-      if (!value.hasError) {
-        invoices.addAll(value.data);
-      }
-      if (value.data.length < 50) {
-        isLastPage = true;
-      }
+    await RemoteServices.fetchInvoiceList().then((value) async {
       isLoading(false);
-      isLoadingMore(false);
+      if (!value.hasError) {
+        var box = await Hive.openBox<InvoiceModel>('invoices');
+        for (var invoice in value.data) {
+          box.put(invoice.id, invoice);
+        }
+        invoices.value = box.toMap().values.toList();
+        SnackBarHelper.successSnackbar(message: 'Inovice data refreshed');
+      } else {
+        SnackBarHelper.errorSnackbar(message: 'Could not refresh invoice data');
+      }
     });
   }
 }

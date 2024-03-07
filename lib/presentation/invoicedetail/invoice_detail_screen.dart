@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -18,22 +19,31 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             CustomActionButton(
-              buttonText: 'Payment',
-              onTap: controller.invoice.value.remaintopay == '0'
-                  ? null
-                  : () => Get.offAndToNamed(
-                        Routes.PAYMENT,
-                        arguments: {
-                          'invid': controller.invoice.value.id,
-                          'socid': controller.invoice.value.socid,
-                          'fromhome': false
-                        },
-                      ),
-            ),
+                buttonText: 'Payment',
+                onTap: controller.invoice.value.remaintopay == '0'
+                    ? null
+                    : () {
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          Get.offAndToNamed(
+                            Routes.PAYMENT,
+                            arguments: {
+                              'invid': controller.invoice.value.id,
+                              'socid': controller.invoice.value.socid,
+                              'fromhome': false
+                            },
+                          );
+                        }
+                      }),
             CustomActionButton(
-              buttonText: 'Download',
-              onTap: () => controller.generateDocument(),
-            ),
+                buttonText: 'Download',
+                onTap: () {
+                  bool connected = getBox.read('connected');
+                  if (connected) {
+                    controller.generateDocument();
+                  }
+                } //=> ,
+                ),
           ],
         ),
       ],
@@ -50,7 +60,12 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                 controller: controller.tabController,
                 children: [
                   InvoiceDetailWidget(
-                      onPressed: () => controller.setDueDate(),
+                      onPressed: () {
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          controller.setDueDate();
+                        }
+                      },
                       customer: controller.customer.value,
                       invoice: controller.invoice.value),
                   ListView(

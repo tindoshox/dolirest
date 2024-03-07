@@ -139,7 +139,7 @@ class InvoiceDetailWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Total: ${amounts(invoice.totalTtc)}',
+                      'Total: ${amounts(invoice.totalTtc!)}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),

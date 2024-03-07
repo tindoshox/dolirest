@@ -20,9 +20,9 @@ DateTime intToDateTime(int intDate) {
 }
 
 /// Returns an integer representation of a date from a [DateTime] object.
-String dateTimeToInt(DateTime date) {
+int dateTimeToInt(DateTime date) {
   var convert = DateUtils.dateOnly(date).millisecondsSinceEpoch / 1000;
-  return convert.toString().substring(0, 10);
+  return convert.toInt();
 }
 
 /// Returns the integer representation of a number without the decimal point.

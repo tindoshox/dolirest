@@ -1,8 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/utils/utils.dart';
 
 class CustomerInfo extends StatelessWidget {
@@ -25,7 +22,7 @@ class CustomerInfo extends StatelessWidget {
       if (customer.phone != null && customer.phone.toString().trim().isNotEmpty)
         CustomerInfoRow(
           onTap: () => makePhoneCall(customer.phone.toString().trim()),
-          title: customer.phone,
+          title: customer.phone!,
           leading: const Icon(Icons.phone_android),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
@@ -36,23 +33,6 @@ class CustomerInfo extends StatelessWidget {
           leading: const Icon(Icons.phone_android_outlined),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            CustomActionButton(
-              buttonText: 'Edit',
-              onTap: () => Get.offAndToNamed(Routes.EDITCUSTOMER,
-                  arguments: {'customerId': customer.id}),
-            ),
-            CustomActionButton(
-                buttonText: 'New Invoice',
-                onTap: () => Get.offAndToNamed(Routes.CREATEINVOICE,
-                    arguments: {'customerId': customer.id, 'fromhome': false})),
-          ],
-        ),
-      ),
     ];
     return ListView.separated(
         itemBuilder: (context, index) {

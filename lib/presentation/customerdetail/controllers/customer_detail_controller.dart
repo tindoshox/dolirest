@@ -1,14 +1,14 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class CustomerdetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   String customerId = Get.arguments['customerId'];
-  //
+  bool refreshCustomer = Get.arguments['refresh'];
   final List<Tab> customerTabs =
       [const Tab(text: 'Details'), const Tab(text: 'Invoices')].obs;
   var tabIndex = 0.obs;
@@ -26,7 +26,7 @@ class CustomerdetailController extends GetxController
       tabIndex(tabController.index);
     });
 
-    _fetchData(customerId);
+    _fetchData();
     super.onInit();
   }
 
@@ -35,32 +35,33 @@ class CustomerdetailController extends GetxController
     tabController.dispose();
   }
 
-  void _fetchData(String id) async {
+  void _fetchData() async {
     isLoading(true);
 
-    await _fetchCustomerById(id);
-    await _fetchCustomerInvoices(id);
+    if (refreshCustomer) {
+      await refreshCustomerData();
+    } else {
+      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      customer.value = box.get(customerId)!;
+    }
+
+    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    invoices.value = invoiceBox
+        .toMap()
+        .values
+        .toList()
+        .where((inv) => inv.socid == customerId)
+        .toList();
 
     isLoading(false);
   }
 
-  Future _fetchCustomerById(String id) async {
-    await RemoteServices.fetchThirdPartyById(id).then((value) {
-      if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
-      }
-
-      customer(value.data);
-    });
-
-    isLoading(false);
-  }
-
-  Future _fetchCustomerInvoices(String id) async {
-    await RemoteServices.fetchInvoicesByCustomerId(id).then((value) {
-      if (!value.hasError) {
-        invoices(value.data);
-      }
+  refreshCustomerData() async {
+    var customerBox = await Hive.openBox<ThirdPartyModel>('customers');
+    await RemoteServices.fetchThirdPartyById(customerId).then((value) {
+      ThirdPartyModel newCustomer = value.data;
+      customerBox.put(newCustomer.id, newCustomer);
+      customer.value = customerBox.get(customerId)!;
     });
   }
 }

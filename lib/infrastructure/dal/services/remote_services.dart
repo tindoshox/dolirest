@@ -14,41 +14,52 @@ import 'package:dolirest/infrastructure/dal/models/build_report_response_model.d
 import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_list_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
 class RemoteServices {
   static final _client = RetryClient(http.Client());
-  static const _timeout = Duration(seconds: 20);
-  static final _url = box.read('url');
-  static final _apikey = box.read('apikey');
+  static const _timeout = Duration(seconds: 30);
+  static final _url = getBox.read('url');
+  static final _apikey = getBox.read('apikey');
+  static final Map<String, String> _headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'DOLAPIKEY': _apikey
+  };
 
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
-      String sqlfilters, String mode, int page) async {
+      {String sqlfilters = "%",
+      String mode = "1",
+      String page = "1",
+      String limit = "0"}) async {
     final queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
       "mode": mode,
-      "limit": "50",
+      "limit": limit,
       "page": page.toString(),
       "sqlfilters":
           "(t.nom:like:'$sqlfilters') or (t.phone:like:'$sqlfilters') or (t.fax:like:'$sqlfilters') or (t.town:like:'$sqlfilters')or (t.address:like:'$sqlfilters')",
     };
     try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.customers, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.customers, queryParameters),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
-      final customers = List<ThirdPartyModel>.from(
-          json.decode(response.body).map((x) => ThirdPartyModel.fromJson(x)));
+      String jsonString = response.body; // Example JSON string of a list
+      List<dynamic> jsonList = json.decode(jsonString);
+
+      List<ThirdPartyModel> customers = jsonList
+          .map((jsonItem) =>
+              ThirdPartyModel.fromJson(jsonItem as Map<String, dynamic>))
+          .toList();
 
       return DataOrException(
         data: customers,
@@ -59,7 +70,7 @@ class RemoteServices {
         return DataOrException(
           hasError: true,
           data: [],
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -79,70 +90,67 @@ class RemoteServices {
 
   /// invoiceList
   static Future<DataOrException> fetchInvoiceList(
-      String sqlfilters, int page) async {
+      {String sqlfilters = '%', String page = "1", String limit = "0"}) async {
     final queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
-      "status": "unpaid",
-      "page": page.toString(),
-      "limit": "50",
+      "page": page,
+      "limit": limit,
       "sqlfilters":
-          "(t.type:=:0) and ((t.ref:like:'$sqlfilters') or (nom:like:'$sqlfilters'))"
-
-      // To enable filtering by customer name we need to modify htdocs/compta/facture/class/api_invoices.class.php
-      // To have customer name on invoice data we need to modify htdocs/compta/facture/class/facture.class.php
+          "(t.type:=:0) and ((t.ref:like:$sqlfilters) or (nom:like:$sqlfilters))"
     };
 
-    try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.invoices, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+    // try {
+    var response = await _client
+        .get(
+          Uri.https(_url, ApiRoutes.invoices, queryParameters),
+          headers: _headers,
+        )
+        .timeout(_timeout);
+    String jsonString = response.body; // Example JSON string of a list
+    List<dynamic> jsonList = json.decode(jsonString);
 
-      final invoices = List<InvoiceModel>.from(
-          json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
-      return DataOrException(
-        data: invoices,
-        statusCode: response.statusCode,
-      );
-    } catch (e) {
-      if (e is SocketException) {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "Connection error",
-          data: [],
-        );
-      } else if (e is TimeoutException) {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "Timeout error",
-          data: [],
-        );
-      } else {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "Unkown error",
-          data: [],
-        );
-      }
-    }
+    List<InvoiceModel> invoices = jsonList
+        .map((jsonItem) =>
+            InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
+        .toList();
+
+    return DataOrException(
+      data: invoices,
+      statusCode: response.statusCode,
+    );
+    // } catch (e) {
+    //   if (e is SocketException) {
+    //     return DataOrException(
+    //       hasError: true,
+    //       errorMessage: "No Internet",
+    //       data: [],
+    //     );
+    //   } else if (e is TimeoutException) {
+    //     return DataOrException(
+    //       hasError: true,
+    //       errorMessage: "Timeout error",
+    //       data: [],
+    //     );
+    //   } else {
+    //     return DataOrException(
+    //       hasError: true,
+    //       errorMessage: "Unkown error",
+    //       data: [],
+    //     );
+    //   }
+    // }
   }
 
   /// Customers By Id
   static Future<DataOrException> fetchThirdPartyById(String customerId) async {
     try {
-      var response = await _client.get(
-        Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: thirdPartyModelFromJson(response.body),
@@ -152,7 +160,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -179,17 +187,20 @@ class RemoteServices {
       "sqlfilters": "(t.type:=:0)",
     };
     try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.invoices, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.invoices, queryParameters),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
-      final invoices = List<InvoiceModel>.from(
-          json.decode(response.body).map((x) => InvoiceModel.fromJson(x)));
+      String jsonString = response.body; // Example JSON string of a list
+      List<dynamic> jsonList = json.decode(jsonString);
+
+      List<InvoiceModel> invoices = jsonList
+          .map((jsonItem) =>
+              InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
+          .toList();
       return DataOrException(
         data: invoices,
         statusCode: response.statusCode,
@@ -198,7 +209,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -218,24 +229,22 @@ class RemoteServices {
   static Future<DataOrException> fetchPaymentsByInvoice(
       String invoiceId) async {
     try {
-      var response = await _client.get(
-        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/payments'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/payments'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
-        data: paymentFromMap(response.body),
+        data: paymentModelFromJson(response.body),
         statusCode: response.statusCode,
       );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -254,14 +263,12 @@ class RemoteServices {
   /// Invoice by ID
   static Future<DataOrException> fetchInvoiceById(String invoiceId) async {
     try {
-      var response = await _client.get(
-        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: invoiceModelFromJson(response.body),
@@ -271,7 +278,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -291,25 +298,23 @@ class RemoteServices {
   static Future<DataOrException> updateInvoice(
       String invoiceId, String body) async {
     try {
-      var response = await _client.put(
-        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .put(
+            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
-        data: invoiceModelFromJson(response.body),
+        //data: invoiceModelFromJson(response.body),
         statusCode: response.statusCode,
       );
     } catch (e) {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -328,15 +333,13 @@ class RemoteServices {
   /// Create Customer
   static Future<DataOrException> createCustomer(String body) async {
     try {
-      var response = await _client.post(
-        Uri.https(_url, ApiRoutes.customers),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .post(
+            Uri.https(_url, ApiRoutes.customers),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: response.body.replaceAll('"', ''),
@@ -346,7 +349,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -366,15 +369,13 @@ class RemoteServices {
   static Future<DataOrException> updateCustomer(
       String body, String customerId) async {
     try {
-      var response = await _client.put(
-        Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .put(
+            Uri.https(_url, '${ApiRoutes.customers}/$customerId'),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: thirdPartyModelFromJson(response.body),
@@ -384,7 +385,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -408,14 +409,12 @@ class RemoteServices {
       "sqlfilters": "(t.active:=:1) and (t.nom:like:'$searchString')",
     };
     try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.groups, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.groups, queryParameters),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: groupModelFromMap(response.body),
@@ -425,7 +424,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -444,14 +443,12 @@ class RemoteServices {
   /// Fetch User Info
   static Future<DataOrException> fetchUserInfo() async {
     try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.users),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.users),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: userModelFromJson(response.body),
@@ -461,7 +458,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -482,15 +479,13 @@ class RemoteServices {
   static Future<DataOrException> addpayment(String body) async {
     var serverURL = _url;
     try {
-      var response = await _client.post(
-        Uri.https(serverURL, '${ApiRoutes.invoices}/paymentsdistributed'),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .post(
+            Uri.https(serverURL, '${ApiRoutes.invoices}/paymentsdistributed'),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: response.body.replaceAll('"', ''),
@@ -500,7 +495,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -524,14 +519,12 @@ class RemoteServices {
       "sqlfilters": "(t.label:like:'$searchString')",
     };
     try {
-      var response = await _client.get(
-        Uri.https(_url, ApiRoutes.products, queryParameters),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.products, queryParameters),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: productFromMap(response.body),
@@ -541,7 +534,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -560,14 +553,12 @@ class RemoteServices {
   /// Check stock Products
   static Future<DataOrException> checkStock(String productId) async {
     try {
-      var response = await _client.get(
-        Uri.https(_url, '${ApiRoutes.products}/$productId/stock'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .get(
+            Uri.https(_url, '${ApiRoutes.products}/$productId/stock'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: response.statusCode,
@@ -577,7 +568,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -596,15 +587,13 @@ class RemoteServices {
   /// Create Invoice
   static Future<DataOrException> createInvoice(String body) async {
     try {
-      var response = await _client.post(
-        Uri.https(_url, ApiRoutes.invoices),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .post(
+            Uri.https(_url, ApiRoutes.invoices),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: response.body.replaceAll('"', ''),
@@ -614,7 +603,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -636,15 +625,13 @@ class RemoteServices {
   static Future<DataOrException> validateInvoice(
       String body, String invoiceId) async {
     try {
-      var response = await _client.post(
-        Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/validate'),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .post(
+            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId/validate'),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: response.body.replaceAll('"', ''),
@@ -654,7 +641,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -673,15 +660,13 @@ class RemoteServices {
 //Build Document
   static Future<DataOrException> buildDocument(String body) async {
     try {
-      var response = await _client.put(
-        Uri.https(_url, ApiRoutes.buildDocument),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(_timeout);
+      var response = await _client
+          .put(
+            Uri.https(_url, ApiRoutes.buildDocument),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(_timeout);
 
       return DataOrException(
         data: buildDucumentResponseModelFromJson(response.body),
@@ -691,7 +676,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(
@@ -710,15 +695,13 @@ class RemoteServices {
   //Build Report
   static Future<DataOrException> buildReport(String body) async {
     try {
-      var response = await _client.put(
-        Uri.https(_url, ApiRoutes.buildReport),
-        body: body,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'DOLAPIKEY': _apikey
-        },
-      ).timeout(const Duration(seconds: 60));
+      var response = await _client
+          .put(
+            Uri.https(_url, ApiRoutes.buildReport),
+            body: body,
+            headers: _headers,
+          )
+          .timeout(const Duration(seconds: 60));
 
       return DataOrException(
         data: buildReportResponseModelFromJson(response.body),
@@ -728,7 +711,7 @@ class RemoteServices {
       if (e is SocketException) {
         return DataOrException(
           hasError: true,
-          errorMessage: "Connection error",
+          errorMessage: "No Internet",
         );
       } else if (e is TimeoutException) {
         return DataOrException(

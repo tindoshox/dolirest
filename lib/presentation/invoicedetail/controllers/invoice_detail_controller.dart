@@ -7,11 +7,13 @@ import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_list_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
@@ -26,10 +28,11 @@ class InvoiceDetailController extends GetxController
 
   final invoiceId = Get.arguments['invoiceId'];
   final customerId = Get.arguments['customerId'];
+  bool refreshInvoice = Get.arguments['refresh'];
   var selectedDate = DateTime.now().obs;
   var documentList = <DocumenListModel>[];
 
-  var payments = <Payment>[].obs;
+  var payments = <PaymentModel>[].obs;
 
   late TabController tabController;
   late TargetPlatform? platform;
@@ -47,6 +50,7 @@ class InvoiceDetailController extends GetxController
     tabController.addListener(() {
       tabIndex(tabController.index);
     });
+
     await fetchData();
     super.onInit();
   }
@@ -59,11 +63,27 @@ class InvoiceDetailController extends GetxController
   Future fetchData() async {
     isLoading(true);
 
-    await _fetchInvoiceById(invoiceId);
-    await _fetchCustomerById(customerId);
     await _fetchPayments(invoiceId);
+    var customerBox = await Hive.openBox<ThirdPartyModel>('customers');
+    customer.value = customerBox.get(customerId)!;
+
+    if (refreshInvoice) {
+      await refreshInvoiceData();
+    } else {
+      var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+      invoice.value = invoiceBox.get(invoiceId)!;
+    }
 
     isLoading(false);
+  }
+
+  refreshInvoiceData() async {
+    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
+      InvoiceModel newInvoice = value.data;
+      invoiceBox.put(newInvoice.id, newInvoice);
+      invoice.value = invoiceBox.get(newInvoice.id)!;
+    });
   }
 
   Future generateDocument() async {
@@ -99,32 +119,14 @@ class InvoiceDetailController extends GetxController
     DialogHelper.hideLoading();
   }
 
-  Future _fetchInvoiceById(String invoiceId) async {
-    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
-      if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
-        return;
-      }
-      if (!value.hasError) {
-        invoice(value.data);
-      }
-    });
-  }
-
-  Future _fetchCustomerById(String customerId) async {
-    await RemoteServices.fetchThirdPartyById(customerId).then((value) {
-      if (!value.hasError) {
-        customer(value.data);
-      }
-    });
-  }
-
   Future _fetchPayments(String invoiceId) async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
-      if (!value.hasError) {
-        payments(value.data);
-      }
-    }));
+    var box = await Hive.openBox<List<PaymentModel>>('payments');
+    payments.value = box.get(invoiceId)!;
+    // await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
+    //   if (!value.hasError) {
+    //     payments(value.data);
+    //   }
+    // }));
   }
 
   setDueDate() async {
@@ -147,7 +149,7 @@ class InvoiceDetailController extends GetxController
     }
   }
 
-  Future _updateDueDate(String selectedDate) async {
+  Future _updateDueDate(int selectedDate) async {
     DialogHelper.showLoading('Updating Due Date');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();

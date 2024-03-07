@@ -12,12 +12,14 @@ import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:intl/intl.dart';
 
 class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
+
   var customer = ThirdPartyModel().obs;
 
   final createInvoiceKey = GlobalKey<FormBuilderState>();
@@ -86,16 +88,8 @@ class CreateinvoiceController extends GetxController {
   }
 
   Future fetchCustomerById(String customerId) async {
-    DialogHelper.showLoading('Loading Customer');
-
-    await RemoteServices.fetchThirdPartyById(customerId).then((value) {
-      DialogHelper.hideLoading();
-
-      if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
-      }
-      customer(value.data);
-    });
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    customer.value = box.get(customerId)!;
   }
 
   ///
@@ -166,10 +160,10 @@ class CreateinvoiceController extends GetxController {
     /// Generate main draft
     var invoice = InvoiceModel(
         socid: customer.value.id,
-        date: int.parse(dateTimeToInt(invoiceDate.value)),
+        date: dateTimeToInt(invoiceDate.value),
         refClient: refController.text,
         type: '0',
-        dateLimReglement: int.parse(dateTimeToInt(dueDate.value)),
+        dateLimReglement: dateTimeToInt(dueDate.value),
         condReglementCode: 'RECEP',
         modeReglementCode: 'LIQ',
         lines: [line]).toJson();
@@ -208,9 +202,11 @@ class CreateinvoiceController extends GetxController {
         );
       } else {
         DialogHelper.hideLoading();
+
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
           'customerId': customer.value.id,
+          'refresh': true,
         });
       }
     });
@@ -218,18 +214,25 @@ class CreateinvoiceController extends GetxController {
 
   ///
   ///Customer search for DropDown
-  Future searchCustomer(String searchString) async {
+  Future searchCustomer({String searchString = ""}) async {
     List<ThirdPartyModel> customers = [];
 
-    var response =
-        await RemoteServices.fetchThirdPartyList('%$searchString%', '1', 0);
-    if (!response.hasError) {
-      customers = response.data;
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+
+    if (searchString == "") {
+      customers = box.toMap().values.toList();
     } else {
-      customers = [];
-      if (response.statusCode == 408) {
-        SnackBarHelper.errorSnackbar(message: 'Connection Timeout.');
-      }
+      customers = box
+          .toMap()
+          .values
+          .toList()
+          .where((customer) =>
+              customer.name.contains(searchString) ||
+              customer.address.toString().contains(searchString) ||
+              customer.town.toString().contains(searchString) ||
+              customer.phone.toString().contains(searchString) ||
+              customer.fax.toString().contains(searchString))
+          .toList();
     }
 
     return customers;

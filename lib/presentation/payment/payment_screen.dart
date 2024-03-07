@@ -60,7 +60,8 @@ class PaymentScreen extends GetView<PaymentController> {
                                 const ClearButtonProps(isVisible: true),
                             onChanged: (invoice) {
                               if (invoice != null) {
-                                controller.fetchData(invoice.socid, invoice.id);
+                                controller.fetchData(
+                                    invoice.socid!, invoice.id!);
                               } else {
                                 controller.clearInvoice();
                               }
@@ -76,8 +77,11 @@ class PaymentScreen extends GetView<PaymentController> {
                               ),
                             ),
                             itemAsString: (InvoiceModel? invoice) =>
-                                invoice?.ref,
+                                invoice!.ref!,
                             popupProps: PopupProps.modalBottomSheet(
+                                searchFieldProps: const TextFieldProps(
+                                    textCapitalization:
+                                        TextCapitalization.characters),
                                 modalBottomSheetProps: ModalBottomSheetProps(
                                     shape: const RoundedRectangleBorder(),
                                     constraints:
@@ -100,13 +104,13 @@ class PaymentScreen extends GetView<PaymentController> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            invoice?.ref,
+                                            invoice!.ref!,
                                             style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           Text(
-                                            'BALANCE: ${invoice?.remaintopay}',
+                                            'BALANCE: ${invoice.remaintopay}',
                                             style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
@@ -122,19 +126,18 @@ class PaymentScreen extends GetView<PaymentController> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Flexible(
-                                                child: Text(invoice?.nom),
+                                                child: Text(invoice.nom!),
                                               ),
                                               Text(
                                                 intToDateString(
-                                                    invoice?.dateLimReglement),
+                                                    invoice.dateLimReglement!),
                                                 style: overDueStyle(
-                                                    invoice?.dateLimReglement),
+                                                    invoice.dateLimReglement!),
                                               ),
                                             ],
                                           ),
-                                          Text(invoice
-                                                  ?.lines![0].productLabel ??
-                                              invoice?.lines![0].description)
+                                          Text(invoice.lines![0].productLabel ??
+                                              invoice.lines![0].description)
                                         ],
                                       ));
                                 },
@@ -143,8 +146,8 @@ class PaymentScreen extends GetView<PaymentController> {
                                         child: Text('Invoice not found'))),
                                 showSearchBox: true),
                             asyncItems: (String searchString) async {
-                              List<InvoiceModel> invoices =
-                                  await controller.fetchInvoices(searchString);
+                              List<InvoiceModel> invoices = await controller
+                                  .fetchInvoices(searchString: searchString);
                               return invoices;
                             },
                           ),
@@ -167,7 +170,6 @@ class PaymentScreen extends GetView<PaymentController> {
                                 icon: const Icon(Icons.calendar_today),
                                 onPressed: () => controller.setPayDate()),
                           )),
-                      FormBuilderDateTimePicker(name: 'date_paid'),
 
                       ///
                       ///
@@ -215,7 +217,7 @@ class PaymentScreen extends GetView<PaymentController> {
                             return 'Amount is required';
                           }
                           if (GetUtils.isGreaterThan(int.parse(amount),
-                              int.parse(invoice.value.remaintopay))) {
+                              int.parse(invoice.value.remaintopay!))) {
                             return 'Amount cannot be greater than balnace';
                           }
                           return null;

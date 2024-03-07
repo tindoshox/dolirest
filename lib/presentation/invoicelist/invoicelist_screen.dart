@@ -16,6 +16,11 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoices'),
+        actions: [
+          IconButton(
+              onPressed: () => controller.getAllInvoices(),
+              icon: const Icon(Icons.refresh_outlined))
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -25,12 +30,12 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                 name: 'search',
                 labelText: 'Search',
                 hintText: 'Search by name or invoice number',
-                suffix: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
                 textInputAction: TextInputAction.done,
                 controller: controller.searchController,
                 onChanged: (string) {
                   debouncer(() {
-                    controller.initialSearch(string!);
+                    controller.search(searchText: string!);
                   });
                 }),
             Expanded(
@@ -39,7 +44,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                   return ListView.separated(
                       itemBuilder: (context, index) =>
                           const InvoiceListLoadingTile(),
-                      separatorBuilder: (context, indx) => const Divider(
+                      separatorBuilder: (context, index) => const Divider(
                             color: Colors.grey,
                             thickness: 1,
                           ),
@@ -48,8 +53,10 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                 if (controller.invoices.isEmpty) {
                   return const Text('Invoice not found');
                 }
-                var invoices = controller.invoices;
-                var loadMore = controller.isLoadingMore.value;
+                var invoices = controller.invoices
+                    .where((element) => element.remaintopay != "0")
+                    .toList();
+                //var loadMore = controller.isLoadingMore.value;
                 return ListView.builder(
                     controller: controller.scrollController,
                     itemCount: invoices.length + 1,
@@ -64,6 +71,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                               arguments: {
                                 'customerId': invoice.socid,
                                 'invoiceId': invoice.id,
+                                'refresh': false
                               },
                             );
                           },
@@ -74,7 +82,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      invoice.ref,
+                                      invoice.ref!,
                                       style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold),
@@ -95,13 +103,13 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Flexible(
-                                          child: Text(invoice.nom),
+                                          child: Text(invoice.nom!),
                                         ),
                                         Text(
                                           intToDateString(
-                                              invoice.dateLimReglement),
+                                              invoice.dateLimReglement!),
                                           style: overDueStyle(
-                                              invoice.dateLimReglement),
+                                              invoice.dateLimReglement!),
                                         )
                                       ],
                                     ),
@@ -113,12 +121,12 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                           ),
                         );
                       } else {
-                        if (loadMore) {
-                          return const InvoiceListLoadingTile();
-                        }
+                        // if (loadMore) {
+                        //   return const InvoiceListLoadingTile();
+                        // }
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(child: Text('nothing more to load!')),
+                          child: Center(child: Text('End of list!')),
                         );
                       }
                     });

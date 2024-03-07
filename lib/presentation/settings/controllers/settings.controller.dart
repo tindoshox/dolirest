@@ -1,8 +1,8 @@
+import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -23,13 +23,13 @@ class SettingsController extends GetxController {
   }
 
   void readSettings() {
-    if (box.read('url') != null) {
-      serverUrl = box.read('url');
+    if (getBox.read('url') != null) {
+      serverUrl = getBox.read('url');
       urlController.text = serverUrl;
     }
 
-    if (box.read('apikey') != null) {
-      apiKey = box.read('apikey');
+    if (getBox.read('apikey') != null) {
+      apiKey = getBox.read('apikey');
       apiController.text = apiKey;
     }
   }
@@ -56,14 +56,14 @@ class SettingsController extends GetxController {
 
   /// Writes the server info to the local storage.
   void _writeStore() {
-    box.write('url', urlController.text.trim());
-    box.write('apikey', apiController.text.trim());
+    getBox.write('url', urlController.text.trim());
+    getBox.write('apikey', apiController.text.trim());
     //Get.offAndToNamed(Routes.HOME);
   }
 
   void _clearStorage() {
-    box.write('url', "");
-    box.write('apikey', "");
+    getBox.write('url', "");
+    getBox.write('apikey', "");
   }
 
   void getClipboardText() async {

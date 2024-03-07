@@ -10,11 +10,13 @@ import 'controllers/editcustomer_controller.dart';
 
 class EditcustomerScreen extends GetView<EditcustomerController> {
   const EditcustomerScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Customer'),
+        title: Text(
+            controller.customerId == '' ? 'New Customer' : 'Edit Customer'),
       ),
       body: Center(
         child: controller.isLoading.value
@@ -33,26 +35,71 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                           : null,
                       labelText: 'Customer Name',
                     ),
-                    CustomFormField(
-                      name: 'customer_address',
-                      textCapitalization: TextCapitalization.characters,
-                      prefixIcon: const Icon(Icons.location_pin),
-                      controller: controller.addressController,
-                      validator: (address) =>
-                          GetUtils.isLengthEqualTo(address, 0)
-                              ? 'Address is required'
-                              : null,
-                      labelText: 'Address',
+                    Autocomplete(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text == '') {
+                          return const Iterable<String>.empty();
+                        }
+                        return controller.addresses.where((String address) {
+                          return address.contains(textEditingValue.text);
+                        });
+                      },
+                      fieldViewBuilder: (BuildContext context,
+                          TextEditingController addressController,
+                          FocusNode focusNode,
+                          VoidCallback onFieldSubmitted) {
+                        return FormBuilderTextField(
+                          onChanged: (value) =>
+                              controller.addressController.text = value!.trim(),
+                          name: 'customer_address',
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.characters,
+                          controller: controller.customerId == ''
+                              ? addressController
+                              : controller.addressController,
+                          focusNode: focusNode,
+                          validator: (address) =>
+                              GetUtils.isLengthLessThan(address, 3)
+                                  ? 'Address is required'
+                                  : null,
+                          decoration: const InputDecoration(
+                            labelText: 'Address',
+                            prefixIcon: Icon(Icons.location_pin),
+                          ),
+                        );
+                      },
                     ),
-                    CustomFormField(
-                      name: 'customer_city',
-                      textCapitalization: TextCapitalization.characters,
-                      prefixIcon: const Icon(Icons.location_city),
-                      controller: controller.townController,
-                      labelText: 'City',
-                      validator: (city) => GetUtils.isLengthEqualTo(city, 0)
-                          ? 'Customer Name is required'
-                          : null,
+                    Autocomplete(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text == '') {
+                          return const Iterable<String>.empty();
+                        }
+                        return controller.towns.where((String town) {
+                          return town.contains(textEditingValue.text);
+                        });
+                      },
+                      fieldViewBuilder: (context, townController, focusNode,
+                          onFieldSubmitted) {
+                        return FormBuilderTextField(
+                          onChanged: (value) =>
+                              controller.townController.text = value!.trim(),
+                          name: 'customer_city',
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.characters,
+                          controller: controller.customerId == ''
+                              ? townController
+                              : controller.townController,
+                          focusNode: focusNode,
+                          validator: (city) =>
+                              GetUtils.isLengthLessThan(city, 3)
+                                  ? 'City is required'
+                                  : null,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.location_city),
+                            labelText: 'City',
+                          ),
+                        );
+                      },
                     ),
                     if (controller.customerId.isEmpty)
 

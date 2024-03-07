@@ -29,6 +29,7 @@ class InvoiceListWidget extends StatelessWidget {
               arguments: {
                 'invoiceId': invoice.id,
                 'customerId': invoice.socid,
+                'refresh': false,
               },
             );
           },
@@ -36,7 +37,7 @@ class InvoiceListWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                invoices[index].ref,
+                invoices[index].ref!,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -53,7 +54,7 @@ class InvoiceListWidget extends StatelessWidget {
               Text(invoices[index].lines![0].productLabel ??
                   invoices[index].lines![0].description),
               Text(
-                  'Due Date: ${intToDateString(invoices[index].dateLimReglement)}')
+                  'Due Date: ${intToDateString(invoices[index].dateLimReglement!)}')
             ],
           )),
     );

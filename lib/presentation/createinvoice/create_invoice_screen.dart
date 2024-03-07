@@ -47,7 +47,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: DropdownSearch<ThirdPartyModel>(
                             onChanged: (customer) {
-                              controller.fetchCustomerById(customer!.id);
+                              controller.fetchCustomerById(customer!.id!);
                             },
                             validator: (value) =>
                                 value == null ? 'Customer is required' : null,
@@ -63,8 +63,11 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                               ),
                             ),
                             itemAsString: (ThirdPartyModel? customer) =>
-                                customer!.name,
+                                customer!.name!,
                             popupProps: PopupProps.modalBottomSheet(
+                                searchFieldProps: const TextFieldProps(
+                                    textCapitalization:
+                                        TextCapitalization.characters),
                                 modalBottomSheetProps: ModalBottomSheetProps(
                                     backgroundColor: Theme.of(context)
                                         .scaffoldBackgroundColor,
@@ -79,7 +82,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                     ThirdPartyModel? customer, isSelected) {
                                   return ListTile(
                                     title: Text(
-                                      customer!.name,
+                                      customer!.name!,
                                       style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold),
@@ -98,8 +101,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                     ),
                                 showSearchBox: true),
                             asyncItems: (String searchString) async {
-                              List<ThirdPartyModel> customers =
-                                  await controller.searchCustomer(searchString);
+                              List<ThirdPartyModel> customers = await controller
+                                  .searchCustomer(searchString: searchString);
                               return customers;
                             },
                           ),

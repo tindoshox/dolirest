@@ -6,25 +6,25 @@ class SnackBarHelper {
   /// Shows a snackbar with customizable options.
   ///
   static void showSnackbar({
-    required String title,
+    String? title,
     String? message,
     IconData icon = Icons.info,
     Color backgroundColor = Colors.black,
     Duration duration = const Duration(seconds: 2),
   }) {
-    Get.showSnackbar(GetSnackBar(
+    Get.rawSnackbar(
       icon: Icon(icon),
       duration: duration,
       backgroundColor: backgroundColor,
       title: title,
       messageText: Text(message ?? ''),
-    ));
+    );
   }
 
   /// Shows a success snackbar.
   ///
   static void successSnackbar({
-    String title = 'Success',
+    String? title,
     String? message,
   }) {
     showSnackbar(
@@ -38,7 +38,7 @@ class SnackBarHelper {
   /// Shows an error snackbar.
   ///
   static void errorSnackbar({
-    String title = 'Error',
+    String? title,
     String? message,
   }) {
     showSnackbar(
@@ -46,6 +46,18 @@ class SnackBarHelper {
       message: message ?? 'An error occurred.',
       icon: Icons.error,
       backgroundColor: const Color.fromARGB(255, 110, 13, 13),
+    );
+  }
+
+  static void networkSnackbar({
+    String? title,
+    String? message,
+  }) {
+    showSnackbar(
+      title: title,
+      message: message ?? 'No Internet',
+      icon: Icons.error,
+      backgroundColor: Colors.amber,
     );
   }
 }

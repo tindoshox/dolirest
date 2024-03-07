@@ -19,9 +19,8 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
         title: const Text('Customers'),
         actions: [
           IconButton(
-            onPressed: () =>
-                Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''}),
-            icon: const Icon(Icons.add),
+            onPressed: () => controller.getAllCustomers(),
+            icon: const Icon(Icons.refresh_outlined),
             tooltip: 'New Customer',
           )
         ],
@@ -31,15 +30,15 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
         child: Column(
           children: [
             CustomFormField(
+                border: const OutlineInputBorder(),
                 name: 'search',
                 labelText: 'Search',
                 textInputAction: TextInputAction.done,
                 hintText: 'Search by name, address or phone number',
-                suffix: const Icon(Icons.search),
                 controller: controller.searchController,
                 onChanged: (string) {
                   debouncer(() {
-                    controller.initialSearch(string!);
+                    controller.search(searchText: string!);
                   });
                 }),
             Expanded(
@@ -59,7 +58,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                 }
 
                 var customers = controller.customers;
-                var loadingMore = controller.isLoadingMore.value;
+                // var loadingMore = controller.isLoadingMore.value;
                 return Obx(
                   () => ListView.builder(
                       controller: controller.scrollController,
@@ -71,11 +70,12 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                             onTap: () =>
                                 Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
                               'customerId': customer.id.toString(),
+                              'refresh': false,
                             }),
                             child: Card(
                               child: ListTile(
                                 title: Text(
-                                  customers[index].name,
+                                  customers[index].name!,
                                   style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold),
@@ -87,9 +87,9 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                             ),
                           );
                         } else {
-                          if (loadingMore) {
-                            return const ThirdPartyListLoadingTile();
-                          }
+                          // if (loadingMore) {
+                          //   return const ThirdPartyListLoadingTile();
+                          // }
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 32.0),
                             child: Center(child: Text('nothing more to load!')),

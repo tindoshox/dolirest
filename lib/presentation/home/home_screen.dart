@@ -1,5 +1,6 @@
 // ignore_for_file: use_super_parameters
 
+import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -82,29 +83,43 @@ class HomeScreen extends GetView<HomeController> {
                       icon: Icons.list_alt),
                   HomeScreenTile(
                       onTap: () {
-                        Get.toNamed(Routes.EDITCUSTOMER,
-                            arguments: {'customerId': ''});
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          Get.toNamed(Routes.EDITCUSTOMER,
+                              arguments: {'customerId': ''});
+                        }
                       },
                       title: 'New Customer',
                       icon: Icons.person_add_alt_outlined),
                   HomeScreenTile(
-                      onTap: () => Get.toNamed(Routes.PAYMENT, arguments: {
+                      onTap: () {
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          Get.toNamed(Routes.PAYMENT, arguments: {
                             'fromhome': true,
                             'invid': '',
                             'socid': ''
-                          }),
+                          });
+                        }
+                      },
                       title: 'Record Payment',
                       icon: Icons.currency_exchange),
                   HomeScreenTile(
                       onTap: () {
-                        Get.toNamed(Routes.CREATEINVOICE,
-                            arguments: {'fromhome': true});
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          Get.toNamed(Routes.CREATEINVOICE,
+                              arguments: {'fromhome': true});
+                        }
                       },
                       title: 'New Invoice',
                       icon: Icons.inventory_sharp),
                   HomeScreenTile(
                       onTap: () {
-                        Get.toNamed(Routes.REPORTS);
+                        bool connected = getBox.read('connected');
+                        if (connected) {
+                          Get.toNamed(Routes.REPORTS);
+                        }
                       },
                       title: 'Reports',
                       icon: Icons.receipt_long_outlined),

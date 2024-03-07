@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -68,26 +70,13 @@ class PaymentController extends GetxController {
   }
 
   Future _fetchInvoiceById(String invoiceId) async {
-    /// Shows a loading dialog while fetching the invoice data.
-    DialogHelper.showLoading('Loading Invoice.');
-
-    /// Fetches the invoice data from the remote server using the given invoice ID.
-    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
-      /// Hides the loading dialog after the invoice data is fetched.
-      DialogHelper.hideLoading();
-      invoice(value.data);
-    });
+    var box = await Hive.openBox<InvoiceModel>('invoices');
+    invoice.value = box.get(invoiceId)!;
   }
 
   Future _fetchCustomerById(String customerId) async {
-    /// Tries to fetch the customer data from the remote server using the given customer ID.
-    /// If the fetch fails, a snackbar is displayed with an error message.
-    try {
-      await RemoteServices.fetchThirdPartyById(customerId)
-          .then((value) => customer(value.data));
-    } catch (e) {
-      SnackBarHelper.errorSnackbar(message: 'Failed to fetch customer');
-    }
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    customer.value = box.get(customerId)!;
   }
 
   void setPayDate() async {
@@ -159,7 +148,7 @@ class PaymentController extends GetxController {
     await _addPayment(body).then((value) async {
       paymentId = value;
       if (paymentId.isNotEmpty) {
-        await _updateDueDate(invoice.value.id);
+        await _updateDueDate(invoice.value.id!);
       }
     });
 
@@ -169,7 +158,8 @@ class PaymentController extends GetxController {
       var invoiceId = invoice.value.id;
       var customerId = invoice.value.socid;
       var customerName = customer.value.name;
-
+      refreshPayments(invoiceId);
+      refreshInvoices(invoiceId);
       paymentFormKey.currentState?.reset();
       DialogHelper.hideLoading();
       if (fromHomeScreen) {
@@ -182,6 +172,7 @@ class PaymentController extends GetxController {
                   Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
                     'invoiceId': invoiceId,
                     'customerId': customerId,
+                    'refresh': false
                   });
                 },
                 child: const Text('Go to invoice')),
@@ -222,13 +213,41 @@ class PaymentController extends GetxController {
     await RemoteServices.updateInvoice(invoiceId, body);
   }
 
-  Future fetchInvoices(String searchString) async {
+  refreshPayments(invoiceId) async {
+    await RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) async {
+      var box = await Hive.openBox<List<PaymentModel>>('payments');
+      box.put(invoiceId, value.data);
+    });
+  }
+
+  refreshInvoices(invoiceId) async {
+    await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
+      var box = await Hive.openBox<InvoiceModel>('invoices');
+      box.put(invoiceId, value.data);
+    });
+  }
+
+  Future fetchInvoices({String searchString = ""}) async {
     List<InvoiceModel> invoices = List.empty();
+    var box = await Hive.openBox<InvoiceModel>('invoices');
 
-    var response = await RemoteServices.fetchInvoiceList('%$searchString%', 0);
-
-    if (!response.hasError) {
-      invoices = response.data;
+    if (searchString.isEmpty) {
+      invoices = box
+          .toMap()
+          .values
+          .toList()
+          .where((invoice) => invoice.remaintopay != "0")
+          .toList();
+    } else {
+      invoices = box
+          .toMap()
+          .values
+          .toList()
+          .where((invoice) => invoice.remaintopay != "0")
+          .where((invoice) =>
+              invoice.nom!.contains(searchString) ||
+              invoice.ref!.contains(searchString))
+          .toList();
     }
 
     return invoices;
