@@ -144,7 +144,7 @@ class InvoiceDetailWidget extends StatelessWidget {
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     Text(
-                      'Paid: ${(int.parse(amounts(invoice.totalTtc)) - int.parse(invoice.remaintopay))}',
+                      'Paid: ${int.parse(amounts(invoice.sumpayed))}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),

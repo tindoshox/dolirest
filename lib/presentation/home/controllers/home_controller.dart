@@ -42,8 +42,11 @@ class HomeController extends GetxController {
 
   _refeshAllData() async {
     SnackBarHelper.successSnackbar(message: 'Resheshing data...');
-    await DataRefresh.refreshInvoices();
-    await DataRefresh.refreshCustomers();
-    await DataRefresh.refreshPayments();
+    await DataRefresh.refreshCustomers().then((value) async {
+      await DataRefresh.refreshInvoices().then((value) async {
+        await DataRefresh.refreshPayments().then((value) =>
+            SnackBarHelper.successSnackbar(message: 'Data refresh complete'));
+      });
+    });
   }
 }

@@ -32,7 +32,7 @@ class InvoiceDetailController extends GetxController
   var selectedDate = DateTime.now().obs;
   var documentList = <DocumenListModel>[];
 
-  var payments = <PaymentModel>[].obs;
+  RxList<PaymentModel> payments = List<PaymentModel>.empty().obs;
 
   late TabController tabController;
   late TargetPlatform? platform;
@@ -51,7 +51,7 @@ class InvoiceDetailController extends GetxController
       tabIndex(tabController.index);
     });
 
-    await fetchData();
+    await _fetchData();
     super.onInit();
   }
 
@@ -60,30 +60,61 @@ class InvoiceDetailController extends GetxController
     tabController.dispose();
   }
 
-  Future fetchData() async {
+  Future _fetchData() async {
     isLoading(true);
+    await _fetchInvoice();
+    await _fetchCustomer();
+    await _fetchPayments();
+    isLoading(false);
+  }
 
-    await _fetchPayments(invoiceId);
+  Future _fetchPayments() async {
+    var box = await Hive.openBox<List<PaymentModel>>('payments');
+    if (box.get(invoiceId) != null) {
+      payments.value = box.get(invoiceId)!;
+    }
+
+    if (box.get(invoiceId) == null && invoice.value.sumpayed != null) {
+      _refreshPaymentData();
+    }
+  }
+
+  Future _fetchCustomer() async {
     var customerBox = await Hive.openBox<ThirdPartyModel>('customers');
     customer.value = customerBox.get(customerId)!;
+  }
 
+  Future _fetchInvoice() async {
     if (refreshInvoice) {
-      await refreshInvoiceData();
+      await _refreshInvoiceData();
     } else {
       var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
       invoice.value = invoiceBox.get(invoiceId)!;
     }
-
-    isLoading(false);
   }
 
-  refreshInvoiceData() async {
+  Future _refreshInvoiceData() async {
+    isLoading(true);
     var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       InvoiceModel newInvoice = value.data;
       invoiceBox.put(newInvoice.id, newInvoice);
       invoice.value = invoiceBox.get(newInvoice.id)!;
     });
+    isLoading(false);
+  }
+
+  Future _refreshPaymentData() async {
+    isLoading(true);
+    var box = await Hive.openBox<List<PaymentModel>>('payments');
+
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
+      if (!value.hasError) {
+        box.put(invoiceId, value.data);
+        payments.value = box.get(invoiceId)!;
+      }
+    }));
+    isLoading(false);
   }
 
   Future generateDocument() async {
@@ -119,16 +150,6 @@ class InvoiceDetailController extends GetxController
     DialogHelper.hideLoading();
   }
 
-  Future _fetchPayments(String invoiceId) async {
-    var box = await Hive.openBox<List<PaymentModel>>('payments');
-    payments.value = box.get(invoiceId)!;
-    // await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
-    //   if (!value.hasError) {
-    //     payments(value.data);
-    //   }
-    // }));
-  }
-
   setDueDate() async {
     DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
@@ -160,10 +181,10 @@ class InvoiceDetailController extends GetxController
     await RemoteServices.updateInvoice(invoiceId, body).then((value) {
       DialogHelper.hideLoading();
       if (!value.hasError) {
-        SnackBarHelper.successSnackbar(
-            title: 'Due date changes', message: 'Reload invoice to rechanges');
+        _refreshInvoiceData();
+        SnackBarHelper.successSnackbar(message: 'Due date changed');
       } else {
-        Get.snackbar('Error', 'Update Failed');
+        SnackBarHelper.errorSnackbar(message: 'Update Failed');
       }
     });
   }

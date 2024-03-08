@@ -21,7 +21,7 @@ import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
 class RemoteServices {
   static final _client = RetryClient(http.Client());
-  static const _timeout = Duration(seconds: 30);
+  static const _timeout = Duration(seconds: 60);
   static final _url = getBox.read('url');
   static final _apikey = getBox.read('apikey');
   static final Map<String, String> _headers = {
@@ -100,46 +100,46 @@ class RemoteServices {
           "(t.type:=:0) and ((t.ref:like:$sqlfilters) or (nom:like:$sqlfilters))"
     };
 
-    // try {
-    var response = await _client
-        .get(
-          Uri.https(_url, ApiRoutes.invoices, queryParameters),
-          headers: _headers,
-        )
-        .timeout(_timeout);
-    String jsonString = response.body; // Example JSON string of a list
-    List<dynamic> jsonList = json.decode(jsonString);
+    try {
+      var response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.invoices, queryParameters),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+      String jsonString = response.body; // Example JSON string of a list
+      List<dynamic> jsonList = json.decode(jsonString);
 
-    List<InvoiceModel> invoices = jsonList
-        .map((jsonItem) =>
-            InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
-        .toList();
+      List<InvoiceModel> invoices = jsonList
+          .map((jsonItem) =>
+              InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
+          .toList();
 
-    return DataOrException(
-      data: invoices,
-      statusCode: response.statusCode,
-    );
-    // } catch (e) {
-    //   if (e is SocketException) {
-    //     return DataOrException(
-    //       hasError: true,
-    //       errorMessage: "No Internet",
-    //       data: [],
-    //     );
-    //   } else if (e is TimeoutException) {
-    //     return DataOrException(
-    //       hasError: true,
-    //       errorMessage: "Timeout error",
-    //       data: [],
-    //     );
-    //   } else {
-    //     return DataOrException(
-    //       hasError: true,
-    //       errorMessage: "Unkown error",
-    //       data: [],
-    //     );
-    //   }
-    // }
+      return DataOrException(
+        data: invoices,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      if (e is SocketException) {
+        return DataOrException(
+          hasError: true,
+          errorMessage: "No Internet",
+          data: [],
+        );
+      } else if (e is TimeoutException) {
+        return DataOrException(
+          hasError: true,
+          errorMessage: "Timeout error",
+          data: [],
+        );
+      } else {
+        return DataOrException(
+          hasError: true,
+          errorMessage: "Unkown error",
+          data: [],
+        );
+      }
+    }
   }
 
   /// Customers By Id
@@ -701,7 +701,7 @@ class RemoteServices {
             body: body,
             headers: _headers,
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(_timeout);
 
       return DataOrException(
         data: buildReportResponseModelFromJson(response.body),
