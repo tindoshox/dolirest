@@ -46,6 +46,9 @@ class CustomerdetailController extends GetxController
     }
 
     var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    if (invoiceBox.get(customerId) == null) {
+      await _refreshInvoiceData();
+    }
     invoices.value = invoiceBox
         .toMap()
         .values
@@ -62,6 +65,15 @@ class CustomerdetailController extends GetxController
       ThirdPartyModel newCustomer = value.data;
       customerBox.put(newCustomer.id, newCustomer);
       customer.value = customerBox.get(customerId)!;
+    });
+  }
+
+  Future _refreshInvoiceData() async {
+    var box = await Hive.openBox<InvoiceModel>('invoices');
+    await RemoteServices.fetchInvoicesByCustomerId(customerId).then((value) {
+      for (var invoice in value.data) {
+        box.put(invoice.id, invoice);
+      }
     });
   }
 }

@@ -18,7 +18,7 @@ class NetworkController extends GetxController {
       Get.rawSnackbar(
           backgroundColor: Colors.amber,
           messageText: const Text(
-            'No Internet: Data Capture is Disabled',
+            'No Internet: Some functions are not available',
             style: TextStyle(
               fontSize: 14,
               color: Colors.white,

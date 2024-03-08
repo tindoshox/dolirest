@@ -70,18 +70,19 @@ class InvoiceDetailController extends GetxController
 
   Future _fetchPayments() async {
     var box = await Hive.openBox<List<PaymentModel>>('payments');
-    if (box.get(invoiceId) != null) {
-      payments.value = box.get(invoiceId)!;
+    if (box.get(invoiceId) == null && invoice.value.sumpayed != null) {
+      await _refreshPaymentData();
     }
 
-    if (box.get(invoiceId) == null && invoice.value.sumpayed != null) {
-      _refreshPaymentData();
-    }
+    payments.value = box.get(invoiceId)!;
   }
 
   Future _fetchCustomer() async {
-    var customerBox = await Hive.openBox<ThirdPartyModel>('customers');
-    customer.value = customerBox.get(customerId)!;
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    if (box.get(customerId) == null) {
+      await _refreshCustomerData();
+    }
+    customer.value = box.get(customerId)!;
   }
 
   Future _fetchInvoice() async {
@@ -185,6 +186,15 @@ class InvoiceDetailController extends GetxController
         SnackBarHelper.successSnackbar(message: 'Due date changed');
       } else {
         SnackBarHelper.errorSnackbar(message: 'Update Failed');
+      }
+    });
+  }
+
+  Future _refreshCustomerData() async {
+    await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
+      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      for (var customer in value.data) {
+        box.put(customer.id, customer);
       }
     });
   }

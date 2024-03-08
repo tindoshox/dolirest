@@ -1,5 +1,3 @@
-import 'package:dolirest/infrastructure/dal/services/datarefresh.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -23,9 +21,7 @@ class HomeController extends GetxController {
   @override
   void onReady() {
     bool connected = getBox.read('connected');
-    if (connected) {
-      _refeshAllData();
-    }
+    if (connected) {}
     super.onReady();
   }
 
@@ -37,16 +33,6 @@ class HomeController extends GetxController {
         currentUser(value.data);
         isLoading.value = false;
       }
-    });
-  }
-
-  _refeshAllData() async {
-    SnackBarHelper.successSnackbar(message: 'Resheshing data...');
-    await DataRefresh.refreshCustomers().then((value) async {
-      await DataRefresh.refreshInvoices().then((value) async {
-        await DataRefresh.refreshPayments().then((value) =>
-            SnackBarHelper.successSnackbar(message: 'Data refresh complete'));
-      });
     });
   }
 }

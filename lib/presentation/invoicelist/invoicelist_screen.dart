@@ -41,13 +41,9 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
-                  return ListView.separated(
+                  return ListView.builder(
                       itemBuilder: (context, index) =>
                           const InvoiceListLoadingTile(),
-                      separatorBuilder: (context, index) => const Divider(
-                            color: Colors.grey,
-                            thickness: 1,
-                          ),
                       itemCount: 15);
                 }
                 if (controller.invoices.isEmpty) {

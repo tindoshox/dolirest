@@ -235,7 +235,6 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
       return DataOrException(
         data: paymentModelFromJson(response.body),
         statusCode: response.statusCode,

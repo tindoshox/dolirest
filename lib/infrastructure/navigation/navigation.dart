@@ -25,7 +25,7 @@ import 'routes.dart';
 
 // ignore_for_file: use_key_in_widget_constructors
 
-const transition = Transition.fadeIn;
+const transition = Transition.upToDown;
 const transitionDuration = Duration(milliseconds: 500);
 
 class Nav {
