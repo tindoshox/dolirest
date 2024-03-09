@@ -18,7 +18,7 @@ class PaymentsDataTable extends StatelessWidget {
       'Bal',
     ];
     Widget buildDataTable() {
-      var price = int.parse(amounts(invoice.totalTtc));
+      var price = int.parse(stringToAmount(invoice.totalTtc));
 
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -35,12 +35,13 @@ class PaymentsDataTable extends StatelessWidget {
 
 List<DataRow> getRows(List<PaymentModel> payments, int price) {
   return payments.map((PaymentModel payment) {
-    price -= int.parse(amounts(payment.amount)).toInt();
+    // Reduce price by payment to obtain running balance
+    price -= int.parse(stringToAmount(payment.amount)).toInt();
     return DataRow(
         cells: getCells([
       Text(datePaid(payment.date!)),
       Text(payment.num ?? payment.type.toString().toLowerCase()),
-      Text(amounts(payment.amount)),
+      Text(stringToAmount(payment.amount)),
       Text(price.toString()),
     ]));
   }).toList();

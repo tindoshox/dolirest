@@ -2,8 +2,9 @@
 //
 //     final paymentModel = paymentModelFromJson(jsonString);
 
-import 'package:hive/hive.dart';
 import 'dart:convert';
+
+import 'package:hive_flutter/hive_flutter.dart';
 
 part 'payment_model.g.dart';
 

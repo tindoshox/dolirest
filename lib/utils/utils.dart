@@ -26,8 +26,8 @@ int dateTimeToInt(DateTime date) {
 }
 
 /// Returns the integer representation of a number without the decimal point.
-String amounts(String input) {
-  if (input.isNotEmpty) {
+String stringToAmount(String? input) {
+  if (input != null) {
     return input.substring(0, input.indexOf('.'));
   }
   return '0';

@@ -14,28 +14,29 @@ class InvoicelistController extends GetxController {
 
   final searchController = TextEditingController();
   final scrollController = ScrollController();
-  Box<InvoiceModel>? box;
+
   int page = 0;
   String searchString = '';
 
   @override
   void onInit() async {
-    box = await Hive.openBox<InvoiceModel>('invoices');
-    var map = box!.toMap().values.toList();
-    if (map.isEmpty) {
+    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var list = box.toMap().values.toList();
+    if (list.length < 50) {
       getAllInvoices();
     } else {
-      invoices.value = map;
+      invoices.value = list;
     }
 
     super.onInit();
   }
 
-  void search({String searchText = ""}) {
+  Future<void> search({String searchText = ""}) async {
+    var box = await Hive.openBox<InvoiceModel>('invoices');
     isLoading(true);
 
     if (searchText != "") {
-      invoices.value = box!
+      invoices.value = box
           .toMap()
           .values
           .toList()
@@ -44,7 +45,7 @@ class InvoicelistController extends GetxController {
               invoice.ref!.contains(searchText))
           .toList();
     } else {
-      invoices.value = box!.toMap().values.toList();
+      invoices.value = box.toMap().values.toList();
     }
 
     isLoading(false);

@@ -70,24 +70,32 @@ class InvoiceDetailController extends GetxController
 
   Future _fetchPayments() async {
     var box = await Hive.openBox<List<PaymentModel>>('payments');
-    if (box.get(invoiceId) == null && invoice.value.sumpayed != null) {
+    // Fetch payment list from storage
+    if (box.get(invoiceId) == null) {
+      //If storage is null fetch from server
       await _refreshPaymentData();
+    } else if (box.get(invoiceId)!.isEmpty && invoice.value.sumpayed != null) {
+      // If storage has empty list but sumpayed is not null fetch from server
+      await _refreshPaymentData();
+    } else {
+      //If Storage is valid
+      payments.value = box.get(invoiceId)!;
     }
-
-    payments.value = box.get(invoiceId)!;
   }
 
   Future _fetchCustomer() async {
     var box = await Hive.openBox<ThirdPartyModel>('customers');
     if (box.get(customerId) == null) {
       await _refreshCustomerData();
+    } else {
+      customer.value = box.get(customerId)!;
     }
-    customer.value = box.get(customerId)!;
   }
 
   Future _fetchInvoice() async {
     if (refreshInvoice) {
       await _refreshInvoiceData();
+      await _refreshPaymentData();
     } else {
       var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
       invoice.value = invoiceBox.get(invoiceId)!;
@@ -98,11 +106,32 @@ class InvoiceDetailController extends GetxController
     isLoading(true);
     var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
-      InvoiceModel newInvoice = value.data;
-      invoiceBox.put(newInvoice.id, newInvoice);
-      invoice.value = invoiceBox.get(newInvoice.id)!;
+      if (!value.hasError) {
+        InvoiceModel newInvoice = value.data;
+        invoiceBox.put(newInvoice.id, newInvoice);
+        invoice.value = invoiceBox.get(newInvoice.id)!;
+      } else {
+        Get.back();
+        SnackBarHelper.errorSnackbar(
+            message: '${value.errorMessage}: Failed to refresh Invoice data');
+      }
     });
+
     isLoading(false);
+  }
+
+  Future _refreshCustomerData() async {
+    await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
+      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      if (!value.hasError) {
+        box.put(customerId, value.data);
+        customer.value = box.get(customerId)!;
+      } else {
+        Get.back();
+        SnackBarHelper.errorSnackbar(
+            message: '${value.errorMessage}: Failed to refresh customer data');
+      }
+    });
   }
 
   Future _refreshPaymentData() async {
@@ -113,6 +142,10 @@ class InvoiceDetailController extends GetxController
       if (!value.hasError) {
         box.put(invoiceId, value.data);
         payments.value = box.get(invoiceId)!;
+      } else {
+        SnackBarHelper.errorSnackbar(
+            message:
+                '${value.errorMessage}: Failed to refresh payment history');
       }
     }));
     isLoading(false);
@@ -186,15 +219,6 @@ class InvoiceDetailController extends GetxController
         SnackBarHelper.successSnackbar(message: 'Due date changed');
       } else {
         SnackBarHelper.errorSnackbar(message: 'Update Failed');
-      }
-    });
-  }
-
-  Future _refreshCustomerData() async {
-    await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
-      var box = await Hive.openBox<ThirdPartyModel>('customers');
-      for (var customer in value.data) {
-        box.put(customer.id, customer);
       }
     });
   }

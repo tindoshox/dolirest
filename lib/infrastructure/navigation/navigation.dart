@@ -25,8 +25,8 @@ import 'routes.dart';
 
 // ignore_for_file: use_key_in_widget_constructors
 
-const transition = Transition.upToDown;
-const transitionDuration = Duration(milliseconds: 500);
+const transition = Transition.zoom;
+const transitionDuration = Duration(milliseconds: 300);
 
 class Nav {
   static List<GetPage> routes = [

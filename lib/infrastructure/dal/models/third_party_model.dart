@@ -2,8 +2,9 @@
 //
 //     final thirdPartyModel = thirdPartyModelFromJson(jsonString);
 
-import 'package:hive/hive.dart';
 import 'dart:convert';
+
+import 'package:hive_flutter/hive_flutter.dart';
 
 part 'third_party_model.g.dart';
 

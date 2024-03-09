@@ -110,8 +110,20 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                                       ],
                                     ),
                                     //Product name
-                                    Text(invoice.lines![0].productLabel ??
-                                        invoice.lines![0].description)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(invoice.lines![0].productLabel ??
+                                            invoice.lines![0].description),
+                                        Text(
+                                          invoice.sumpayed == null
+                                              ? 'UNPAID'
+                                              : 'STARTED',
+                                          style: const TextStyle(fontSize: 10),
+                                        ),
+                                      ],
+                                    )
                                   ],
                                 )),
                           ),

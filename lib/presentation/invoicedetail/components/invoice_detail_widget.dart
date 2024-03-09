@@ -112,14 +112,14 @@ class InvoiceDetailWidget extends StatelessWidget {
                 children: [
                   Text(invoice.lines![0].productLabel ??
                       invoice.lines![0].description),
-                  Text(amounts(invoice.lines![0].totalTtc.toString()))
+                  Text(stringToAmount(invoice.lines![0].totalTtc.toString()))
                 ],
               ),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-                '${invoice.lines![0].qty} x ${amounts(invoice.lines![0].totalTtc.toString())}'),
+                '${invoice.lines![0].qty} x ${stringToAmount(invoice.lines![0].totalTtc.toString())}'),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -139,12 +139,12 @@ class InvoiceDetailWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Total: ${amounts(invoice.totalTtc!)}',
+                      'Total: ${stringToAmount(invoice.totalTtc!)}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     Text(
-                      'Paid: ${int.parse(amounts(invoice.sumpayed))}',
+                      'Paid: ${int.parse(stringToAmount(invoice.sumpayed))}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),

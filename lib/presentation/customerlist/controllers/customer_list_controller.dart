@@ -13,28 +13,29 @@ class CustomerlistController extends GetxController {
 
   final searchController = TextEditingController();
   final scrollController = ScrollController();
-  Box<ThirdPartyModel>? box;
 
   int pageNumber = 0;
   String searchString = '';
 
   @override
   void onInit() async {
-    box = await Hive.openBox<ThirdPartyModel>('customers');
-    var map = box!.toMap().values.toList();
-    if (map.isEmpty) {
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var list = box.toMap().values.toList();
+
+    if (list.length < 50) {
       getAllCustomers();
     } else {
-      customers.value = map;
+      customers.value = list;
     }
     super.onInit();
   }
 
-  void search({String searchText = ""}) {
+  Future<void> search({String searchText = ""}) async {
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
     isLoading(true);
 
     if (searchText != "") {
-      customers.value = box!
+      customers.value = box
           .toMap()
           .values
           .toList()
@@ -46,7 +47,7 @@ class CustomerlistController extends GetxController {
               customer.fax.toString().contains(searchText))
           .toList();
     } else {
-      customers.value = box!.toMap().values.toList();
+      customers.value = box.toMap().values.toList();
     }
 
     isLoading(false);

@@ -17,14 +17,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
+  await Hive.initFlutter(dir.path);
   Hive.registerAdapter<InvoiceModel>(InvoiceModelAdapter());
   Hive.registerAdapter<Line>(LineAdapter());
   Hive.registerAdapter(ThirdPartyModelAdapter());
   Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
-  await Hive.openBox<InvoiceModel>('invoices');
-  await Hive.openBox<ThirdPartyModel>('customers');
-  await Hive.openBox<List<PaymentModel>>('payments');
+
   await GetStorage.init();
 
   runApp(const Main());

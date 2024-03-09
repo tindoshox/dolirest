@@ -68,12 +68,14 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                       },
                       customer: controller.customer.value,
                       invoice: controller.invoice.value),
-                  ListView(
-                    children: [
-                      PaymentsDataTable(
-                          payments: controller.payments,
-                          invoice: controller.invoice.value)
-                    ],
+                  Scrollbar(
+                    child: ListView(
+                      children: [
+                        PaymentsDataTable(
+                            payments: controller.payments,
+                            invoice: controller.invoice.value)
+                      ],
+                    ),
                   ),
                 ],
               ),
