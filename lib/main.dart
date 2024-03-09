@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
@@ -22,6 +23,7 @@ void main() async {
   Hive.registerAdapter<Line>(LineAdapter());
   Hive.registerAdapter(ThirdPartyModelAdapter());
   Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
+  Hive.registerAdapter<GroupModel>(GroupModelAdapter());
 
   await GetStorage.init();
 

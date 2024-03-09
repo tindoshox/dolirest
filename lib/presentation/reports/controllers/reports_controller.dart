@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
@@ -18,6 +19,7 @@ class ReportsController extends GetxController {
   final reportFormKey = GlobalKey<FormBuilderState>();
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
+  var groups = List<GroupModel>.empty().obs;
 
   late bool permissionReady;
   late TargetPlatform? platform;
@@ -64,15 +66,53 @@ class ReportsController extends GetxController {
 
   /// Initializes the controller.
   @override
-  void onInit() {
+  void onInit() async {
     if (Platform.isAndroid) {
       platform = TargetPlatform.android;
     } else {
       platform = TargetPlatform.iOS;
     }
+
+    var box = await Hive.openBox<GroupModel>('groups');
+    var list = box.toMap().values.toList();
+
+    if (list.length < 50) {
+      await refreshGroups();
+    } else {
+      groups.value = list;
+    }
     fromDateController.text = dateTimeToString(DateTime.now());
     toDateController.text = dateTimeToString(DateTime.now());
     super.onInit();
+  }
+
+  Future getGroups({String search = ""}) async {
+    var box = await Hive.openBox<GroupModel>('groups');
+
+    if (search.isNotEmpty) {
+      groups.value = box
+          .toMap()
+          .values
+          .toList()
+          .where((group) => group.name.contains(search))
+          .toList();
+    } else {
+      groups.value = box.toMap().values.toList();
+    }
+    return groups;
+  }
+
+  Future<List<GroupModel>> refreshGroups() async {
+    var box = await Hive.openBox<GroupModel>('groups');
+    await RemoteServices.fetchGroups().then((value) async {
+      if (!value.hasError) {
+        for (GroupModel group in value.data) {
+          box.put(group.id, group);
+        }
+      }
+    });
+
+    return groups;
   }
 
   /// Validates the form.
@@ -160,17 +200,17 @@ class ReportsController extends GetxController {
     }
   }
 
-  /// Fetches groups based on the given search string.
-  Future<List<GroupModel>> fetchGroups(searchString) async {
-    List<GroupModel> groups = List.empty();
+  // /// Fetches groups based on the given search string.
+  // Future<List<GroupModel>> fetchGroups(searchString) async {
+  //   List<GroupModel> groups = List.empty();
 
-    var response = await RemoteServices.fetchGroups('%$searchString%');
-    if (response.hasError) {
-      groups = [];
-    }
+  //   var response = await RemoteServices.fetchGroups();
+  //   if (response.hasError) {
+  //     groups = [];
+  //   }
 
-    groups = response.data;
+  //   groups = response.data;
 
-    return groups;
-  }
+  //   return groups;
+  // }
 }

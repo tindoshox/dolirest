@@ -23,7 +23,7 @@ class CustomerlistController extends GetxController {
     var list = box.toMap().values.toList();
 
     if (list.length < 50) {
-      getAllCustomers();
+      await getAllCustomers();
     } else {
       customers.value = list;
     }
@@ -60,7 +60,7 @@ class CustomerlistController extends GetxController {
       isLoading(false);
       if (!value.hasError) {
         var box = await Hive.openBox<ThirdPartyModel>('customers');
-        for (var customer in value.data) {
+        for (ThirdPartyModel customer in value.data) {
           box.put(customer.id, customer);
         }
         customers.value = box.toMap().values.toList();
@@ -71,35 +71,4 @@ class CustomerlistController extends GetxController {
       }
     });
   }
-
-  // void initialSearch(String text) {
-  //   pageNumber = 0;
-  //   customers.value = <ThirdPartyModel>[];
-  //   isLoading(true);
-  //   searchString = '%${text.trim()}%';
-  //   _fetchCustomers();
-  // }
-
-  // Future<void> _loadMore() async {
-  //   isLoadingMore(true);
-
-  //   pageNumber++;
-  //   await _fetchCustomers().then((value) => isLoadingMore(false));
-  // }
-
-  // Future _fetchCustomers() async {
-  //   await RemoteServices.fetchThirdPartyList(searchString, '1', pageNumber)
-  //       .then((value) {
-  //     if (!value.hasError) {
-  //       customers.addAll(value.data);
-  //     }
-
-  //     if (value.data.length < 50) {
-  //       isLastPage = true;
-  //     }
-
-  //     isLoading(false);
-  //     isLoadingMore(false);
-  //   });
-  // }
 }

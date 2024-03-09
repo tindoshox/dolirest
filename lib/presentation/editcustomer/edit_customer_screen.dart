@@ -144,8 +144,8 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                                   const Center(child: Text('Group Not Found')),
                               showSearchBox: true),
                           asyncItems: (String searchString) async {
-                            List<GroupModel> groups =
-                                await controller.fetchGroups(searchString);
+                            List<GroupModel> groups = await controller
+                                .getGroups(search: searchString);
                             return groups;
                           },
                         ),

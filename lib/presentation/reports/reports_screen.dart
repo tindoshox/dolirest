@@ -152,7 +152,7 @@ class ReportsScreen extends GetView<ReportsController> {
                           showSearchBox: true),
                       asyncItems: (String searchString) async {
                         List<GroupModel> groups =
-                            await controller.fetchGroups(searchString);
+                            await controller.getGroups(search: searchString);
                         return groups;
                       },
                     ),

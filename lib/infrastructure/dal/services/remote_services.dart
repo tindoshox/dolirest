@@ -53,7 +53,7 @@ class RemoteServices {
           )
           .timeout(_timeout);
 
-      String jsonString = response.body; // Example JSON string of a list
+      String jsonString = response.body;
       List<dynamic> jsonList = json.decode(jsonString);
 
       List<ThirdPartyModel> customers = jsonList
@@ -107,7 +107,7 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      String jsonString = response.body; // Example JSON string of a list
+      String jsonString = response.body;
       List<dynamic> jsonList = json.decode(jsonString);
 
       List<InvoiceModel> invoices = jsonList
@@ -194,7 +194,7 @@ class RemoteServices {
           )
           .timeout(_timeout);
 
-      String jsonString = response.body; // Example JSON string of a list
+      String jsonString = response.body;
       List<dynamic> jsonList = json.decode(jsonString);
 
       List<InvoiceModel> invoices = jsonList
@@ -401,11 +401,11 @@ class RemoteServices {
   }
 
   /// Fetch Groups
-  static Future<DataOrException> fetchGroups(String searchString) async {
+  static Future<DataOrException> fetchGroups() async {
     final queryParameters = {
       "sortfield": "nom",
       "sortorder": "ASC",
-      "sqlfilters": "(t.active:=:1) and (t.nom:like:'$searchString')",
+      "sqlfilters": "(t.active:=:1)",
     };
     try {
       var response = await _client
@@ -414,9 +414,16 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
+      String jsonString = response.body;
 
+      List<dynamic> jsonList = json.decode(jsonString);
+
+      List<GroupModel> groups = jsonList
+          .map((jsonItem) =>
+              GroupModel.fromJson(jsonItem as Map<String, dynamic>))
+          .toList();
       return DataOrException(
-        data: groupModelFromMap(response.body),
+        data: groups,
         statusCode: response.statusCode,
       );
     } catch (e) {

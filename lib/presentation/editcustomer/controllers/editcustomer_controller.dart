@@ -25,6 +25,7 @@ class EditcustomerController extends GetxController {
   String customerId = Get.arguments['customerId'];
 
   var selectedGroup = GroupModel().obs;
+  var groups = List<GroupModel>.empty().obs;
 
   var addresses = <String>[];
   var towns = <String>[];
@@ -33,6 +34,15 @@ class EditcustomerController extends GetxController {
   void onInit() async {
     if (customerId.isNotEmpty) {
       await _fetchCustomerById(customerId);
+    }
+
+    var box = await Hive.openBox<GroupModel>('groups');
+    var list = box.toMap().values.toList();
+
+    if (list.length < 50) {
+      await refreshGroups();
+    } else {
+      groups.value = list;
     }
     await getSuggestions();
     super.onInit();
@@ -49,15 +59,31 @@ class EditcustomerController extends GetxController {
         customers.map((customer) => customer.town.toString()).toSet().toList();
   }
 
-  Future<List<GroupModel>> fetchGroups(searchString) async {
-    List<GroupModel> groups = List.empty();
+  Future getGroups({String search = ""}) async {
+    var box = await Hive.openBox<GroupModel>('groups');
 
-    var response = await RemoteServices.fetchGroups('%$searchString%');
-    if (!response.hasError) {
-      groups = response.data;
+    if (search.isNotEmpty) {
+      groups.value = box
+          .toMap()
+          .values
+          .toList()
+          .where((group) => group.name.contains(search))
+          .toList();
     } else {
-      groups = [];
+      groups.value = box.toMap().values.toList();
     }
+    return groups;
+  }
+
+  Future<List<GroupModel>> refreshGroups() async {
+    var box = await Hive.openBox<GroupModel>('groups');
+    await RemoteServices.fetchGroups().then((value) async {
+      if (!value.hasError) {
+        for (GroupModel group in value.data) {
+          box.put(group.id, group);
+        }
+      }
+    });
 
     return groups;
   }

@@ -1,24 +1,35 @@
 // To parse this JSON data, do
 //
-//     final groupModel = groupModelFromMap(jsonString);
+//     final groupModel = groupModelFromJson(jsonString);
 
+import 'package:hive/hive.dart';
 import 'dart:convert';
 
-List<GroupModel> groupModelFromMap(String str) =>
-    List<GroupModel>.from(json.decode(str).map((x) => GroupModel.fromMap(x)));
+part 'group_model.g.dart';
 
-String groupModelToMap(List<GroupModel> data) =>
-    json.encode(List<dynamic>.from(data.map((x) => x.toMap())));
+GroupModel groupModelFromJson(String str) =>
+    GroupModel.fromJson(json.decode(str));
 
+String groupModelToJson(GroupModel data) => json.encode(data.toJson());
+
+@HiveType(typeId: 6)
 class GroupModel {
-  String? id;
+  @HiveField(1)
+  dynamic id;
+  @HiveField(2)
   dynamic rowid;
-  String? codeDepartement;
-  String? code;
-  String? name;
-  String? nom;
+  @HiveField(3)
+  dynamic codeDepartement;
+  @HiveField(4)
+  dynamic code;
+  @HiveField(5)
+  dynamic name;
+  @HiveField(6)
+  dynamic nom;
+  @HiveField(7)
   dynamic label;
-  String? active;
+  @HiveField(8)
+  dynamic active;
 
   GroupModel({
     this.id,
@@ -31,7 +42,7 @@ class GroupModel {
     this.active,
   });
 
-  factory GroupModel.fromMap(Map<String, dynamic> json) => GroupModel(
+  factory GroupModel.fromJson(Map<String, dynamic> json) => GroupModel(
         id: json["id"],
         rowid: json["rowid"],
         codeDepartement: json["code_departement"],
@@ -42,7 +53,7 @@ class GroupModel {
         active: json["active"],
       );
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "rowid": rowid,
         "code_departement": codeDepartement,
