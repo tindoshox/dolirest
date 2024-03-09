@@ -72,8 +72,9 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                     child: ListView(
                       children: [
                         PaymentsDataTable(
-                            payments: controller.payments,
-                            invoice: controller.invoice.value)
+                          payments: controller.payments,
+                          invoice: controller.invoice.value,
+                        )
                       ],
                     ),
                   ),

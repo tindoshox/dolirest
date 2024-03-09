@@ -35,7 +35,6 @@ class PaymentsDataTable extends StatelessWidget {
 
 List<DataRow> getRows(List<PaymentModel> payments, int price) {
   return payments.map((PaymentModel payment) {
-    // Reduce price by payment to obtain running balance
     price -= int.parse(stringToAmount(payment.amount)).toInt();
     return DataRow(
         cells: getCells([

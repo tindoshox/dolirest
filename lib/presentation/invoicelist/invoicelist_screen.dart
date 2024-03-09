@@ -14,13 +14,14 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
   Widget build(BuildContext context) {
     final debouncer = Debouncer(delay: const Duration(milliseconds: 1000));
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Got to top',
+        onPressed: () => controller.scrollController.animateTo(0,
+            duration: const Duration(milliseconds: 200), curve: Curves.linear),
+        child: const Icon(Icons.arrow_upward),
+      ),
       appBar: AppBar(
         title: const Text('Invoices'),
-        actions: [
-          IconButton(
-              onPressed: () => controller.getAllInvoices(),
-              icon: const Icon(Icons.refresh_outlined))
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -38,6 +39,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     controller.search(searchText: string!);
                   });
                 }),
+            const Text('Swipe down to refresh'),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
@@ -53,91 +55,99 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     .where((element) => element.remaintopay != "0")
                     .toList();
                 //var loadMore = controller.isLoadingMore.value;
-                return ListView.builder(
-                    controller: controller.scrollController,
-                    itemCount: invoices.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index < invoices.length) {
-                        var invoice = invoices[index];
-                        return InkWell(
-                          onTap: () {
+                return RefreshIndicator(
+                  onRefresh: () => controller.getAllInvoices(),
+                  child: Scrollbar(
+                    child: ListView.builder(
+                        controller: controller.scrollController,
+                        itemCount: invoices.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index < invoices.length) {
                             var invoice = invoices[index];
-                            Get.toNamed(
-                              Routes.INVOICEDETAIL,
-                              arguments: {
-                                'customerId': invoice.socid,
-                                'invoiceId': invoice.id,
-                                'refresh': false
+                            return InkWell(
+                              onTap: () {
+                                var invoice = invoices[index];
+                                Get.toNamed(
+                                  Routes.INVOICEDETAIL,
+                                  arguments: {
+                                    'customerId': invoice.socid,
+                                    'invoiceId': invoice.id,
+                                    'refresh': false
+                                  },
+                                );
                               },
-                            );
-                          },
-                          child: Card(
-                            child: ListTile(
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      invoice.ref!,
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      'BALANCE: ${invoice.remaintopay}',
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                              child: Card(
+                                child: ListTile(
+                                    title: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Flexible(
-                                          child: Text(invoice.nom!),
+                                        Text(
+                                          invoice.ref!,
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         Text(
-                                          intToDateString(
-                                              invoice.dateLimReglement!),
-                                          style: overDueStyle(
-                                              invoice.dateLimReglement!),
+                                          'BALANCE: ${invoice.remaintopay}',
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Flexible(
+                                              child: Text(invoice.nom!),
+                                            ),
+                                            Text(
+                                              intToDateString(
+                                                  invoice.dateLimReglement!),
+                                              style: overDueStyle(
+                                                  invoice.dateLimReglement!),
+                                            )
+                                          ],
+                                        ),
+                                        //Product name
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(invoice
+                                                    .lines![0].productLabel ??
+                                                invoice.lines![0].description),
+                                            Text(
+                                              invoice.sumpayed == null
+                                                  ? 'UNPAID'
+                                                  : 'STARTED',
+                                              style:
+                                                  const TextStyle(fontSize: 10),
+                                            ),
+                                          ],
                                         )
                                       ],
-                                    ),
-                                    //Product name
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(invoice.lines![0].productLabel ??
-                                            invoice.lines![0].description),
-                                        Text(
-                                          invoice.sumpayed == null
-                                              ? 'UNPAID'
-                                              : 'STARTED',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                )),
-                          ),
-                        );
-                      } else {
-                        // if (loadMore) {
-                        //   return const InvoiceListLoadingTile();
-                        // }
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(child: Text('End of list!')),
-                        );
-                      }
-                    });
+                                    )),
+                              ),
+                            );
+                          } else {
+                            // if (loadMore) {
+                            //   return const InvoiceListLoadingTile();
+                            // }
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32.0),
+                              child: Center(child: Text('End of list!')),
+                            );
+                          }
+                        }),
+                  ),
+                );
               }),
             ),
           ],

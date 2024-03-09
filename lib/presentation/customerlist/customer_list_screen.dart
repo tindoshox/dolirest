@@ -15,15 +15,14 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
   Widget build(BuildContext context) {
     final debouncer = Debouncer(delay: const Duration(milliseconds: 1000));
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Got to top',
+        onPressed: () => controller.scrollController.animateTo(0,
+            duration: const Duration(milliseconds: 200), curve: Curves.linear),
+        child: const Icon(Icons.arrow_upward),
+      ),
       appBar: AppBar(
         title: const Text('Customers'),
-        actions: [
-          IconButton(
-            onPressed: () => controller.getAllCustomers(),
-            icon: const Icon(Icons.refresh_outlined),
-            tooltip: 'New Customer',
-          )
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -41,6 +40,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                     controller.search(searchText: string!);
                   });
                 }),
+            const Text('Swipe down to refresh'),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
@@ -60,42 +60,48 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                 var customers = controller.customers;
                 // var loadingMore = controller.isLoadingMore.value;
                 return Obx(
-                  () => ListView.builder(
-                      controller: controller.scrollController,
-                      itemCount: customers.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index < customers.length) {
-                          var customer = customers[index];
-                          return InkWell(
-                            onTap: () =>
-                                Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-                              'customerId': customer.id.toString(),
-                              'refresh': false,
-                            }),
-                            child: Card(
-                              child: ListTile(
-                                title: Text(
-                                  customers[index].name!,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                  () => RefreshIndicator(
+                    onRefresh: () => controller.getAllCustomers(),
+                    child: Scrollbar(
+                      child: ListView.builder(
+                          controller: controller.scrollController,
+                          itemCount: customers.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index < customers.length) {
+                              var customer = customers[index];
+                              return InkWell(
+                                onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL,
+                                    arguments: {
+                                      'customerId': customer.id.toString(),
+                                      'refresh': false,
+                                    }),
+                                child: Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      customers[index].name!,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(
+                                        '${customer.address} ${customer.town}'
+                                            .trim()),
+                                  ),
                                 ),
-                                subtitle: Text(
-                                    '${customer.address} ${customer.town}'
-                                        .trim()),
-                              ),
-                            ),
-                          );
-                        } else {
-                          // if (loadingMore) {
-                          //   return const ThirdPartyListLoadingTile();
-                          // }
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32.0),
-                            child: Center(child: Text('nothing more to load!')),
-                          );
-                        }
-                      }),
+                              );
+                            } else {
+                              // if (loadingMore) {
+                              //   return const ThirdPartyListLoadingTile();
+                              // }
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 32.0),
+                                child: Center(
+                                    child: Text('nothing more to load!')),
+                              );
+                            }
+                          }),
+                    ),
+                  ),
                 );
               }),
             ),
