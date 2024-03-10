@@ -30,9 +30,8 @@ void main() async {
   await Hive.openBox<List<PaymentModel>>('payments');
 
   await GetStorage.init();
-
-  runApp(const Main());
   DependencyInjection.init();
+  runApp(const Main());
 }
 
 class Main extends StatelessWidget {

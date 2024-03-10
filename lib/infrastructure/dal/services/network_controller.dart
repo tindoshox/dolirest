@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 class NetworkController extends GetxController {
@@ -15,6 +16,7 @@ class NetworkController extends GetxController {
   void _updateConnectionStatus(ConnectivityResult connectivityResult) {
     if (connectivityResult == ConnectivityResult.none) {
       getBox.write('connected', false);
+      debugPrint('Connected: false');
       Get.rawSnackbar(
           backgroundColor: Colors.amber,
           messageText: const Text(
@@ -35,6 +37,7 @@ class NetworkController extends GetxController {
           snackStyle: SnackStyle.GROUNDED);
     } else {
       getBox.write('connected', true);
+      debugPrint('Connected: true');
       if (Get.isSnackbarOpen) {
         Get.closeCurrentSnackbar();
       }
