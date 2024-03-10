@@ -13,6 +13,7 @@ class SnackBarHelper {
     Duration duration = const Duration(seconds: 2),
   }) {
     Get.rawSnackbar(
+      padding: const EdgeInsets.only(left: 40),
       icon: Icon(icon),
       duration: duration,
       backgroundColor: backgroundColor,
