@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/customerlist/components/customer_list_loading_tile.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 
 import 'controllers/customer_list_controller.dart';
@@ -44,14 +43,9 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
-                  return ListView.separated(
-                      itemBuilder: (context, index) =>
-                          const ThirdPartyListLoadingTile(),
-                      separatorBuilder: (context, index) => const Divider(
-                            color: Colors.grey,
-                            thickness: 1,
-                          ),
-                      itemCount: 15);
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
                 if (controller.customers.isEmpty) {
                   return const Text('Customer not found');

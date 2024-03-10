@@ -2,7 +2,6 @@ import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/invoicelist/components/invoice_list_loading_tile.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 
@@ -43,10 +42,9 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
-                  return ListView.builder(
-                      itemBuilder: (context, index) =>
-                          const InvoiceListLoadingTile(),
-                      itemCount: 15);
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
                 if (controller.invoices.isEmpty) {
                   return const Text('Invoice not found');
