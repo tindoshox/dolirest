@@ -69,7 +69,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    var box = await Hive.openBox('payments');
+    var box = await Hive.openBox<List<PaymentModel>>('payments');
     List<PaymentModel> list =
         box.get(invoiceId, defaultValue: List<PaymentModel>.empty())!;
     // Fetch payment list from storage
@@ -87,7 +87,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    var box = await Hive.openBox('payments');
+    var box = await Hive.openBox<List<PaymentModel>>('payments');
 
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {

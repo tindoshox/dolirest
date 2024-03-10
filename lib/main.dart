@@ -25,6 +25,10 @@ void main() async {
   Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
   Hive.registerAdapter<GroupModel>(GroupModelAdapter());
 
+  await Hive.openBox<InvoiceModel>('invoices');
+  await Hive.openBox<ThirdPartyModel>('customers');
+  await Hive.openBox<List<PaymentModel>>('payments');
+
   await GetStorage.init();
 
   runApp(const Main());

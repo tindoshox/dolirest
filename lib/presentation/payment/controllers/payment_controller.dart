@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -158,7 +159,7 @@ class PaymentController extends GetxController {
       var customerId = invoice.value.socid;
       var customerName = customer.value.name;
       refreshPayments(invoiceId);
-      refreshInvoices(invoiceId);
+      refreshInvoice(invoiceId);
       paymentFormKey.currentState?.reset();
       DialogHelper.hideLoading();
       if (fromHomeScreen) {
@@ -215,12 +216,12 @@ class PaymentController extends GetxController {
 
   refreshPayments(invoiceId) async {
     await RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) async {
-      var box = await Hive.openBox('payments');
+      var box = await Hive.openBox<List<PaymentModel>>('payments');
       box.put(invoiceId, value.data);
     });
   }
 
-  refreshInvoices(invoiceId) async {
+  refreshInvoice(invoiceId) async {
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
       var box = await Hive.openBox<InvoiceModel>('invoices');
       box.put(invoiceId, value.data);
