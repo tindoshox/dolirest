@@ -38,7 +38,9 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     controller.search(searchText: string!);
                   });
                 }),
-            const Text('Swipe down to refresh'),
+            Obx(() => Text(controller.isLoading.value
+                ? 'Refreshing data'
+                : 'Swipe down to refresh')),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {

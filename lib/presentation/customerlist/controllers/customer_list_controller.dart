@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -25,6 +26,7 @@ class CustomerlistController extends GetxController {
     if (list.length < 50) {
       await getAllCustomers();
     } else {
+      list.sort((a, b) => a.name.compareTo(b.name));
       customers.value = list;
     }
     super.onInit();
@@ -35,7 +37,7 @@ class CustomerlistController extends GetxController {
     isLoading(true);
 
     if (searchText != "") {
-      customers.value = box
+      var list = box
           .toMap()
           .values
           .toList()
@@ -46,8 +48,12 @@ class CustomerlistController extends GetxController {
               customer.phone.toString().contains(searchText) ||
               customer.fax.toString().contains(searchText))
           .toList();
+      list.sort((a, b) => a.name.compareTo(b.name));
+      customers.value = list;
     } else {
-      customers.value = box.toMap().values.toList();
+      var list = box.toMap().values.toList();
+      list.sort((a, b) => a.name.compareTo(b.name));
+      customers.value = list;
     }
 
     isLoading(false);
@@ -63,7 +69,9 @@ class CustomerlistController extends GetxController {
         for (ThirdPartyModel customer in value.data) {
           box.put(customer.id, customer);
         }
-        customers.value = box.toMap().values.toList();
+        var list = box.toMap().values.toList();
+        list.sort((a, b) => a.name.compareTo(b.name));
+        customers.value = list;
         SnackBarHelper.successSnackbar(message: 'Customer data refreshed');
       } else {
         SnackBarHelper.errorSnackbar(
