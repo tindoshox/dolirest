@@ -172,7 +172,7 @@ class PaymentController extends GetxController {
                   Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
                     'invoiceId': invoiceId,
                     'customerId': customerId,
-                    'refresh': false
+                    'refresh': true
                   });
                 },
                 child: const Text('Go to invoice')),
@@ -184,6 +184,7 @@ class PaymentController extends GetxController {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
           'customerId': customerId,
+          'refresh': true,
         });
         SnackBarHelper.successSnackbar(message: 'Payment succesful');
       }
@@ -215,7 +216,7 @@ class PaymentController extends GetxController {
 
   refreshPayments(invoiceId) async {
     await RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) async {
-      var box = await Hive.openBox<List<PaymentModel>>('payments');
+      var box = await Hive.openBox('payments');
       box.put(invoiceId, value.data);
     });
   }

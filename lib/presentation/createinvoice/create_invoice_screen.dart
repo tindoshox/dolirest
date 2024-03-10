@@ -199,7 +199,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                 onChanged: (product) {
                                   controller.selectedProduct.value = product!;
                                   controller.priceController.text =
-                                      stringToAmount('${product.price}');
+                                      amounts('${product.price}');
                                 },
                                 validator: (value) => value == null
                                     ? 'Product is required'
@@ -233,8 +233,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                         (context, Product product, isSelected) {
                                       return ListTile(
                                         title: Text('${product.label}'),
-                                        subtitle: Text(
-                                            stringToAmount('${product.price}')),
+                                        subtitle:
+                                            Text(amounts('${product.price}')),
                                       );
                                     },
                                     emptyBuilder: (context, searchEntry) =>

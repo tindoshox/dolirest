@@ -26,11 +26,12 @@ int dateTimeToInt(DateTime date) {
 }
 
 /// Returns the integer representation of a number without the decimal point.
-String stringToAmount(String? input) {
+String amounts(String? input) {
   if (input != null) {
     return input.substring(0, input.indexOf('.'));
+  } else {
+    return '0';
   }
-  return '0';
 }
 
 /// Returns the date portion of a [DateTime] object as a string.

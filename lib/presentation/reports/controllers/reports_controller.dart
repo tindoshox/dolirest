@@ -199,18 +199,4 @@ class ReportsController extends GetxController {
       toDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
     }
   }
-
-  // /// Fetches groups based on the given search string.
-  // Future<List<GroupModel>> fetchGroups(searchString) async {
-  //   List<GroupModel> groups = List.empty();
-
-  //   var response = await RemoteServices.fetchGroups();
-  //   if (response.hasError) {
-  //     groups = [];
-  //   }
-
-  //   groups = response.data;
-
-  //   return groups;
-  // }
 }

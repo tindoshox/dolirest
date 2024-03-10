@@ -69,18 +69,36 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    var box = await Hive.openBox<List<PaymentModel>>('payments');
+    var box = await Hive.openBox('payments');
+    List<PaymentModel> list =
+        box.get(invoiceId, defaultValue: List<PaymentModel>.empty())!;
     // Fetch payment list from storage
-    if (box.get(invoiceId) == null) {
-      //If storage is null fetch from server
-      await _refreshPaymentData();
-    } else if (box.get(invoiceId)!.isEmpty && invoice.value.sumpayed != null) {
+
+    if (list.isEmpty && amounts(invoice.value.sumpayed) != '0') {
       // If storage has empty list but sumpayed is not null fetch from server
-      await _refreshPaymentData();
+      await _refreshPaymentData().then((value) {
+        list = box.get(invoiceId)!;
+        payments.value = list;
+      });
     } else {
-      //If Storage is valid
-      payments.value = box.get(invoiceId)!;
+      payments.value = list;
     }
+    //If Storage is valid
+  }
+
+  Future _refreshPaymentData() async {
+    var box = await Hive.openBox('payments');
+
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
+      if (!value.hasError) {
+        List<PaymentModel> list = value.data;
+        box.put(invoiceId, list);
+      } else {
+        SnackBarHelper.errorSnackbar(
+            message:
+                '${value.errorMessage}: Failed to refresh payment history');
+      }
+    }));
   }
 
   Future _fetchCustomer() async {
@@ -103,7 +121,6 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    isLoading(true);
     var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
@@ -116,8 +133,6 @@ class InvoiceDetailController extends GetxController
             message: '${value.errorMessage}: Failed to refresh Invoice data');
       }
     });
-
-    isLoading(false);
   }
 
   Future _refreshCustomerData() async {
@@ -132,23 +147,6 @@ class InvoiceDetailController extends GetxController
             message: '${value.errorMessage}: Failed to refresh customer data');
       }
     });
-  }
-
-  Future _refreshPaymentData() async {
-    isLoading(true);
-    var box = await Hive.openBox<List<PaymentModel>>('payments');
-
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
-      if (!value.hasError) {
-        box.put(invoiceId, value.data);
-        payments.value = box.get(invoiceId)!;
-      } else {
-        SnackBarHelper.errorSnackbar(
-            message:
-                '${value.errorMessage}: Failed to refresh payment history');
-      }
-    }));
-    isLoading(false);
   }
 
   Future generateDocument() async {
