@@ -44,19 +44,36 @@ class EditcustomerController extends GetxController {
     } else {
       groups.value = list;
     }
-    await getSuggestions();
+
+    await getTownSuggestions();
     super.onInit();
   }
 
-  getSuggestions() async {
+  getTownSuggestions() async {
     var box = await Hive.openBox<ThirdPartyModel>('customers');
     List<ThirdPartyModel> customers = box.toMap().values.toList();
+
+    towns =
+        customers.map((customer) => customer.town.toString()).toSet().toList();
+    towns.removeWhere((element) => element == "");
+    towns.sort((a, b) => a.compareTo(b));
+    //return towns;
+  }
+
+  getAddressSuggestions({String? town = ""}) async {
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    List<ThirdPartyModel> customers = box.toMap().values.toList();
+    if (town != null && town != "") {
+      customers.removeWhere((element) => element.town != town);
+    }
     addresses = customers
         .map((customer) => customer.address.toString())
         .toSet()
         .toList();
-    towns =
-        customers.map((customer) => customer.town.toString()).toSet().toList();
+    addresses.removeWhere((element) => element == "");
+
+    addresses.sort((a, b) => a.compareTo(b));
+    //return addresses;
   }
 
   Future getGroups({String search = ""}) async {

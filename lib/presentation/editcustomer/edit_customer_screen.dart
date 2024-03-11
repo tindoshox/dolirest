@@ -34,6 +34,43 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                           ? 'Customer Name is required'
                           : null,
                       labelText: 'Customer Name',
+                      autofocus: true,
+                    ),
+                    Autocomplete(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text == '') {
+                          return const Iterable<String>.empty();
+                        }
+                        return controller.towns.where((String town) =>
+                            town.contains(textEditingValue.text));
+                      },
+                      fieldViewBuilder: (context, townController, focusNode,
+                          onFieldSubmitted) {
+                        return FormBuilderTextField(
+                          onEditingComplete: () {
+                            controller.getAddressSuggestions(
+                                town: controller.townController.text.trim());
+                            FocusScope.of(context).requestFocus(focusNode);
+                          },
+                          onChanged: (value) =>
+                              controller.townController.text = value!.trim(),
+                          name: 'customer_city',
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.characters,
+                          controller: controller.customerId == ''
+                              ? townController
+                              : controller.townController,
+                          focusNode: focusNode,
+                          validator: (city) =>
+                              GetUtils.isLengthLessThan(city, 3)
+                                  ? 'City is required'
+                                  : null,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.location_city),
+                            labelText: 'City',
+                          ),
+                        );
+                      },
                     ),
                     Autocomplete(
                       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -45,9 +82,7 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                         });
                       },
                       fieldViewBuilder: (BuildContext context,
-                          TextEditingController addressController,
-                          FocusNode focusNode,
-                          VoidCallback onFieldSubmitted) {
+                          addressController, focusNode, onFieldSubmitted) {
                         return FormBuilderTextField(
                           onChanged: (value) =>
                               controller.addressController.text = value!.trim(),
@@ -65,38 +100,6 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                           decoration: const InputDecoration(
                             labelText: 'Address',
                             prefixIcon: Icon(Icons.location_pin),
-                          ),
-                        );
-                      },
-                    ),
-                    Autocomplete(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text == '') {
-                          return const Iterable<String>.empty();
-                        }
-                        return controller.towns.where((String town) {
-                          return town.contains(textEditingValue.text);
-                        });
-                      },
-                      fieldViewBuilder: (context, townController, focusNode,
-                          onFieldSubmitted) {
-                        return FormBuilderTextField(
-                          onChanged: (value) =>
-                              controller.townController.text = value!.trim(),
-                          name: 'customer_city',
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.characters,
-                          controller: controller.customerId == ''
-                              ? townController
-                              : controller.townController,
-                          focusNode: focusNode,
-                          validator: (city) =>
-                              GetUtils.isLengthLessThan(city, 3)
-                                  ? 'City is required'
-                                  : null,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.location_city),
-                            labelText: 'City',
                           ),
                         );
                       },
