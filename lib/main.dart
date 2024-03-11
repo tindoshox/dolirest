@@ -27,7 +27,7 @@ void main() async {
 
   await Hive.openBox<InvoiceModel>('invoices');
   await Hive.openBox<ThirdPartyModel>('customers');
-  await Hive.openBox<List<PaymentModel>>('payments');
+  await Hive.openBox<List>('payments');
 
   await GetStorage.init();
   DependencyInjection.init();

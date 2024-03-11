@@ -60,7 +60,14 @@ class CustomerdetailController extends GetxController
           .toList();
     } else {
       // If data not found in storage fetch from server
-      await _refreshInvoiceData();
+      await _refreshInvoiceData().then((value) {
+        invoices.value = invoiceBox
+            .toMap()
+            .values
+            .toList()
+            .where((inv) => inv.socid == _customerId)
+            .toList();
+      });
     }
 
     isLoading(false);
@@ -91,7 +98,9 @@ class CustomerdetailController extends GetxController
   // Fetch invoice datad from server
   Future _refreshInvoiceData() async {
     var box = await Hive.openBox<InvoiceModel>('invoices');
-    await RemoteServices.fetchInvoicesByCustomerId(_customerId).then((value) {
+
+    await RemoteServices.fetchInvoicesByCustomerId(_customerId)
+        .then((value) async {
       if (!value.hasError) {
         for (var invoice in value.data) {
           box.put(invoice.id, invoice);

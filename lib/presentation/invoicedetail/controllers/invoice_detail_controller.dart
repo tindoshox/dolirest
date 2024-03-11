@@ -69,15 +69,14 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    var box = await Hive.openBox<List<PaymentModel>>('payments');
-    List<PaymentModel> list =
-        box.get(invoiceId, defaultValue: List<PaymentModel>.empty())!;
+    var box = await Hive.openBox<List>('payments');
+    var list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
     // Fetch payment list from storage
 
     if (list.isEmpty && amounts(invoice.value.sumpayed) != '0') {
       // If storage has empty list but sumpayed is not null fetch from server
       await _refreshPaymentData().then((value) {
-        list = box.get(invoiceId)!;
+        list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
         payments.value = list;
       });
     } else {
@@ -87,7 +86,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    var box = await Hive.openBox<List<PaymentModel>>('payments');
+    var box = await Hive.openBox<List>('payments');
 
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
@@ -104,7 +103,8 @@ class InvoiceDetailController extends GetxController
   Future _fetchCustomer() async {
     var box = await Hive.openBox<ThirdPartyModel>('customers');
     if (box.get(customerId) == null) {
-      await _refreshCustomerData();
+      await _refreshCustomerData()
+          .then((value) => customer.value = box.get(customerId)!);
     } else {
       customer.value = box.get(customerId)!;
     }
