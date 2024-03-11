@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
@@ -22,7 +21,7 @@ class CreateinvoiceController extends GetxController {
 
   var customer = ThirdPartyModel().obs;
 
-  final createInvoiceKey = GlobalKey<FormBuilderState>();
+  final createInvoiceKey = GlobalKey<FormState>();
 
   final invoiceDateController = TextEditingController();
   final dueDateController = TextEditingController();
@@ -33,7 +32,7 @@ class CreateinvoiceController extends GetxController {
   final customerController = TextEditingController();
 
   var selectedProduct = Product().obs;
-  var stockType = 1.obs;
+  var stockType = '1'.obs;
 
   var invoiceDate = DateTime.now().obs;
 
@@ -65,7 +64,7 @@ class CreateinvoiceController extends GetxController {
     super.onClose();
   }
 
-  void setStockType(int value) {
+  void setStockType(String value) {
     stockType.value = value;
   }
 
@@ -121,7 +120,7 @@ class CreateinvoiceController extends GetxController {
 
   /// Validation
   Future<void> validateInputs() async {
-    final FormBuilderState form = createInvoiceKey.currentState!;
+    final FormState form = createInvoiceKey.currentState!;
 
     /// Check if form inputs ar valid
 
@@ -129,7 +128,7 @@ class CreateinvoiceController extends GetxController {
       DialogHelper.showLoading('Creating Invoice');
 
       // If stock type is free text.
-      if (stockType.value != 0) {
+      if (stockType.value != '0') {
         _createInvoice();
       } else {
         /// if not free text: Check if product has stock above zero
@@ -155,7 +154,8 @@ class CreateinvoiceController extends GetxController {
         fkProduct: selectedProduct.value.id,
         desc: freetextController.text,
         description: freetextController.text,
-        fkProductType: stockType.value == 0 ? stockType.value : null);
+        fkProductType:
+            stockType.value == '0' ? int.parse(stockType.value) : null);
 
     /// Generate main draft
     var invoice = InvoiceModel(

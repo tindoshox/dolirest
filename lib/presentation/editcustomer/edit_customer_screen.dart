@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 
 import 'package:get/get.dart';
@@ -21,7 +20,7 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
       body: Center(
         child: controller.isLoading.value
             ? const CircularProgressIndicator()
-            : FormBuilder(
+            : Form(
                 key: controller.customerFormKey,
                 child: Card(
                   child: ListView(children: [
@@ -46,17 +45,15 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                       },
                       fieldViewBuilder: (context, townController, focusNode,
                           onFieldSubmitted) {
-                        return FormBuilderTextField(
-                          onEditingComplete: () {
+                        return CustomFormField(
+                          prefixIcon: const Icon(Icons.location_city),
+                          onFieldSubmitted: (town) {
                             controller.getAddressSuggestions(
-                                town: controller.townController.text.trim());
-                            FocusScope.of(context).requestFocus(focusNode);
+                                town: town!.trim());
                           },
                           onChanged: (value) =>
                               controller.townController.text = value!.trim(),
                           name: 'customer_city',
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.characters,
                           controller: controller.customerId == ''
                               ? townController
                               : controller.townController,
@@ -65,10 +62,7 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                               GetUtils.isLengthLessThan(city, 3)
                                   ? 'City is required'
                                   : null,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.location_city),
-                            labelText: 'City',
-                          ),
+                          labelText: 'City',
                         );
                       },
                     ),
@@ -83,12 +77,11 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                       },
                       fieldViewBuilder: (BuildContext context,
                           addressController, focusNode, onFieldSubmitted) {
-                        return FormBuilderTextField(
+                        return CustomFormField(
+                          prefixIcon: const Icon(Icons.location_pin),
                           onChanged: (value) =>
                               controller.addressController.text = value!.trim(),
                           name: 'customer_address',
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.characters,
                           controller: controller.customerId == ''
                               ? addressController
                               : controller.addressController,
@@ -97,10 +90,7 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                               GetUtils.isLengthLessThan(address, 3)
                                   ? 'Address is required'
                                   : null,
-                          decoration: const InputDecoration(
-                            labelText: 'Address',
-                            prefixIcon: Icon(Icons.location_pin),
-                          ),
+                          labelText: 'Address',
                         );
                       },
                     ),

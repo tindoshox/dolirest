@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 
 import 'package:get/get.dart';
@@ -25,7 +24,7 @@ class ReportsScreen extends GetView<ReportsController> {
       appBar: AppBar(
         title: const Text('Reports'),
       ),
-      body: FormBuilder(
+      body: Form(
         key: controller.reportFormKey,
         child: Obx(
           () => Card(

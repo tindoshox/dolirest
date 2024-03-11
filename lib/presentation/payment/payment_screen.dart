@@ -1,6 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
@@ -45,7 +44,7 @@ class PaymentScreen extends GetView<PaymentController> {
               ),
             ),
             Expanded(
-              child: FormBuilder(
+              child: Form(
                 key: controller.paymentFormKey,
                 child: Card(
                   child: ListView(

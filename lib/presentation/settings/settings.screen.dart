@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
@@ -28,7 +27,7 @@ class SettingsScreen extends GetView<SettingsController> {
           ),
         ),
         Card(
-          child: FormBuilder(
+          child: Form(
             key: controller.serverFormKey,
             child: Column(
               children: [

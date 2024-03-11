@@ -1,6 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
@@ -36,7 +35,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             ),
           ),
           Expanded(
-            child: FormBuilder(
+            child: Form(
                 key: controller.createInvoiceKey,
                 child: Obx(
                   () => Card(
@@ -156,24 +155,42 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                       ///
                       ///
                       /// Stock Type
-                      FormBuilderRadioGroup(
-                        name: 'stock_type',
-                        initialValue: controller.stockType.value,
-                        onChanged: (value) => controller.setStockType(value!),
-                        options: const [
-                          FormBuilderFieldOption(
-                            value: 1,
-                            child: Text('Free Text'),
+                      const ListTile(
+                        title: Text('Product Type'),
+                        leading: Icon(Icons.delivery_dining),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(0),
+                              leading: Radio(
+                                  value: '1',
+                                  groupValue: controller.stockType.value,
+                                  onChanged: (value) {
+                                    controller.setStockType(value.toString());
+                                  }),
+                              title: const Text('Free Text'),
+                            ),
                           ),
-                          FormBuilderFieldOption(
-                            value: 0,
-                            child: Text('Predefined'),
+                          Flexible(
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(0),
+                              leading: Radio(
+                                  value: '0',
+                                  groupValue: controller.stockType.value,
+                                  onChanged: (value) {
+                                    controller.setStockType(value.toString());
+                                  }),
+                              title: const Text('Predefined'),
+                            ),
                           ),
                         ],
                       ),
 
                       /*--Free text--*/
-                      controller.stockType.value == 1
+                      controller.stockType.value == '1'
                           ? CustomFormField(
                               name: 'free_text',
                               prefixIcon: const Icon(Icons.inventory_sharp),

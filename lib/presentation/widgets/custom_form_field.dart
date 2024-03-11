@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 /// A custom form field that wraps a [FormBuilderTextField].
 ///
@@ -41,6 +40,7 @@ class CustomFormField extends StatelessWidget {
       this.textInputAction = TextInputAction.next,
       this.maxLines,
       this.minLines,
+      this.onFieldSubmitted,
       this.border = const UnderlineInputBorder()});
 
   final FocusNode? focusNode;
@@ -69,13 +69,13 @@ class CustomFormField extends StatelessWidget {
   final int? minLines;
   final int? maxLines;
   final InputBorder? border;
+  final Function(String?)? onFieldSubmitted;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: FormBuilderTextField(
-        name: name,
+      child: TextFormField(
         initialValue: initialValue,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -89,6 +89,7 @@ class CustomFormField extends StatelessWidget {
         controller: controller,
         onSaved: onSaved,
         onChanged: onChanged,
+        onFieldSubmitted: onFieldSubmitted,
         onEditingComplete: onEditingComplete,
         validator: validator,
         obscureText: obscureText,

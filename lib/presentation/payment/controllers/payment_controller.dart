@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +24,7 @@ class PaymentController extends GetxController {
   final String invid = Get.arguments['invid'];
   final String socid = Get.arguments['socid'];
 
-  final paymentFormKey = GlobalKey<FormBuilderState>();
+  final paymentFormKey = GlobalKey<FormState>();
 
   var payDate = DateTime.now().obs;
   var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
@@ -113,7 +112,7 @@ class PaymentController extends GetxController {
 
   void validateAndSave() async {
     /// Retrieves the form state from the payment form key.
-    final FormBuilderState form = paymentFormKey.currentState!;
+    final FormState form = paymentFormKey.currentState!;
 
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {

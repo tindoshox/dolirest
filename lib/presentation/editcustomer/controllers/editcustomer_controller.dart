@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -12,7 +11,7 @@ import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class EditcustomerController extends GetxController {
-  final customerFormKey = GlobalKey<FormBuilderState>();
+  final customerFormKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final townController = TextEditingController();
@@ -106,7 +105,7 @@ class EditcustomerController extends GetxController {
   }
 
   void validateAndSave() async {
-    final FormBuilderState form = customerFormKey.currentState!;
+    final FormState form = customerFormKey.currentState!;
     if (form.validate()) {
       var customer = ThirdPartyModel(
               client: "1",

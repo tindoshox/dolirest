@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -16,7 +15,7 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
-  final reportFormKey = GlobalKey<FormBuilderState>();
+  final reportFormKey = GlobalKey<FormState>();
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
   var groups = List<GroupModel>.empty().obs;
@@ -117,7 +116,7 @@ class ReportsController extends GetxController {
 
   /// Validates the form.
   void validate() async {
-    final FormBuilderState form = reportFormKey.currentState!;
+    final FormState form = reportFormKey.currentState!;
     if (form.validate()) {
       var requestModel = BuildReportRequestModel(
         reportid: selectedReport.value.reportid,
