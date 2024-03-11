@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
-import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/products_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
@@ -210,8 +210,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                           : Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              child: FormBuilderSearchableDropdown<Product>(
-                                name: 'product',
+                              child: DropdownSearch<Product>(
                                 compareFn: (item1, item2) => item1 == item2,
                                 onChanged: (product) {
                                   controller.selectedProduct.value = product!;
@@ -221,14 +220,6 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                 validator: (value) => value == null
                                     ? 'Product is required'
                                     : null,
-                                decoration: const InputDecoration(
-                                  labelText: 'Product',
-                                  icon: Icon(Icons.inventory_sharp),
-                                  border: UnderlineInputBorder(),
-                                  errorBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.red),
-                                  ),
-                                ),
                                 itemAsString: (Product product) =>
                                     '${product.label}',
                                 popupProps: PopupProps.modalBottomSheet(

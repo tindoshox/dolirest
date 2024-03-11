@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:flutter/material.dart';
-import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
@@ -52,8 +52,7 @@ class PaymentScreen extends GetView<PaymentController> {
                       if (controller.fromHomeScreen)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: FormBuilderSearchableDropdown<InvoiceModel>(
-                            name: 'find_invoice',
+                          child: DropdownSearch<InvoiceModel>(
                             compareFn: (item1, item2) => item1 == item2,
                             clearButtonProps:
                                 const ClearButtonProps(isVisible: true),
@@ -67,14 +66,6 @@ class PaymentScreen extends GetView<PaymentController> {
                             },
                             validator: (value) =>
                                 value == null ? 'Invoice is required' : null,
-                            decoration: const InputDecoration(
-                              labelText: 'Invoice',
-                              icon: Icon(Icons.inventory_sharp),
-                              border: UnderlineInputBorder(),
-                              errorBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red),
-                              ),
-                            ),
                             itemAsString: (InvoiceModel? invoice) =>
                                 invoice!.ref!,
                             popupProps: PopupProps.modalBottomSheet(
