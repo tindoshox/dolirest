@@ -30,8 +30,6 @@ class InvoiceDetailController extends GetxController
   var selectedDate = DateTime.now().obs;
   var documentList = <DocumenListModel>[];
 
-  RxList<PaymentModel> payments = List<PaymentModel>.empty().obs;
-
   late TabController tabController;
   late TargetPlatform? platform;
   late bool permissionReady;
@@ -84,7 +82,6 @@ class InvoiceDetailController extends GetxController
       // If storage has empty list but sumpayed is not null fetch from server
       await _refreshPaymentData().then((value) {
         list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
-        payments.value = list;
       });
     }
     //If Storage is valid
@@ -95,8 +92,7 @@ class InvoiceDetailController extends GetxController
 
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
-        List<PaymentModel> list = value.data;
-        box.put(invoiceId, list);
+        box.put(invoiceId, value.data);
       } else {
         SnackBarHelper.errorSnackbar(
             message:

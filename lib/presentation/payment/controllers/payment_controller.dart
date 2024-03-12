@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -215,7 +214,7 @@ class PaymentController extends GetxController {
 
   refreshPayments(invoiceId) async {
     await RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) async {
-      var box = await Hive.openBox<List<PaymentModel>>('payments');
+      var box = await Hive.openBox<List>('payments');
       box.put(invoiceId, value.data);
     });
   }
