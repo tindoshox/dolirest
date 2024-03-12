@@ -88,7 +88,6 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                                       Routes.CUSTOMERDETAIL,
                                       arguments: {
                                         'customerId': customer.id.toString(),
-                                        'refresh': false,
                                       }),
                                   child: Card(
                                     child: ListTile(

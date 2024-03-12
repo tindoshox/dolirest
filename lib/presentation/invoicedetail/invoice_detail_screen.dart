@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -79,25 +78,20 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                         customer: controller.customer.value,
                         invoice: invoices.get(controller.invoiceId)!),
                   ),
-                  ValueListenableBuilder(
-                    valueListenable: Hive.box<List>('payments')
-                        .listenable(keys: [controller.invoiceId]),
-                    builder: (context, payments, child) => Scrollbar(
-                      child: ListView(
-                        children: [
-                          ValueListenableBuilder(
-                            valueListenable: Hive.box<InvoiceModel>('invoices')
-                                .listenable(keys: [controller.customerId]),
-                            builder: (context, invoices, child) =>
-                                PaymentsDataTable(
-                              payments: payments.get(controller.invoiceId,
-                                  defaultValue: [])!.cast<PaymentModel>(),
-                              totalTtc:
-                                  invoices.get(controller.invoiceId)!.totalTtc,
-                            ),
-                          )
-                        ],
-                      ),
+                  Scrollbar(
+                    child: ListView(
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: Hive.box<InvoiceModel>('invoices')
+                              .listenable(keys: [controller.customerId]),
+                          builder: (context, invoices, child) =>
+                              PaymentsDataTable(
+                            invoiceId: controller.invoiceId,
+                            totalTtc:
+                                invoices.get(controller.invoiceId)!.totalTtc,
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ],

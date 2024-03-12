@@ -80,9 +80,7 @@ class InvoiceDetailController extends GetxController
 
     if (sumpayed != total) {
       // If storage has empty list but sumpayed is not null fetch from server
-      await _refreshPaymentData().then((value) {
-        list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
-      });
+      await _refreshPaymentData();
     }
     //If Storage is valid
   }
@@ -117,7 +115,6 @@ class InvoiceDetailController extends GetxController
       if (!value.hasError) {
         InvoiceModel newInvoice = value.data;
         invoiceBox.put(newInvoice.id, newInvoice);
-        // invoice.value = invoiceBox.get(newInvoice.id)!;
       } else {
         Get.back();
         SnackBarHelper.errorSnackbar(

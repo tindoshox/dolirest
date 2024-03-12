@@ -121,28 +121,24 @@ class CreateinvoiceController extends GetxController {
   /// Validation
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
-
-    /// Check if form inputs ar valid
-
     if (form.validate()) {
       DialogHelper.showLoading('Creating Invoice');
-
       // If stock type is free text.
       if (stockType.value != '0') {
-        _createInvoice();
+        await _createInvoice();
       } else {
         /// if not free text: Check if product has stock above zero
         await RemoteServices.checkStock(selectedProduct.value.id!)
-            .then((value) {
+            .then((value) async {
           if (value.hasError) {
             DialogHelper.hideLoading();
             SnackBarHelper.errorSnackbar(message: 'Product has no stock');
           }
-
-          _createInvoice();
+          await _createInvoice();
         });
       }
     }
+    // DialogHelper.hideLoading();
   }
 
   /// Attempt draft creation
@@ -174,7 +170,7 @@ class CreateinvoiceController extends GetxController {
 
     /// Submit for draft creation
 
-    await RemoteServices.createInvoice(body).then((value) {
+    await RemoteServices.createInvoice(body).then((value) async {
       if (value.hasError) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(
@@ -182,7 +178,7 @@ class CreateinvoiceController extends GetxController {
         );
       }
 
-      _validateInvoice(value.data);
+      await _validateInvoice(value.data);
     });
   }
 
@@ -196,8 +192,8 @@ class CreateinvoiceController extends GetxController {
       }''';
 
     await RemoteServices.validateInvoice(body, invoiceId).then((value) async {
-      DialogHelper.hideLoading();
       if (value.hasError) {
+        DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(
           message: value.errorMessage,
         );
@@ -206,7 +202,6 @@ class CreateinvoiceController extends GetxController {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
           'customerId': customer.value.id,
-          'refresh': true,
         });
       }
     });
@@ -217,6 +212,11 @@ class CreateinvoiceController extends GetxController {
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
         box.put(invoiceId, value.data);
+      } else {
+        DialogHelper.hideLoading();
+        SnackBarHelper.errorSnackbar(
+          message: value.errorMessage,
+        );
       }
     });
   }

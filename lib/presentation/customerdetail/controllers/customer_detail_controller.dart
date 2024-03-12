@@ -8,7 +8,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 class CustomerdetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final String customerId = Get.arguments['customerId'];
-  //final bool _refreshCustomer = Get.arguments['refresh'];
   final List<Tab> customerTabs =
       [const Tab(text: 'Details'), const Tab(text: 'Invoices')].obs;
   var tabIndex = 0.obs;

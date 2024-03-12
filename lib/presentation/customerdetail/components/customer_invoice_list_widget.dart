@@ -29,7 +29,6 @@ class InvoiceListWidget extends StatelessWidget {
             arguments: {
               'invoiceId': invoice.id,
               'customerId': invoice.socid,
-              'refresh': false,
             },
           );
         },

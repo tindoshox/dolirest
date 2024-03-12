@@ -136,7 +136,8 @@ class PaymentController extends GetxController {
       });
 
       /// Processes the payment using the given payment data.
-      _processPayment(body);
+      await _processPayment(body);
+      DialogHelper.hideLoading();
     }
   }
 
@@ -156,10 +157,10 @@ class PaymentController extends GetxController {
       var invoiceId = invoice.value.id;
       var customerId = invoice.value.socid;
       var customerName = customer.value.name;
-      refreshPayments(invoiceId);
-      refreshInvoice(invoiceId);
+      await refreshPayments(invoiceId);
+      await refreshInvoice(invoiceId);
       paymentFormKey.currentState?.reset();
-      DialogHelper.hideLoading();
+
       if (fromHomeScreen) {
         Get.snackbar('Payment', '${amount.value} for $customerName received.',
             icon: const Icon(Icons.money_sharp),
@@ -169,8 +170,7 @@ class PaymentController extends GetxController {
                 onPressed: () {
                   Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
                     'invoiceId': invoiceId,
-                    'customerId': customerId,
-                    'refresh': true
+                    'customerId': customerId
                   });
                 },
                 child: const Text('Go to invoice')),
@@ -182,12 +182,10 @@ class PaymentController extends GetxController {
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
           'customerId': customerId,
-          'refresh': true,
         });
         SnackBarHelper.successSnackbar(message: 'Payment succesful');
       }
     } else {
-      DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }
   }

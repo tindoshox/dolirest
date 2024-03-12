@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class PaymentsDataTable extends StatelessWidget {
   const PaymentsDataTable(
-      {super.key, required this.payments, required this.totalTtc});
-  final List<PaymentModel> payments;
+      {super.key, required this.totalTtc, required this.invoiceId});
+
   //final InvoiceModel invoice;
   final String totalTtc;
+  final String invoiceId;
 
   @override
   Widget build(Object context) {
@@ -22,10 +24,16 @@ class PaymentsDataTable extends StatelessWidget {
 
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: DataTable(
-            columnSpacing: 30,
-            columns: getColumns(columns),
-            rows: getRows(payments, price)),
+        child: ValueListenableBuilder(
+            valueListenable: Hive.box<List>('payments').listenable(),
+            builder: (context, value, child) {
+              var payments =
+                  value.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+              return DataTable(
+                  columnSpacing: 30,
+                  columns: getColumns(columns),
+                  rows: getRows(payments, price));
+            }),
       );
     }
 

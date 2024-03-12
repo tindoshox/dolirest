@@ -90,7 +90,6 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                                       arguments: {
                                         'customerId': invoice.socid,
                                         'invoiceId': invoice.id,
-                                        'refresh': false
                                       },
                                     );
                                   },
