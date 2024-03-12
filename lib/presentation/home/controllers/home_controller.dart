@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -15,6 +17,7 @@ class HomeController extends GetxController {
     if (connected) {
       _fetchUserInfo();
     }
+
     super.onInit();
   }
 

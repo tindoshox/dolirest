@@ -6,7 +6,6 @@ import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class CustomerlistController extends GetxController {
-  var customers = <ThirdPartyModel>[].obs;
   var isLoading = false.obs;
   var isLoadingMore = false.obs;
   var isLastPage = false;
@@ -26,9 +25,15 @@ class CustomerlistController extends GetxController {
       await getAllCustomers();
     } else {
       list.sort((a, b) => a.name.compareTo(b.name));
-      customers.value = list;
     }
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+
+    super.onClose();
   }
 
   search({String searchText = ""}) {
@@ -47,7 +52,7 @@ class CustomerlistController extends GetxController {
         }
         var list = box.toMap().values.toList();
         list.sort((a, b) => a.name.compareTo(b.name));
-        customers.value = list;
+
         SnackBarHelper.successSnackbar(message: 'Customer data refreshed');
       } else {
         SnackBarHelper.errorSnackbar(

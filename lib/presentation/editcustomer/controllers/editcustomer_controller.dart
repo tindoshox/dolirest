@@ -48,6 +48,16 @@ class EditcustomerController extends GetxController {
     super.onInit();
   }
 
+  @override
+  @override
+  void onClose() {
+    nameController.dispose();
+    addressController.dispose();
+    townController.dispose();
+    phoneController.dispose();
+    faxController.dispose();
+  }
+
   getTownSuggestions() async {
     var box = await Hive.openBox<ThirdPartyModel>('customers');
     List<ThirdPartyModel> customers = box.toMap().values.toList();

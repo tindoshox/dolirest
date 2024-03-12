@@ -28,6 +28,13 @@ class InvoicelistController extends GetxController {
     super.onInit();
   }
 
+  @override
+  void onClose() {
+    searchController.dispose();
+
+    super.onClose();
+  }
+
   search({String searchText = ""}) {
     searchString.value = searchText;
   }
