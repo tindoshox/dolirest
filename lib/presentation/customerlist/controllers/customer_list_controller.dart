@@ -15,7 +15,7 @@ class CustomerlistController extends GetxController {
   final scrollController = ScrollController();
 
   int pageNumber = 0;
-  String searchString = '';
+  var searchString = ''.obs;
 
   @override
   void onInit() async {
@@ -31,31 +31,8 @@ class CustomerlistController extends GetxController {
     super.onInit();
   }
 
-  Future<void> search({String searchText = ""}) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
-    isLoading(true);
-
-    if (searchText != "") {
-      var list = box
-          .toMap()
-          .values
-          .toList()
-          .where((customer) =>
-              customer.name.contains(searchText) ||
-              customer.address.toString().contains(searchText) ||
-              customer.town.toString().contains(searchText) ||
-              customer.phone.toString().contains(searchText) ||
-              customer.fax.toString().contains(searchText))
-          .toList();
-      list.sort((a, b) => a.name.compareTo(b.name));
-      customers.value = list;
-    } else {
-      var list = box.toMap().values.toList();
-      list.sort((a, b) => a.name.compareTo(b.name));
-      customers.value = list;
-    }
-
-    isLoading(false);
+  search({String searchText = ""}) {
+    searchString.value = searchText;
   }
 
   getAllCustomers() async {

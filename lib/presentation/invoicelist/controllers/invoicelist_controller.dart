@@ -7,7 +7,6 @@ import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InvoicelistController extends GetxController {
-  var invoices = <InvoiceModel>[].obs;
   var isLoading = false.obs;
 
   var isLastPage = false;
@@ -16,7 +15,7 @@ class InvoicelistController extends GetxController {
   final scrollController = ScrollController();
 
   int page = 0;
-  String searchString = '';
+  var searchString = ''.obs;
 
   @override
   void onInit() async {
@@ -24,31 +23,13 @@ class InvoicelistController extends GetxController {
     var list = box.toMap().values.toList();
     if (list.length < 50) {
       getAllInvoices();
-    } else {
-      invoices.value = list;
     }
 
     super.onInit();
   }
 
-  Future<void> search({String searchText = ""}) async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
-    isLoading(true);
-
-    if (searchText != "") {
-      invoices.value = box
-          .toMap()
-          .values
-          .toList()
-          .where((invoice) =>
-              invoice.nom!.contains(searchText) ||
-              invoice.ref!.contains(searchText))
-          .toList();
-    } else {
-      invoices.value = box.toMap().values.toList();
-    }
-
-    isLoading(false);
+  search({String searchText = ""}) {
+    searchString.value = searchText;
   }
 
   getAllInvoices() async {
@@ -61,7 +42,7 @@ class InvoicelistController extends GetxController {
         for (var invoice in value.data) {
           box.put(invoice.id, invoice);
         }
-        invoices.value = box.toMap().values.toList();
+
         SnackBarHelper.successSnackbar(message: 'Inovice data refreshed');
       } else {
         SnackBarHelper.errorSnackbar(message: 'Could not refresh invoice data');
