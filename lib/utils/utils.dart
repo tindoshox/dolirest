@@ -25,12 +25,20 @@ int dateTimeToInt(DateTime date) {
   return convert.toInt();
 }
 
-/// Returns the integer representation of a number without the decimal point.
+/// Returns the string representation of a number without the decimal point.
 String amounts(String? input) {
   if (input != null) {
     return input.substring(0, input.indexOf('.'));
   } else {
     return '0';
+  }
+}
+
+int intAmounts(String? input) {
+  if (input != null) {
+    return int.parse(input.substring(0, input.indexOf('.')));
+  } else {
+    return 0;
   }
 }
 

@@ -28,7 +28,7 @@ class InvoiceDetailController extends GetxController
 
   final invoiceId = Get.arguments['invoiceId'];
   final customerId = Get.arguments['customerId'];
-  bool refreshInvoice = Get.arguments['refresh'];
+  final bool _refreshInvoice = Get.arguments['refresh'];
   var selectedDate = DateTime.now().obs;
   var documentList = <DocumenListModel>[];
 
@@ -62,18 +62,25 @@ class InvoiceDetailController extends GetxController
 
   Future _fetchData() async {
     isLoading(true);
-    await _fetchInvoice();
+    await _fetchInvoice().then((value) async {
+      await _fetchPayments();
+    });
     await _fetchCustomer();
-    await _fetchPayments();
+
     isLoading(false);
   }
 
   Future _fetchPayments() async {
     var box = await Hive.openBox<List>('payments');
     var list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+
+    var amounts = list.map((payment) => intAmounts(payment.amount)).toList();
+    var total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
+    var sumpayed = intAmounts(invoice.value.sumpayed);
+
     // Fetch payment list from storage
 
-    if (list.isEmpty && amounts(invoice.value.sumpayed) != '0') {
+    if (sumpayed != total) {
       // If storage has empty list but sumpayed is not null fetch from server
       await _refreshPaymentData().then((value) {
         list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
@@ -111,7 +118,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchInvoice() async {
-    if (refreshInvoice) {
+    if (_refreshInvoice) {
       await _refreshInvoiceData();
       await _refreshPaymentData();
     } else {

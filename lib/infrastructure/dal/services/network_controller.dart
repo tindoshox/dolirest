@@ -16,7 +16,7 @@ class NetworkController extends GetxController {
   void _updateConnectionStatus(ConnectivityResult connectivityResult) {
     if (connectivityResult == ConnectivityResult.none) {
       getBox.write('connected', false);
-      debugPrint('Connected: false');
+
       Get.rawSnackbar(
           backgroundColor: Colors.amber,
           messageText: const Text(
@@ -37,7 +37,7 @@ class NetworkController extends GetxController {
           snackStyle: SnackStyle.GROUNDED);
     } else {
       getBox.write('connected', true);
-      debugPrint('Connected: true');
+
       if (Get.isSnackbarOpen) {
         Get.closeCurrentSnackbar();
       }
