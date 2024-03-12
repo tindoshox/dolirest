@@ -195,19 +195,28 @@ class CreateinvoiceController extends GetxController {
       "notrigger": 0
       }''';
 
-    await RemoteServices.validateInvoice(body, invoiceId).then((value) {
+    await RemoteServices.validateInvoice(body, invoiceId).then((value) async {
+      DialogHelper.hideLoading();
       if (value.hasError) {
         SnackBarHelper.errorSnackbar(
           message: value.errorMessage,
         );
       } else {
-        DialogHelper.hideLoading();
-
+        await _getNewInvoice(invoiceId);
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
           'invoiceId': invoiceId,
           'customerId': customer.value.id,
           'refresh': true,
         });
+      }
+    });
+  }
+
+  _getNewInvoice(invoiceId) async {
+    var box = await Hive.openBox<InvoiceModel>('invoices');
+    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
+      if (!value.hasError) {
+        box.put(invoiceId, value.data);
       }
     });
   }

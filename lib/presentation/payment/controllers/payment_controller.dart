@@ -213,15 +213,18 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    await RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) async {
-      var box = await Hive.openBox<List>('payments');
-      box.put(invoiceId, value.data);
-    });
+    var box = await Hive.openBox<List>('payments');
+
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
+      if (!value.hasError) {
+        box.put(invoiceId, value.data);
+      }
+    }));
   }
 
   refreshInvoice(invoiceId) async {
+    var box = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
-      var box = await Hive.openBox<InvoiceModel>('invoices');
       box.put(invoiceId, value.data);
     });
   }

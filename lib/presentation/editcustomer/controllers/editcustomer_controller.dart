@@ -141,18 +141,23 @@ class EditcustomerController extends GetxController {
     DialogHelper.showLoading('Saving Customer.');
 
     await RemoteServices.createCustomer(body).then((value) async {
+      DialogHelper.hideLoading();
       if (value.hasError) {
         SnackBarHelper.errorSnackbar(message: value.errorMessage);
+      } else {
+        await _fetchNewCustomer(value.data);
+        Get.offAndToNamed(Routes.CUSTOMERDETAIL,
+            arguments: {'customerId': value.data});
       }
-      nameController.text = '';
-      addressController.text = '';
-      townController.text = '';
-      phoneController.text = '';
-      faxController.text = '';
-      DialogHelper.hideLoading();
+    });
+  }
 
-      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': value.data});
+  _fetchNewCustomer(data) async {
+    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    await RemoteServices.fetchThirdPartyById(data).then((value) {
+      if (!value.hasError) {
+        box.put(data, value.data);
+      }
     });
   }
 
