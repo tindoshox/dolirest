@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/utils/utils.dart';
 
 class PaymentsDataTable extends StatelessWidget {
   const PaymentsDataTable(
-      {super.key, required this.payments, required this.invoice});
+      {super.key, required this.payments, required this.totalTtc});
   final List<PaymentModel> payments;
-  final InvoiceModel invoice;
+  //final InvoiceModel invoice;
+  final String totalTtc;
 
   @override
   Widget build(Object context) {
@@ -18,7 +18,7 @@ class PaymentsDataTable extends StatelessWidget {
       'Bal',
     ];
     Widget buildDataTable() {
-      var price = int.parse(amounts(invoice.totalTtc));
+      var price = int.parse(amounts(totalTtc));
 
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -35,7 +35,7 @@ class PaymentsDataTable extends StatelessWidget {
 
 List<DataRow> getRows(List<PaymentModel> payments, int price) {
   return payments.map((PaymentModel payment) {
-    price -= int.parse(amounts(payment.amount)).toInt();
+    price -= intAmounts(payment.amount);
     return DataRow(
         cells: getCells([
       Text(datePaid(payment.date!)),

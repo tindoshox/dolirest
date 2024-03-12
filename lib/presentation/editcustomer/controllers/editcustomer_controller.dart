@@ -140,8 +140,9 @@ class EditcustomerController extends GetxController {
       phoneController.text = '';
       faxController.text = '';
       DialogHelper.hideLoading();
+
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': value.data, 'refresh': true});
+          arguments: {'customerId': value.data});
     });
   }
 
@@ -172,8 +173,9 @@ class EditcustomerController extends GetxController {
       var box = await Hive.openBox<ThirdPartyModel>('customers');
       box.put(customerId, value.data);
 
-      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': customerId, 'refresh': true});
+      Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {
+        'customerId': customerId,
+      });
     });
   }
 }

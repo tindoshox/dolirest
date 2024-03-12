@@ -1,6 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class CustomerInfo extends StatelessWidget {
   const CustomerInfo({super.key, required this.customer});
@@ -34,16 +35,21 @@ class CustomerInfo extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
     ];
-    return ListView.separated(
-        itemBuilder: (context, index) {
-          var child = children[index];
-          return child;
-        },
-        separatorBuilder: (context, index) => const Divider(
-              color: Colors.grey,
-              thickness: 1,
-            ),
-        itemCount: children.length);
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<ThirdPartyModel>('customers').listenable(),
+      builder: (context, box, widget) {
+        return ListView.separated(
+            itemBuilder: (context, index) {
+              var child = children[index];
+              return child;
+            },
+            separatorBuilder: (context, index) => const Divider(
+                  color: Colors.grey,
+                  thickness: 1,
+                ),
+            itemCount: children.length);
+      },
+    );
   }
 }
 
