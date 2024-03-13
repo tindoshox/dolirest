@@ -230,6 +230,7 @@ class CreateinvoiceController extends GetxController {
 
     if (searchString == "") {
       customers = box.toMap().values.toList();
+      customers.sort((a, b) => a.name.compareTo(b.name));
     } else {
       customers = box
           .toMap()
@@ -242,6 +243,7 @@ class CreateinvoiceController extends GetxController {
               customer.phone.toString().contains(searchString) ||
               customer.fax.toString().contains(searchString))
           .toList();
+      customers.sort((a, b) => a.name.compareTo(b.name));
     }
 
     return customers;

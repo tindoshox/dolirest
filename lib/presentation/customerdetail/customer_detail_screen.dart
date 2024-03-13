@@ -3,6 +3,7 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_info_widget.dart';
@@ -47,8 +48,8 @@ class CustomerDetailScreen extends GetView<CustomerdetailController> {
       ),
       body: Obx(
         () => controller.isLoading.value
-            ? const Center(
-                child: CircularProgressIndicator(),
+            ? const LoadingIndicator(
+                message: Text('loading...'),
               )
             : TabBarView(
                 controller: controller.tabController,

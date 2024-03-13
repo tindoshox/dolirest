@@ -1,6 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
@@ -65,8 +66,8 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return const LoadingIndicator(
+                    message: Text('Refreshing invoice data'),
                   );
                 }
 

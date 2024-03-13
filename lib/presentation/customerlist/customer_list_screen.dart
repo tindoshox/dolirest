@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -67,8 +68,8 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return const LoadingIndicator(
+                    message: Text('Refreshing customer data'),
                   );
                 }
 

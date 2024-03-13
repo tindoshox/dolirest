@@ -75,7 +75,7 @@ class PaymentScreen extends GetView<PaymentController> {
                             dropdownDecoratorProps:
                                 const DropDownDecoratorProps(
                               dropdownSearchDecoration: InputDecoration(
-                                labelText: 'Customer',
+                                labelText: 'Invoice',
                                 icon: Icon(Icons.person_outline),
                                 border: UnderlineInputBorder(),
                                 errorBorder: UnderlineInputBorder(

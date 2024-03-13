@@ -1,3 +1,4 @@
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
@@ -19,7 +20,9 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
       ),
       body: Center(
         child: controller.isLoading.value
-            ? const CircularProgressIndicator()
+            ? const LoadingIndicator(
+                message: Text('loading...'),
+              )
             : Form(
                 key: controller.customerFormKey,
                 child: Card(

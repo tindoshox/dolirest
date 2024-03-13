@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -61,7 +62,9 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
       ),
       body: Obx(
         () => controller.isLoading.value
-            ? const Center(child: CircularProgressIndicator())
+            ? const LoadingIndicator(
+                message: Text('loading...'),
+              )
             : TabBarView(
                 controller: controller.tabController,
                 children: [

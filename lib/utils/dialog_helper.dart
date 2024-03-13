@@ -1,3 +1,4 @@
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,7 +16,7 @@ class DialogHelper {
             mainAxisSize: MainAxisSize.min,
             children: [
               /// A [CircularProgressIndicator] to indicate that the application is busy.
-              const CircularProgressIndicator(),
+              const LoadingIndicator(),
               const SizedBox(height: 8),
 
               /// A [Text] widget that displays a message indicating that the application is busy.
