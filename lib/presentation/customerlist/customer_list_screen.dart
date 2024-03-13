@@ -83,24 +83,26 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                             itemBuilder: (context, index) {
                               if (index < customers.length) {
                                 var customer = customers[index];
-                                return InkWell(
-                                  onTap: () => Get.toNamed(
-                                      Routes.CUSTOMERDETAIL,
-                                      arguments: {
-                                        'customerId': customer.id.toString(),
-                                      }),
-                                  child: Card(
-                                    child: ListTile(
-                                      title: Text(
-                                        customers[index].name!,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      subtitle: Text(
-                                          '${customer.address} ${customer.town}'
-                                              .trim()),
+                                return Card(
+                                  child: ListTile(
+                                    onTap: () => Get.toNamed(
+                                        Routes.CUSTOMERDETAIL,
+                                        arguments: {
+                                          'customerId': customer.id.toString(),
+                                        }),
+                                    leading: const Icon(
+                                      Icons.person_2_sharp,
+                                      size: 40,
                                     ),
+                                    title: Text(
+                                      customers[index].name!,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(
+                                        '${customer.address} ${customer.town}'
+                                            .trim()),
                                   ),
                                 );
                               } else {

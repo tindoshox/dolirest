@@ -31,26 +31,28 @@ class HomeScreen extends GetView<HomeController> {
                   child: const Text("Settings"),
                 ),
                 PopupMenuItem(
-                  onTap: () => Get.dialog(AboutDialog(
-                    applicationVersion: '0.1.0-beta',
-                    applicationName: 'DoliREST',
-                    applicationLegalese: "© Copyright ShoxMukanya 2024",
-                    applicationIcon: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent,
-                        image: DecorationImage(
-                          fit: BoxFit.contain,
-                          image: AssetImage('assets/images/smbi.png'),
+                  onTap: () => Get.dialog(
+                      barrierDismissible: false,
+                      AboutDialog(
+                        applicationVersion: '0.1.0-beta',
+                        applicationName: 'DoliREST',
+                        applicationLegalese: "© Copyright SMBI 2024",
+                        applicationIcon: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.transparent,
+                            image: DecorationImage(
+                              fit: BoxFit.contain,
+                              image: AssetImage('assets/images/smbi.png'),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    children: const [
-                      Text('A REST API client for Dolibarr CRM.')
-                    ],
-                  )),
+                        children: const [
+                          Text('A Restful API client for Dolibarr CRM.')
+                        ],
+                      )),
                   value: '/about',
                   child: const Text("About"),
                 ),

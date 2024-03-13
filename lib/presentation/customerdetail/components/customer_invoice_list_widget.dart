@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/utils.dart';
@@ -15,46 +16,10 @@ class InvoiceListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      separatorBuilder: (context, index) => const Divider(
-        color: Colors.grey,
-        thickness: 1,
-      ),
-      itemCount: invoices.length,
-      itemBuilder: (context, index) => ListTile(
-        onTap: () {
-          var invoice = invoices[index];
-          Get.toNamed(
-            Routes.INVOICEDETAIL,
-            arguments: {
-              'invoiceId': invoice.id,
-              'customerId': invoice.socid,
-            },
-          );
-        },
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              invoices[index].ref!,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'BALANCE: ${invoices[index].remaintopay}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(invoices[index].lines![0].productLabel ??
-                invoices[index].lines![0].description),
-            Text(
-                'Due Date: ${intToDateString(invoices[index].dateLimReglement!)}')
-          ],
-        ),
-      ),
-    );
+    return ListView.builder(
+        itemCount: invoices.length,
+        itemBuilder: (context, index) {
+          return InvoiceListTile(invoices: invoices, invoice: invoices[index]);
+        });
   }
 }

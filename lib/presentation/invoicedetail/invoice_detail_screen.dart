@@ -67,7 +67,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                 children: [
                   ValueListenableBuilder(
                     valueListenable: Hive.box<InvoiceModel>('invoices')
-                        .listenable(keys: [controller.customerId]),
+                        .listenable(keys: [controller.invoiceId]),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
                           bool connected = getBox.read('connected');

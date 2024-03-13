@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -82,83 +83,9 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                             itemBuilder: (context, index) {
                               if (index < invoices.length) {
                                 var invoice = invoices[index];
-                                return InkWell(
-                                  onTap: () {
-                                    var invoice = invoices[index];
-                                    Get.toNamed(
-                                      Routes.INVOICEDETAIL,
-                                      arguments: {
-                                        'customerId': invoice.socid,
-                                        'invoiceId': invoice.id,
-                                      },
-                                    );
-                                  },
-                                  child: Card(
-                                    child: ListTile(
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            invoice.ref!,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          Text(
-                                            'BALANCE: ${invoice.remaintopay}',
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Flexible(
-                                                child: Text(invoice.nom!),
-                                              ),
-                                              Text(
-                                                intToDateString(
-                                                    invoice.dateLimReglement!),
-                                                style: overDueStyle(
-                                                    invoice.dateLimReglement!),
-                                              )
-                                            ],
-                                          ),
-                                          //Product name
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(invoice
-                                                      .lines![0].productLabel ??
-                                                  invoice
-                                                      .lines![0].description),
-                                              Text(
-                                                invoice.sumpayed == null
-                                                    ? 'UNPAID'
-                                                    : 'STARTED',
-                                                style: const TextStyle(
-                                                    fontSize: 10),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
+                                return InvoiceListTile(
+                                    invoices: invoices, invoice: invoice);
                               } else {
-                                // if (loadMore) {
-                                //   return const InvoiceListLoadingTile();
-                                // }
                                 return const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 32.0),
                                   child: Center(child: Text('End of list!')),
