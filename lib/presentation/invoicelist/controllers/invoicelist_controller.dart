@@ -14,8 +14,8 @@ class InvoicelistController extends GetxController {
   final searchController = TextEditingController();
   final scrollController = ScrollController();
 
-  int page = 0;
   var searchString = ''.obs;
+  var searchIcon = true.obs;
 
   @override
   void onInit() async {

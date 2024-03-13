@@ -115,7 +115,7 @@ class PaymentController extends GetxController {
 
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
-      DialogHelper.showLoading('Processing Payment.');
+      DialogHelper.showLoading('Processing Payment...');
       var body = jsonEncode({
         "arrayofamounts": {
           "${invoice.value.id}": {

@@ -25,23 +25,27 @@ class PaymentScreen extends GetView<PaymentController> {
         child: Column(
           children: [
             Card(
-              child: ListTile(
-                isThreeLine: true,
-                title:
-                    Obx(() => Text(invoice.value.ref ?? 'No Invoice Selected')),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Obx(() => Text(customer.value.name ?? '')),
-                    Obx(() => Text(controller.customer.value.ref == null
-                        ? ''
-                        : '${customer.value.address} ${customer.value.town}')),
-                    Obx(() => Text(controller.customer.value.ref == null
-                        ? ''
-                        : 'Balance Due: ${invoice.value.remaintopay ?? '0'}')),
-                  ],
-                ),
-              ),
+              child: Obx(() => ListTile(
+                    isThreeLine: true,
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(customer.value.name ?? 'No Invoice Selected'),
+                        Text(invoice.value.ref ?? ''),
+                      ],
+                    ),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(controller.customer.value.ref == null
+                            ? ''
+                            : '${customer.value.town} ${customer.value.address}'),
+                        Text(controller.customer.value.ref == null
+                            ? ''
+                            : 'Balance Due: ${invoice.value.remaintopay ?? '0'}'),
+                      ],
+                    ),
+                  )),
             ),
             Expanded(
               child: Form(
@@ -68,6 +72,17 @@ class PaymentScreen extends GetView<PaymentController> {
                                 value == null ? 'Invoice is required' : null,
                             itemAsString: (InvoiceModel? invoice) =>
                                 invoice!.ref!,
+                            dropdownDecoratorProps:
+                                const DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: 'Customer',
+                                icon: Icon(Icons.person_outline),
+                                border: UnderlineInputBorder(),
+                                errorBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                              ),
+                            ),
                             popupProps: PopupProps.modalBottomSheet(
                                 searchFieldProps: const TextFieldProps(
                                     textCapitalization:

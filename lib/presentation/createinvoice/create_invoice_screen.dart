@@ -21,18 +21,18 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
       body: Column(
         children: [
           Card(
-            child: ListTile(
-              isThreeLine: true,
-              title: Obx(() => Text(
-                  controller.customer.value.name ?? 'No Customer Selected')),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(() => Text(controller.customer.value.address ?? '')),
-                  Obx(() => Text(controller.customer.value.town ?? '')),
-                ],
-              ),
-            ),
+            child: Obx(() => ListTile(
+                  isThreeLine: true,
+                  title: Text(
+                      controller.customer.value.name ?? 'No Customer Selected'),
+                  subtitle: Row(
+                    children: [
+                      Text(controller.customer.value.town ?? ''),
+                      const Text(' '),
+                      Text(controller.customer.value.address ?? ''),
+                    ],
+                  ),
+                )),
           ),
           Expanded(
             child: Form(

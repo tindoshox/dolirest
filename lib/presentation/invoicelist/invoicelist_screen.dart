@@ -3,8 +3,6 @@ import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/utils.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -23,28 +21,47 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
         child: const Icon(Icons.arrow_upward),
       ),
       appBar: AppBar(
-        title: const Text('Invoices'),
+        automaticallyImplyLeading: false,
+        title: Obx(
+          () => SizedBox(
+            child: controller.searchIcon.value
+                ? const Text('Invoices')
+                : CustomFormField(
+                    name: 'search',
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    hintText: 'Search by  name or invoice number',
+                    controller: controller.searchController,
+                    onChanged: (string) {
+                      debouncer(() {
+                        controller.search(searchText: string!);
+                      });
+                    },
+                  ),
+          ),
+        ),
+        actions: [
+          Obx(() => Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: IconButton(
+                  icon: controller.searchIcon.value
+                      ? const Icon(Icons.search)
+                      : const Icon(Icons.cancel),
+                  onPressed: () {
+                    if (!controller.searchIcon.value) {
+                      controller.searchController.clear();
+                      controller.searchString.value = "";
+                    }
+                    controller.searchIcon.value = !controller.searchIcon.value;
+                  },
+                ),
+              ))
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            CustomFormField(
-              name: 'search',
-              labelText: 'Search',
-              hintText: 'Search by name or invoice number',
-              border: const OutlineInputBorder(),
-              textInputAction: TextInputAction.done,
-              controller: controller.searchController,
-              onChanged: (string) {
-                debouncer(() {
-                  controller.search(searchText: string!);
-                });
-              },
-            ),
-            Obx(() => Text(controller.isLoading.value
-                ? 'Refreshing data'
-                : 'Swipe down to refresh')),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {

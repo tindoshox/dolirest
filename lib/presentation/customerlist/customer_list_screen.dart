@@ -23,28 +23,47 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
         child: const Icon(Icons.arrow_upward),
       ),
       appBar: AppBar(
-        title: const Text('Customers'),
+        automaticallyImplyLeading: false,
+        title: Obx(
+          () => SizedBox(
+            child: controller.searchIcon.value
+                ? const Text('Customers')
+                : CustomFormField(
+                    name: 'search',
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    hintText: 'Search by name, address or phone number',
+                    controller: controller.searchController,
+                    onChanged: (string) {
+                      debouncer(() {
+                        controller.search(searchText: string!);
+                      });
+                    },
+                  ),
+          ),
+        ),
+        actions: [
+          Obx(() => Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: IconButton(
+                  icon: controller.searchIcon.value
+                      ? const Icon(Icons.search)
+                      : const Icon(Icons.cancel),
+                  onPressed: () {
+                    if (!controller.searchIcon.value) {
+                      controller.searchController.clear();
+                      controller.searchString.value = "";
+                    }
+                    controller.searchIcon.value = !controller.searchIcon.value;
+                  },
+                ),
+              ))
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            CustomFormField(
-              border: const OutlineInputBorder(),
-              name: 'search',
-              labelText: 'Search',
-              textInputAction: TextInputAction.done,
-              hintText: 'Search by name, address or phone number',
-              controller: controller.searchController,
-              onChanged: (string) {
-                debouncer(() {
-                  controller.search(searchText: string!);
-                });
-              },
-            ),
-            Obx(() => Text(controller.isLoading.value
-                ? 'Refreshing data...'
-                : 'Swipe down to refresh')),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.isTrue) {
@@ -63,7 +82,7 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                       builder: (context, value, child) {
                         var sortedValues = value.values.toList()
                           ..sort((a, b) => a.name.compareTo(b.name));
-                        var customers = search != ""
+                        var customers = search.length > 2
                             ? sortedValues
                                 .where((customer) =>
                                     customer.name.contains(search) ||

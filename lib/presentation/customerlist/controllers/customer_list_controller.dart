@@ -12,6 +12,7 @@ class CustomerlistController extends GetxController {
 
   final searchController = TextEditingController();
   final scrollController = ScrollController();
+  var searchIcon = true.obs;
 
   int pageNumber = 0;
   var searchString = ''.obs;

@@ -142,7 +142,7 @@ class InvoiceDetailController extends GetxController
     var invoice = invoiceBox.get(invoiceId)!;
     permissionReady = await checkPermission(platform);
 
-    DialogHelper.showLoading();
+    DialogHelper.showLoading('Downloading document...');
     var body = json.encode(BuildDocumentRequestModel(
       modulepart: 'invoice',
       originalFile: '${invoice.ref}/${invoice.ref}.pdf',
@@ -193,7 +193,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _updateDueDate(int selectedDate) async {
-    DialogHelper.showLoading('Updating Due Date');
+    DialogHelper.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
     update.removeWhere((key, value) => value == null);

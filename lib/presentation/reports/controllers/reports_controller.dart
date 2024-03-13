@@ -144,7 +144,7 @@ class ReportsController extends GetxController {
     permissionReady = await checkPermission(platform);
     if (permissionReady) {
       DialogHelper.showLoading(
-          'Fetching ${selectedReport.value.displayName} report');
+          'Fetching ${selectedReport.value.displayName} report...');
 
       /// Checks permissions
       if (permissionReady) {

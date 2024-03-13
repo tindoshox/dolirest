@@ -16,7 +16,7 @@ class CustomerInfo extends StatelessWidget {
         subtitle: Text(customer.codeClient.toString()),
       ),
       CustomerInfoRow(
-        title: '${customer.address} ${customer.town}',
+        title: '${customer.town} ${customer.address}',
         leading: const Icon(Icons.location_city_outlined),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
       ),

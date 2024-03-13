@@ -138,7 +138,7 @@ class EditcustomerController extends GetxController {
   }
 
   Future _createCustomer(String body) async {
-    DialogHelper.showLoading('Saving Customer.');
+    DialogHelper.showLoading('Saving Customer...');
 
     await RemoteServices.createCustomer(body).then((value) async {
       DialogHelper.hideLoading();
@@ -173,7 +173,7 @@ class EditcustomerController extends GetxController {
   }
 
   Future _updateCustomer(String body, String id) async {
-    DialogHelper.showLoading('Updating Customer');
+    DialogHelper.showLoading('Updating Customer...');
     await RemoteServices.updateCustomer(body, id).then((value) async {
       DialogHelper.hideLoading();
 

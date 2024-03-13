@@ -122,7 +122,7 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-      DialogHelper.showLoading('Creating Invoice');
+      DialogHelper.showLoading('Creating Invoice...');
       // If stock type is free text.
       if (stockType.value != '0') {
         await _createInvoice();

@@ -38,7 +38,7 @@ class SettingsController extends GetxController {
     final FormState form = serverFormKey.currentState!;
     _writeStore();
     if (form.validate()) {
-      DialogHelper.showLoading('Verifying Server Info');
+      DialogHelper.showLoading('Verifying Server Info...');
 
       await RemoteServices.fetchUserInfo().then((value) {
         if (!value.hasError) {
