@@ -84,7 +84,8 @@ class PaymentScreen extends GetView<PaymentController> {
                               ),
                             ),
                             popupProps: PopupProps.modalBottomSheet(
-                                searchFieldProps: const TextFieldProps(
+                                searchFieldProps: TextFieldProps(
+                                    controller: controller.invoiceController,
                                     textCapitalization:
                                         TextCapitalization.characters),
                                 modalBottomSheetProps: ModalBottomSheetProps(

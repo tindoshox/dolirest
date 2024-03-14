@@ -9,6 +9,7 @@ class DialogHelper {
   /// The dialog will automatically be dismissed when the user dismisses the dialog or presses the back button.
   static void showLoading([String? message]) {
     Get.dialog(
+      barrierDismissible: false,
       Dialog(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

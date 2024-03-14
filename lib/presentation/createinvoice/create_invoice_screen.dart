@@ -2,10 +2,11 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/products_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/create_invoice_controller.dart';
 
@@ -210,7 +211,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                           : Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              child: DropdownSearch<Product>(
+                              child: DropdownSearch<ProductModel>(
                                 compareFn: (item1, item2) => item1 == item2,
                                 onChanged: (product) {
                                   controller.selectedProduct.value = product!;
@@ -220,9 +221,12 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                 validator: (value) => value == null
                                     ? 'Product is required'
                                     : null,
-                                itemAsString: (Product product) =>
+                                itemAsString: (ProductModel product) =>
                                     '${product.label}',
                                 popupProps: PopupProps.modalBottomSheet(
+                                    searchFieldProps: const TextFieldProps(
+                                        textCapitalization:
+                                            TextCapitalization.characters),
                                     modalBottomSheetProps:
                                         ModalBottomSheetProps(
                                             shape:
@@ -237,8 +241,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                           fontWeight: FontWeight.bold),
                                     ),
                                     isFilterOnline: true,
-                                    itemBuilder:
-                                        (context, Product product, isSelected) {
+                                    itemBuilder: (context, ProductModel product,
+                                        isSelected) {
                                       return ListTile(
                                         title: Text('${product.label}'),
                                         subtitle:
@@ -250,8 +254,15 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                             child: Text('Product Not Found')),
                                     showSearchBox: true),
                                 asyncItems: (String searchString) async {
-                                  List<Product> products = await controller
-                                      .fetchProducts(searchString);
+                                  var box = await Hive.openBox<ProductModel>(
+                                      'products');
+                                  var list = box.toMap().values.toList();
+                                  list.sort((a, b) =>
+                                      a.description!.compareTo(b.description!));
+                                  var products = list
+                                      .where((product) => product.description!
+                                          .contains(searchString))
+                                      .toList();
                                   return products;
                                 },
                               ),

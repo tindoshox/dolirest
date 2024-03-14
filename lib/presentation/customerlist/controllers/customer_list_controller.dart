@@ -18,19 +18,6 @@ class CustomerlistController extends GetxController {
   var searchString = ''.obs;
 
   @override
-  void onInit() async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
-    var list = box.toMap().values.toList();
-
-    if (list.length < 50) {
-      await getAllCustomers();
-    } else {
-      list.sort((a, b) => a.name.compareTo(b.name));
-    }
-    super.onInit();
-  }
-
-  @override
   void onClose() {
     searchController.dispose();
 
@@ -51,8 +38,6 @@ class CustomerlistController extends GetxController {
         for (ThirdPartyModel customer in value.data) {
           box.put(customer.id, customer);
         }
-        var list = box.toMap().values.toList();
-        list.sort((a, b) => a.name.compareTo(b.name));
 
         SnackBarHelper.successSnackbar(message: 'Customer data refreshed');
       } else {

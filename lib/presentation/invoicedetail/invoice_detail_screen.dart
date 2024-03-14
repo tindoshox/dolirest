@@ -31,7 +31,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                       : () {
                           bool connected = getBox.read('connected');
                           if (connected) {
-                            Get.offAndToNamed(
+                            Get.toNamed(
                               Routes.PAYMENT,
                               arguments: {
                                 'invid': controller.invoiceId,

@@ -1,163 +1,311 @@
 // To parse this JSON data, do
 //
-//     final product = productFromMap(jsonString);
+//     final productModel = productModelFromJson(jsonString);
 
+import 'package:hive/hive.dart';
 import 'dart:convert';
 
-List<Product> productFromMap(String str) =>
-    List<Product>.from(json.decode(str).map((x) => Product.fromMap(x)));
+part 'product_model.g.dart';
 
-String productToMap(List<Product> data) =>
-    json.encode(List<dynamic>.from(data.map((x) => x.toMap())));
+ProductModel productModelFromJson(String str) =>
+    ProductModel.fromJson(json.decode(str));
 
-class Product {
+String productModelToJson(ProductModel data) => json.encode(data.toJson());
+
+@HiveType(typeId: 8)
+class ProductModel {
+  @HiveField(1)
   String? label;
+  @HiveField(2)
   String? description;
+  @HiveField(3)
   dynamic other;
+  @HiveField(4)
   String? type;
+  @HiveField(5)
   String? price;
+  @HiveField(6)
   dynamic priceFormated;
+  @HiveField(7)
   String? priceTtc;
+  @HiveField(8)
   dynamic priceTtcFormated;
+  @HiveField(9)
   String? priceMin;
+  @HiveField(10)
   String? priceMinTtc;
+  @HiveField(11)
   String? priceBaseType;
+  @HiveField(12)
   List<dynamic>? multiprices;
+  @HiveField(13)
   List<dynamic>? multipricesTtc;
+  @HiveField(14)
   List<dynamic>? multipricesBaseType;
+  @HiveField(15)
   List<dynamic>? multipricesMin;
+  @HiveField(16)
   List<dynamic>? multipricesMinTtc;
+  @HiveField(17)
   List<dynamic>? multipricesTvaTx;
+  @HiveField(18)
   List<dynamic>? pricesByQty;
+  @HiveField(19)
   List<dynamic>? pricesByQtyList;
+  @HiveField(20)
   List<dynamic>? multilangs;
+  @HiveField(21)
   dynamic defaultVatCode;
+  @HiveField(22)
   String? tvaTx;
+  @HiveField(23)
   dynamic remisePercent;
+  @HiveField(24)
   String? localtax1Tx;
+  @HiveField(25)
   String? localtax2Tx;
+  @HiveField(26)
   String? localtax1Type;
+  @HiveField(27)
   String? localtax2Type;
+  @HiveField(28)
   dynamic descSupplier;
+  @HiveField(29)
   dynamic vatrateSupplier;
+  @HiveField(30)
   dynamic defaultVatCodeSupplier;
+  @HiveField(31)
   dynamic fournMulticurrencyPrice;
+  @HiveField(32)
   dynamic fournMulticurrencyUnitprice;
+  @HiveField(33)
   dynamic fournMulticurrencyTx;
+  @HiveField(34)
   dynamic fournMulticurrencyId;
+  @HiveField(35)
   dynamic fournMulticurrencyCode;
+  @HiveField(36)
   dynamic packaging;
+  @HiveField(37)
   dynamic lifetime;
+  @HiveField(38)
   dynamic qcFrequency;
+  @HiveField(39)
   dynamic stockReel;
+  @HiveField(40)
   dynamic stockTheorique;
+  @HiveField(41)
   dynamic costPrice;
+  @HiveField(42)
   String? pmp;
+  @HiveField(43)
   String? seuilStockAlerte;
+  @HiveField(44)
   String? desiredstock;
+  @HiveField(45)
   dynamic durationValue;
+  @HiveField(46)
   dynamic durationUnit;
+  @HiveField(47)
   String? duration;
+  @HiveField(48)
   dynamic fkDefaultWorkstation;
+  @HiveField(49)
   String? status;
+  @HiveField(50)
   dynamic tosell;
+  @HiveField(51)
   String? statusBuy;
+  @HiveField(52)
   dynamic tobuy;
+  @HiveField(53)
   String? finished;
+  @HiveField(54)
   dynamic fkDefaultBom;
+  @HiveField(55)
   String? statusBatch;
+  @HiveField(56)
   String? batchMask;
+  @HiveField(57)
   String? customcode;
+  @HiveField(58)
   dynamic url;
+  @HiveField(59)
   dynamic weight;
-  String? weightUnits;
+  @HiveField(60)
+  dynamic weightUnits;
+  @HiveField(61)
   dynamic length;
-  String? lengthUnits;
+  @HiveField(62)
+  dynamic lengthUnits;
+  @HiveField(63)
   dynamic width;
-  String? widthUnits;
+  @HiveField(64)
+  dynamic widthUnits;
+  @HiveField(65)
   dynamic height;
-  String? heightUnits;
+  @HiveField(66)
+  dynamic heightUnits;
+  @HiveField(67)
   dynamic surface;
-  String? surfaceUnits;
+  @HiveField(68)
+  dynamic surfaceUnits;
+  @HiveField(69)
   dynamic volume;
-  String? volumeUnits;
+  @HiveField(70)
+  dynamic volumeUnits;
+  @HiveField(71)
   dynamic netMeasure;
+  @HiveField(72)
   dynamic netMeasureUnits;
+  @HiveField(73)
   String? accountancyCodeSell;
+  @HiveField(74)
   String? accountancyCodeSellIntra;
+  @HiveField(75)
   String? accountancyCodeSellExport;
+  @HiveField(76)
   String? accountancyCodeBuy;
+  @HiveField(77)
   String? accountancyCodeBuyIntra;
+  @HiveField(78)
   String? accountancyCodeBuyExport;
+  @HiveField(79)
   dynamic barcode;
+  @HiveField(80)
   dynamic barcodeType;
+  @HiveField(81)
   List<dynamic>? statsProposalSupplier;
+  @HiveField(82)
   List<dynamic>? statsExpedition;
+  @HiveField(83)
   List<dynamic>? statsMo;
+  @HiveField(84)
   List<dynamic>? statsBom;
+  @HiveField(85)
   List<dynamic>? statsFacturerec;
+  @HiveField(86)
   List<dynamic>? statsFactureFournisseur;
+  @HiveField(87)
   DateTime? dateCreation;
+  @HiveField(88)
   DateTime? dateModification;
+  @HiveField(89)
   List<dynamic>? stockWarehouse;
-  dynamic fkDefaultWarehouse;
+  @HiveField(90)
+  String? fkDefaultWarehouse;
+  @HiveField(91)
   dynamic fkPriceExpression;
+  @HiveField(92)
   dynamic fournQty;
+  @HiveField(93)
   dynamic fkUnit;
+  @HiveField(94)
   String? priceAutogen;
+  @HiveField(95)
   dynamic sousprods;
+  @HiveField(96)
   dynamic res;
+  @HiveField(97)
   dynamic isObjectUsed;
+  @HiveField(98)
   String? mandatoryPeriod;
+  @HiveField(99)
   dynamic module;
+  @HiveField(100)
   String? id;
+  @HiveField(101)
   String? entity;
+  @HiveField(102)
   dynamic importKey;
+  @HiveField(103)
   List<dynamic>? arrayOptions;
+  @HiveField(104)
   dynamic arrayLanguages;
+  @HiveField(105)
   dynamic contactsIds;
+  @HiveField(106)
   dynamic linkedObjects;
+  @HiveField(107)
   dynamic linkedObjectsIds;
+  @HiveField(108)
   dynamic oldref;
+  @HiveField(109)
   String? canvas;
+  @HiveField(110)
   String? ref;
+  @HiveField(111)
   dynamic refExt;
+  @HiveField(112)
   dynamic countryId;
+  @HiveField(113)
   String? countryCode;
-  String? stateId;
+  @HiveField(114)
+  dynamic stateId;
+  @HiveField(115)
   dynamic regionId;
+  @HiveField(116)
   dynamic barcodeTypeCoder;
+  @HiveField(117)
   dynamic shippingMethod;
+  @HiveField(118)
   dynamic multicurrencyCode;
+  @HiveField(119)
   dynamic multicurrencyTx;
+  @HiveField(120)
   dynamic lastMainDoc;
+  @HiveField(121)
   dynamic notePublic;
+  @HiveField(122)
   String? notePrivate;
+  @HiveField(123)
   dynamic totalHt;
+  @HiveField(124)
   dynamic totalTva;
+  @HiveField(125)
   dynamic totalLocaltax1;
+  @HiveField(126)
   dynamic totalLocaltax2;
+  @HiveField(127)
   dynamic totalTtc;
+  @HiveField(128)
   dynamic dateValidation;
+  @HiveField(129)
   dynamic dateUpdate;
+  @HiveField(130)
   dynamic dateCloture;
+  @HiveField(131)
   dynamic userAuthor;
+  @HiveField(132)
   dynamic userCreation;
+  @HiveField(133)
   dynamic userCreationId;
+  @HiveField(134)
   dynamic userValid;
+  @HiveField(135)
   dynamic userValidation;
+  @HiveField(136)
   dynamic userValidationId;
+  @HiveField(137)
   dynamic userClosingId;
+  @HiveField(138)
   dynamic userModification;
+  @HiveField(139)
   dynamic userModificationId;
+  @HiveField(140)
   int? specimen;
+  @HiveField(141)
   dynamic labelStatus;
+  @HiveField(142)
   dynamic showphotoOnPopup;
+  @HiveField(143)
   List<dynamic>? nb;
+  @HiveField(144)
   dynamic output;
+  @HiveField(145)
   List<dynamic>? extraparams;
 
-  Product({
+  ProductModel({
     this.label,
     this.description,
     this.other,
@@ -305,7 +453,7 @@ class Product {
     this.extraparams,
   });
 
-  factory Product.fromMap(Map<String, dynamic> json) => Product(
+  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
         label: json["label"],
         description: json["description"],
         other: json["other"],
@@ -497,7 +645,7 @@ class Product {
             : List<dynamic>.from(json["extraparams"]!.map((x) => x)),
       );
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toJson() => {
         "label": label,
         "description": description,
         "other": other,

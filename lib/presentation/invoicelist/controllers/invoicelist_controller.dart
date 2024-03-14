@@ -18,17 +18,6 @@ class InvoicelistController extends GetxController {
   var searchIcon = true.obs;
 
   @override
-  void onInit() async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
-    var list = box.toMap().values.toList();
-    if (list.length < 50) {
-      getAllInvoices();
-    }
-
-    super.onInit();
-  }
-
-  @override
   void onClose() {
     searchController.dispose();
 

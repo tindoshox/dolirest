@@ -15,7 +15,7 @@ import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/models/products_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
@@ -31,19 +31,13 @@ class RemoteServices {
   };
 
   /// CustomerList
-  static Future<DataOrException> fetchThirdPartyList(
-      {String sqlfilters = "%",
-      String mode = "1",
-      String page = "1",
-      String limit = "0"}) async {
+  static Future<DataOrException> fetchThirdPartyList() async {
     final queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
-      "mode": mode,
-      "limit": limit,
-      "page": page.toString(),
-      "sqlfilters":
-          "(t.nom:like:'$sqlfilters') or (t.phone:like:'$sqlfilters') or (t.fax:like:'$sqlfilters') or (t.town:like:'$sqlfilters')or (t.address:like:'$sqlfilters')",
+      "mode": "1",
+      "limit": "0",
+      "page": "1",
     };
     try {
       var response = await _client
@@ -88,61 +82,7 @@ class RemoteServices {
     }
   }
 
-  /// invoiceList
-  static Future<DataOrException> fetchInvoiceList(
-      {String sqlfilters = '%', String page = "1", String limit = "0"}) async {
-    final queryParameters = {
-      "sortfield": "t.date_lim_reglement",
-      "sortorder": "ASC",
-      "page": page,
-      "limit": limit,
-      "sqlfilters":
-          "(t.type:=:0) and ((t.ref:like:$sqlfilters) or (nom:like:$sqlfilters))"
-    };
-
-    try {
-      var response = await _client
-          .get(
-            Uri.https(_url, ApiRoutes.invoices, queryParameters),
-            headers: _headers,
-          )
-          .timeout(_timeout);
-      String jsonString = response.body;
-      List<dynamic> jsonList = json.decode(jsonString);
-
-      List<InvoiceModel> invoices = jsonList
-          .map((jsonItem) =>
-              InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
-          .toList();
-
-      return DataOrException(
-        data: invoices,
-        statusCode: response.statusCode,
-      );
-    } catch (e) {
-      if (e is SocketException) {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "No Internet",
-          data: [],
-        );
-      } else if (e is TimeoutException) {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "Timeout error",
-          data: [],
-        );
-      } else {
-        return DataOrException(
-          hasError: true,
-          errorMessage: "Unkown error",
-          data: [],
-        );
-      }
-    }
-  }
-
-  /// Customers By Id
+  /// Customer By Id
   static Future<DataOrException> fetchThirdPartyById(String customerId) async {
     try {
       var response = await _client
@@ -176,16 +116,18 @@ class RemoteServices {
     }
   }
 
-  /// invoices by customer
-  static Future<DataOrException> fetchInvoicesByCustomerId(
-      String customerId) async {
+  /// invoiceList
+  static Future<DataOrException> fetchInvoiceList(
+      {String customerId = ""}) async {
     final queryParameters = {
-      "sortfield": "t.rowid",
-      "sortorder": "DESC",
-      "limit": "20",
+      "sortfield": "t.date_lim_reglement",
+      "sortorder": "ASC",
+      "page": "1",
+      "limit": "0",
       "thirdparty_ids": customerId,
-      "sqlfilters": "(t.type:=:0)",
+      "sqlfilters": "(t.type:=:0)"
     };
+
     try {
       var response = await _client
           .get(
@@ -193,7 +135,6 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
       String jsonString = response.body;
       List<dynamic> jsonList = json.decode(jsonString);
 
@@ -201,6 +142,7 @@ class RemoteServices {
           .map((jsonItem) =>
               InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
           .toList();
+
       return DataOrException(
         data: invoices,
         statusCode: response.statusCode,
@@ -210,16 +152,19 @@ class RemoteServices {
         return DataOrException(
           hasError: true,
           errorMessage: "No Internet",
+          data: [],
         );
       } else if (e is TimeoutException) {
         return DataOrException(
           hasError: true,
           errorMessage: "Timeout error",
+          data: [],
         );
       } else {
         return DataOrException(
           hasError: true,
           errorMessage: "Unkown error",
+          data: [],
         );
       }
     }
@@ -518,11 +463,10 @@ class RemoteServices {
   }
 
   /// Fetch Products
-  static Future<DataOrException> fetchProducts(String searchString) async {
+  static Future<DataOrException> fetchProducts() async {
     final queryParameters = {
       "sortfield": "label",
       "sortorder": "ASC",
-      "sqlfilters": "(t.label:like:'$searchString')",
     };
     try {
       var response = await _client
@@ -532,8 +476,16 @@ class RemoteServices {
           )
           .timeout(_timeout);
 
+      String jsonString = response.body;
+      List<dynamic> jsonList = json.decode(jsonString);
+
+      List<ProductModel> products = jsonList
+          .map((jsonItem) =>
+              ProductModel.fromJson(jsonItem as Map<String, dynamic>))
+          .toList();
+
       return DataOrException(
-        data: productFromMap(response.body),
+        data: products,
         statusCode: response.statusCode,
       );
     } catch (e) {

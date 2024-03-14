@@ -101,7 +101,7 @@ class EditcustomerController extends GetxController {
     return groups;
   }
 
-  Future<List<GroupModel>> refreshGroups() async {
+  refreshGroups() async {
     var box = await Hive.openBox<GroupModel>('groups');
     await RemoteServices.fetchGroups().then((value) async {
       if (!value.hasError) {
@@ -110,8 +110,6 @@ class EditcustomerController extends GetxController {
         }
       }
     });
-
-    return groups;
   }
 
   void validateAndSave() async {

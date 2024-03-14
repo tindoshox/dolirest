@@ -1,6 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/dependency_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
@@ -24,10 +25,13 @@ void main() async {
   Hive.registerAdapter(ThirdPartyModelAdapter());
   Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
   Hive.registerAdapter<GroupModel>(GroupModelAdapter());
+  Hive.registerAdapter<ProductModel>(ProductModelAdapter());
 
   await Hive.openBox<InvoiceModel>('invoices');
   await Hive.openBox<ThirdPartyModel>('customers');
   await Hive.openBox<List>('payments');
+  await Hive.openBox<ProductModel>('products');
+  await Hive.openBox<GroupModel>('groups');
 
   await GetStorage.init();
   DependencyInjection.init();

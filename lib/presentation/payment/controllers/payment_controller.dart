@@ -7,7 +7,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -51,6 +50,7 @@ class PaymentController extends GetxController {
     dueDateController.dispose();
     receiptController.dispose();
     amountController.dispose();
+    invoiceController.dispose();
     super.onClose();
   }
 
@@ -137,67 +137,38 @@ class PaymentController extends GetxController {
 
       /// Processes the payment using the given payment data.
       await _processPayment(body);
-      DialogHelper.hideLoading();
     }
   }
 
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
-    String paymentId = '';
-    await _addPayment(body).then((value) async {
-      paymentId = value;
-      if (paymentId.isNotEmpty) {
-        await _updateDueDate(invoice.value.id!);
-      }
-    });
-
-    /// Validates the form and saves the payment data if the form is valid.
-
-    if (paymentId.isNotEmpty) {
-      var invoiceId = invoice.value.id;
-      var customerId = invoice.value.socid;
-      var customerName = customer.value.name;
-      await refreshPayments(invoiceId);
-      await refreshInvoice(invoiceId);
-      paymentFormKey.currentState?.reset();
-
-      if (fromHomeScreen) {
-        Get.snackbar('Payment', '${amount.value} for $customerName received.',
-            icon: const Icon(Icons.money_sharp),
-            shouldIconPulse: true,
-            mainButton: TextButton(
-                style: const ButtonStyle(),
-                onPressed: () {
-                  Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
-                    'invoiceId': invoiceId,
-                    'customerId': customerId
-                  });
-                },
-                child: const Text('Go to invoice')),
-            backgroundColor: const Color.fromARGB(255, 186, 255, 97),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP);
-        clearInvoice();
-      } else {
-        Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
-          'invoiceId': invoiceId,
-          'customerId': customerId,
-        });
-        SnackBarHelper.successSnackbar(message: 'Payment succesful');
-      }
-    } else {
-      SnackBarHelper.errorSnackbar(message: 'Payment not saved');
-    }
-  }
-
-  Future<String> _addPayment(String body) async {
-    String paymentId = '';
-    await RemoteServices.addpayment(body).then((value) {
+    await RemoteServices.addpayment(body).then((value) async {
       if (!value.hasError) {
-        paymentId = value.data;
+        await _updateDueDate(invid);
+        await refreshPayments(invid);
+        await refreshInvoice(invid);
+
+        if (fromHomeScreen) {
+          DialogHelper.hideLoading();
+          clearInvoice();
+          Get.snackbar(
+              'Payment', '${amount.value} for ${customer.value.name} received.',
+              icon: const Icon(Icons.money_sharp),
+              shouldIconPulse: true,
+              backgroundColor: const Color.fromARGB(255, 186, 255, 97),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP);
+          paymentFormKey.currentState?.reset();
+        } else {
+          DialogHelper.hideLoading();
+          Get.back();
+          SnackBarHelper.successSnackbar(message: 'Payment succesful');
+        }
+      } else {
+        DialogHelper.hideLoading();
+        SnackBarHelper.errorSnackbar(message: 'Payment not saved');
       }
     });
-    return paymentId;
   }
 
   Future _updateDueDate(String invoiceId) async {
@@ -223,7 +194,9 @@ class PaymentController extends GetxController {
   refreshInvoice(invoiceId) async {
     var box = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
-      box.put(invoiceId, value.data);
+      if (!value.hasError) {
+        box.put(invoiceId, value.data);
+      }
     });
   }
 

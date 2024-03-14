@@ -48,7 +48,7 @@ class CustomerdetailController extends GetxController
   Future _refreshInvoiceData() async {
     var box = await Hive.openBox<InvoiceModel>('invoices');
 
-    await RemoteServices.fetchInvoicesByCustomerId(customerId)
+    await RemoteServices.fetchInvoiceList(customerId: customerId)
         .then((value) async {
       if (!value.hasError) {
         for (var invoice in value.data) {

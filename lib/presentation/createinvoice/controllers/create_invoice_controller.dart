@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/products_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -31,7 +31,7 @@ class CreateinvoiceController extends GetxController {
   final priceController = TextEditingController();
   final customerController = TextEditingController();
 
-  var selectedProduct = Product().obs;
+  var selectedProduct = ProductModel().obs;
   var stockType = '1'.obs;
 
   var invoiceDate = DateTime.now().obs;
@@ -47,7 +47,13 @@ class CreateinvoiceController extends GetxController {
   }
 
   @override
-  void onReady() {
+  void onReady() async {
+    var box = await Hive.openBox<ProductModel>('products');
+    var list = box.toMap().values.toList();
+
+    if (list.length < 50) {
+      await refreshProducts();
+    }
     _fetchData();
     super.onReady();
   }
@@ -74,16 +80,15 @@ class CreateinvoiceController extends GetxController {
     }
   }
 
-  Future<List<Product>> fetchProducts(searchString) async {
-    List<Product> products = [];
-
-    var response = await RemoteServices.fetchProducts('%$searchString%');
-
-    if (!response.hasError) {
-      products = response.data;
-    }
-
-    return products;
+  refreshProducts() async {
+    var box = await Hive.openBox<ProductModel>('products');
+    await RemoteServices.fetchProducts().then((value) async {
+      if (!value.hasError) {
+        for (ProductModel product in value.data) {
+          box.put(product.id, product);
+        }
+      }
+    });
   }
 
   Future fetchCustomerById(String customerId) async {
@@ -198,16 +203,19 @@ class CreateinvoiceController extends GetxController {
           message: value.errorMessage,
         );
       } else {
-        await _getNewInvoice(invoiceId);
-        Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
-          'invoiceId': invoiceId,
-          'customerId': customer.value.id,
+        await _getNewInvoice(invoiceId).then((value) {
+          DialogHelper.hideLoading();
+
+          Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
+            'invoiceId': invoiceId,
+            'customerId': customer.value.id,
+          });
         });
       }
     });
   }
 
-  _getNewInvoice(invoiceId) async {
+  Future _getNewInvoice(invoiceId) async {
     var box = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
