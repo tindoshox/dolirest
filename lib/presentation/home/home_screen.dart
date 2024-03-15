@@ -1,6 +1,3 @@
-// ignore_for_file: use_super_parameters
-
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -68,19 +65,31 @@ class HomeScreen extends GetView<HomeController> {
             child: Center(
               child: Column(
                 children: [
-                  ListTile(
-                    title: Obx(() => Text(
-                          controller.baseUrl.value.isEmpty
-                              ? ''
-                              : 'DATABASE: ${subString(controller.baseUrl.value).toUpperCase()}',
+                  Obx(() => ListTile(
+                        title: Text(
+                          'DATABASE: ${subString(controller.baseUrl.value).toUpperCase()}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
-                        )),
-                    subtitle: Obx(() => Text(
-                        controller.isLoading.value
-                            ? ''
-                            : 'USER: ${controller.currentUser.value.lastname ?? controller.currentUser.value.login}',
-                        style: const TextStyle(fontWeight: FontWeight.bold))),
-                  ),
+                        ),
+                        subtitle: Text(
+                            'USER: ${controller.currentUser.value.toUpperCase()}',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                  Obx(() => ListTile(
+                        title: Text(
+                          controller.connected.value
+                              ? ''
+                              : 'Network Disconnected',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.amber),
+                        ),
+                        subtitle: Text(
+                          controller.connected.value
+                              ? ''
+                              : 'Data capture is disabled',
+                          style: const TextStyle(color: Colors.amber),
+                        ),
+                      )),
                   const SizedBox(
                     height: 110,
                   ),
@@ -117,8 +126,7 @@ class HomeScreen extends GetView<HomeController> {
                       icon: Icons.list_alt),
                   HomeScreenTile(
                       onTap: () {
-                        bool connected = getBox.read('connected');
-                        if (connected) {
+                        if (controller.connected.value) {
                           Get.toNamed(Routes.EDITCUSTOMER,
                               arguments: {'customerId': ''});
                         }
@@ -127,8 +135,7 @@ class HomeScreen extends GetView<HomeController> {
                       icon: Icons.person_add_alt_outlined),
                   HomeScreenTile(
                       onTap: () {
-                        bool connected = getBox.read('connected');
-                        if (connected) {
+                        if (controller.connected.value) {
                           Get.toNamed(Routes.PAYMENT, arguments: {
                             'fromhome': true,
                             'invid': '',
@@ -140,8 +147,7 @@ class HomeScreen extends GetView<HomeController> {
                       icon: Icons.currency_exchange),
                   HomeScreenTile(
                       onTap: () {
-                        bool connected = getBox.read('connected');
-                        if (connected) {
+                        if (controller.connected.value) {
                           Get.toNamed(Routes.CREATEINVOICE,
                               arguments: {'fromhome': true});
                         }
@@ -150,8 +156,7 @@ class HomeScreen extends GetView<HomeController> {
                       icon: Icons.inventory_sharp),
                   HomeScreenTile(
                       onTap: () {
-                        bool connected = getBox.read('connected');
-                        if (connected) {
+                        if (controller.connected.value) {
                           Get.toNamed(Routes.REPORTS);
                         }
                       },

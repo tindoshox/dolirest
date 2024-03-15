@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
@@ -22,6 +23,7 @@ class CreateinvoiceController extends GetxController {
   var customer = ThirdPartyModel().obs;
 
   final createInvoiceKey = GlobalKey<FormState>();
+  final dropdownKey = GlobalKey<DropdownSearchState>();
 
   final invoiceDateController = TextEditingController();
   final dueDateController = TextEditingController();
@@ -215,6 +217,7 @@ class CreateinvoiceController extends GetxController {
     });
   }
 
+//Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
     var box = await Hive.openBox<InvoiceModel>('invoices');
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {

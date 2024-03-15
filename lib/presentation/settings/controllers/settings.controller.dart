@@ -41,12 +41,13 @@ class SettingsController extends GetxController {
       DialogHelper.showLoading('Verifying Server Info...');
 
       await RemoteServices.fetchUserInfo().then((value) {
+        DialogHelper.hideLoading();
         if (!value.hasError) {
-          DialogHelper.hideLoading();
+          getBox.write('user', value.data.login.toString());
           Get.offAndToNamed(Routes.HOME);
         } else {
           _clearStorage();
-          DialogHelper.hideLoading();
+
           SnackBarHelper.errorSnackbar(message: value.errorMessage);
         }
       });
@@ -63,6 +64,7 @@ class SettingsController extends GetxController {
   void _clearStorage() {
     getBox.write('url', "");
     getBox.write('apikey', "");
+    getBox.write('user', "");
   }
 
   void getClipboardText() async {

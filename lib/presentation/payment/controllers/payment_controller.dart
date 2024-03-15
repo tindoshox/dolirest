@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -23,6 +24,7 @@ class PaymentController extends GetxController {
   final String socid = Get.arguments['socid'];
 
   final paymentFormKey = GlobalKey<FormState>();
+  final dropdownKey = GlobalKey<DropdownSearchState>();
 
   var payDate = DateTime.now().obs;
   var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
@@ -150,7 +152,7 @@ class PaymentController extends GetxController {
 
         if (fromHomeScreen) {
           DialogHelper.hideLoading();
-          clearInvoice();
+
           Get.snackbar(
               'Payment', '${amount.value} for ${customer.value.name} received.',
               icon: const Icon(Icons.money_sharp),
@@ -159,6 +161,9 @@ class PaymentController extends GetxController {
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP);
           paymentFormKey.currentState?.reset();
+          dropdownKey.currentState?.clear();
+
+          clearInvoice();
         } else {
           DialogHelper.hideLoading();
           Get.back();

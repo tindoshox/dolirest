@@ -57,6 +57,7 @@ class PaymentScreen extends GetView<PaymentController> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: DropdownSearch<InvoiceModel>(
+                            key: controller.dropdownKey,
                             compareFn: (item1, item2) => item1 == item2,
                             clearButtonProps:
                                 const ClearButtonProps(isVisible: true),
@@ -84,8 +85,7 @@ class PaymentScreen extends GetView<PaymentController> {
                               ),
                             ),
                             popupProps: PopupProps.modalBottomSheet(
-                                searchFieldProps: TextFieldProps(
-                                    controller: controller.invoiceController,
+                                searchFieldProps: const TextFieldProps(
                                     textCapitalization:
                                         TextCapitalization.characters),
                                 modalBottomSheetProps: ModalBottomSheetProps(
@@ -160,7 +160,7 @@ class PaymentScreen extends GetView<PaymentController> {
                         ),
                       /*---*/
                       /*---*/
-                      /*--Paymet Date--*/
+                      /*--Payment Date--*/
                       Obx(() => CustomFormField(
                             name: 'pay_date',
                             hintText:
@@ -224,7 +224,7 @@ class PaymentScreen extends GetView<PaymentController> {
                           }
                           if (GetUtils.isGreaterThan(int.parse(amount),
                               int.parse(invoice.value.remaintopay!))) {
-                            return 'Amount cannot be greater than balnace';
+                            return 'Amount cannot be greater than balance';
                           }
                           return null;
                         },
@@ -251,7 +251,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                 buttonText: 'Cancel',
                                 buttonColor: Colors.red,
                                 onTap: () {
-                                  Get.back();
+                                 Get.back();
                                 }),
                           ],
                         ),
