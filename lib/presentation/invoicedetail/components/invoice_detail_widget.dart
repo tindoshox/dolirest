@@ -59,7 +59,7 @@ class InvoiceDetailWidget extends StatelessWidget {
       ListTile(
         isThreeLine: true,
         title: Text(
-          '${customer.address} ${customer.town}',
+          '${customer.town}: ${customer.address}',
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Column(

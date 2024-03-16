@@ -39,7 +39,7 @@ class PaymentScreen extends GetView<PaymentController> {
                       children: [
                         Text(controller.customer.value.ref == null
                             ? ''
-                            : '${customer.value.town} ${customer.value.address}'),
+                            : '${customer.value.town}: ${customer.value.address}'),
                         Text(controller.customer.value.ref == null
                             ? ''
                             : 'Balance Due: ${invoice.value.remaintopay ?? '0'}'),
@@ -251,7 +251,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                 buttonText: 'Cancel',
                                 buttonColor: Colors.red,
                                 onTap: () {
-                                 Get.back();
+                                  Get.back();
                                 }),
                           ],
                         ),

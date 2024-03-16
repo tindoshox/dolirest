@@ -26,13 +26,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                   isThreeLine: true,
                   title: Text(
                       controller.customer.value.name ?? 'No Customer Selected'),
-                  subtitle: Row(
-                    children: [
-                      Text(controller.customer.value.town ?? ''),
-                      const Text(' '),
-                      Text(controller.customer.value.address ?? ''),
-                    ],
-                  ),
+                  subtitle: Text(
+                      '${controller.customer.value.town}: ${controller.customer.value.address}'),
                 )),
           ),
           Expanded(
@@ -88,7 +83,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                           fontWeight: FontWeight.bold),
                                     ),
                                     subtitle: Text(
-                                        '${customer.address} ${customer.town}'
+                                        '${customer.town}: ${customer.address}'
                                             .trim()),
                                   );
                                 },
