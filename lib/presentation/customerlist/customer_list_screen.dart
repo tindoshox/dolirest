@@ -114,15 +114,21 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                                       Icons.person_2_sharp,
                                       size: 40,
                                     ),
-                                    title: Text(
-                                      customers[index].name!,
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
+                                    title: Flexible(
+                                      child: Text(
+                                        customers[index].name!,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    subtitle: Text(
-                                        '${customer.address} ${customer.town}'
-                                            .trim()),
+                                    subtitle: Flexible(
+                                      child: Text(
+                                        '${customer.address} ${customer.town}',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ),
                                 );
                               } else {

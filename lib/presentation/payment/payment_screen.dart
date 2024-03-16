@@ -1,6 +1,8 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
@@ -30,19 +32,32 @@ class PaymentScreen extends GetView<PaymentController> {
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(customer.value.name ?? 'No Invoice Selected'),
+                        Flexible(
+                          child: Text(
+                            customer.value.name ?? 'No Invoice Selected',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         Text(invoice.value.ref ?? ''),
                       ],
                     ),
                     subtitle: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(controller.customer.value.ref == null
-                            ? ''
-                            : '${customer.value.town}: ${customer.value.address}'),
-                        Text(controller.customer.value.ref == null
-                            ? ''
-                            : 'Balance Due: ${invoice.value.remaintopay ?? '0'}'),
+                        Flexible(
+                          child: Text(
+                            controller.customer.value.ref == null
+                                ? ''
+                                : '${customer.value.town}: ${customer.value.address}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          controller.customer.value.ref == null
+                              ? ''
+                              : 'Balance Due: ${invoice.value.remaintopay ?? '0'}',
+                          textAlign: TextAlign.start,
+                        ),
                       ],
                     ),
                   )),

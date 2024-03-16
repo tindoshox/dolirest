@@ -62,10 +62,11 @@ class HomeController extends GetxController {
   Future _loadPaymentData() async {
     var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
     var paymentBox = await Hive.openBox<List>('payments');
-    var invoices = invoiceBox.toMap().values.toList();
+    var invoices =
+        invoiceBox.toMap().values.toList().where((i) => i.remaintopay != "0");
     var payments = paymentBox.toMap().values.toList();
 
-    if (invoices.length > 200 && payments.length < 200) {
+    if (payments.length < invoices.length) {
       for (var invoice in invoices) {
         await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
           if (!value.hasError) {
