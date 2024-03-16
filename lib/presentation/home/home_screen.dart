@@ -12,9 +12,6 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      persistentFooterAlignment: AlignmentDirectional.center,
-      persistentFooterButtons: const [],
-      //
       appBar: AppBar(
         title: const Text("Dashboard"),
         centerTitle: true,

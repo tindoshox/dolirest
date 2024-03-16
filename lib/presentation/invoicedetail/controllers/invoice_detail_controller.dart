@@ -58,9 +58,7 @@ class InvoiceDetailController extends GetxController
 
   Future _fetchData() async {
     isLoading(true);
-    // await _fetchInvoice();
     await _fetchPayments();
-
     await _fetchCustomer();
 
     isLoading(false);
@@ -82,7 +80,6 @@ class InvoiceDetailController extends GetxController
       // If storage has empty list but sumpayed is not null fetch from server
       await _refreshPaymentData();
     }
-    //If Storage is valid
   }
 
   Future _refreshPaymentData() async {
