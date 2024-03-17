@@ -74,12 +74,16 @@ class CustomerInfoRow extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
         onTap: onTap,
-        title: Flexible(
-            child: Text(
-          title.trim(),
-          style: style,
-          overflow: TextOverflow.ellipsis,
-        )),
+        title: Row(
+          children: [
+            Flexible(
+                child: Text(
+              title.trim(),
+              style: style,
+              overflow: TextOverflow.ellipsis,
+            )),
+          ],
+        ),
         subtitle: subtitle,
         leading: leading,
       ),

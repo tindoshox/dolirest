@@ -47,12 +47,10 @@ class InvoiceListTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                  child: Flexible(
-                      child: Text(
-                    invoice.nom!,
-                    overflow: TextOverflow.ellipsis,
-                  )),
-                ),
+                    child: Text(
+                  invoice.nom!,
+                  overflow: TextOverflow.ellipsis,
+                )),
                 Text(
                   intToDateString(invoice.dateLimReglement!),
                   style: overDueStyle(invoice.dateLimReglement!),

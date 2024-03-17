@@ -114,20 +114,28 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                                       Icons.person_2_sharp,
                                       size: 40,
                                     ),
-                                    title: Flexible(
-                                      child: Text(
-                                        customers[index].name!,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    title: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            customers[index].name!,
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    subtitle: Flexible(
-                                      child: Text(
-                                        '${customer.address} ${customer.town}',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    subtitle: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            '${customer.address} ${customer.town}',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
