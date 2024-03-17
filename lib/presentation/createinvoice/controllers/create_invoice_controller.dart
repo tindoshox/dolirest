@@ -82,6 +82,10 @@ class CreateinvoiceController extends GetxController {
     }
   }
 
+  void clearCustomer() {
+    customer(ThirdPartyModel());
+  }
+
   refreshProducts() async {
     var box = await Hive.openBox<ProductModel>('products');
     await RemoteServices.fetchProducts().then((value) async {

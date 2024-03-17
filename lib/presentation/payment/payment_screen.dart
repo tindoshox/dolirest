@@ -28,7 +28,6 @@ class PaymentScreen extends GetView<PaymentController> {
           children: [
             Card(
               child: Obx(() => ListTile(
-                    isThreeLine: true,
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -104,7 +103,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                     textCapitalization:
                                         TextCapitalization.characters),
                                 modalBottomSheetProps: ModalBottomSheetProps(
-                                    shape: const RoundedRectangleBorder(),
+                                    shape: const UnderlineInputBorder(),
                                     constraints:
                                         const BoxConstraints(minHeight: 600),
                                     backgroundColor: Theme.of(context)

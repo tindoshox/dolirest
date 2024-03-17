@@ -23,11 +23,11 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         children: [
           Card(
             child: Obx(() => ListTile(
-                  isThreeLine: true,
                   title: Text(
                       controller.customer.value.name ?? 'No Customer Selected'),
-                  subtitle: Text(
-                      '${controller.customer.value.town}: ${controller.customer.value.address}'),
+                  subtitle: Text(controller.customer.value.town == null
+                      ? ''
+                      : '${controller.customer.value.town}: ${controller.customer.value.address}'),
                 )),
           ),
           Expanded(
@@ -41,8 +41,14 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: DropdownSearch<ThirdPartyModel>(
+                            clearButtonProps:
+                                const ClearButtonProps(isVisible: true),
                             onChanged: (customer) {
-                              controller.fetchCustomerById(customer!.id!);
+                              if (customer != null) {
+                                controller.fetchCustomerById(customer.id!);
+                              } else {
+                                controller.clearCustomer();
+                              }
                             },
                             validator: (value) =>
                                 value == null ? 'Customer is required' : null,
