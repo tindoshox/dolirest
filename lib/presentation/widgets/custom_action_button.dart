@@ -27,7 +27,7 @@ class CustomActionButton extends StatelessWidget {
     this.buttonColor,
     this.onTap,
     this.maximumSize = const Size(150, 50),
-    this.minimumSize = const Size(150, 50),
+    this.minimumSize = const Size(150, 40),
   });
 
   /// The controller for the button.
@@ -50,21 +50,20 @@ class CustomActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
+    return ElevatedButton(
       onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: buttonColor,
-        minimumSize: minimumSize,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5.0),
+        ),
         maximumSize: maximumSize,
-        shape: const StadiumBorder(),
+        minimumSize: minimumSize,
         side: BorderSide(
-          width: 2,
+          width: 1,
           color: buttonColor ?? Theme.of(context).colorScheme.onBackground,
         ),
       ),
-      child: Text(
-        buttonText,
-      ),
+      child: Text(buttonText),
     );
   }
 }

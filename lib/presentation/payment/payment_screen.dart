@@ -1,8 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
@@ -18,8 +16,6 @@ class PaymentScreen extends GetView<PaymentController> {
     var customer = controller.customer;
 
     return Scaffold(
-      persistentFooterAlignment: AlignmentDirectional.center,
-      persistentFooterButtons: const [],
       appBar: AppBar(
         title: const Text('Record Payment'),
       ),
@@ -258,7 +254,30 @@ class PaymentScreen extends GetView<PaymentController> {
                                 buttonText: 'Save',
                                 onTap: () {
                                   FocusManager.instance.primaryFocus?.unfocus();
-                                  controller.validateAndSave();
+                                  //controller.validateAndSave();
+                                  if (controller.paymentFormKey.currentState!
+                                      .validate()) {
+                                    Get.defaultDialog(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 8),
+                                      title: 'Record Payment',
+                                      middleText:
+                                          'Do you confirm payment of R${controller.amount} for ${customer.value.name}?',
+                                      barrierDismissible: false,
+                                      confirm: DialogActionButton(
+                                          onPressed: () {
+                                            Get.back();
+                                            controller.validateAndSave();
+                                          },
+                                          buttonText: 'Yes'),
+                                      cancel: DialogActionButton(
+                                        buttonColor: Colors.red,
+                                        buttonText: 'No',
+                                        onPressed: () => Get.back(),
+                                      ),
+                                    );
+                                  }
                                 }),
                             CustomActionButton(
                                 controller: controller,
@@ -278,6 +297,32 @@ class PaymentScreen extends GetView<PaymentController> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class DialogActionButton extends StatelessWidget {
+  const DialogActionButton(
+      {super.key, this.onPressed, required this.buttonText, this.buttonColor});
+  final void Function()? onPressed;
+  final String buttonText;
+  final Color? buttonColor;
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        maximumSize: const Size(100, 40),
+        minimumSize: const Size(100, 40),
+        side: BorderSide(
+          width: 1,
+          color: buttonColor ?? Theme.of(context).colorScheme.onBackground,
+        ),
+      ),
+      child: Text(buttonText),
     );
   }
 }
