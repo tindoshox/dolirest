@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -50,7 +51,7 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    var box = await Hive.openBox<ProductModel>('products');
+    var box = await Hive.openBox<ProductModel>(BoxName.products.name);
     var list = box.toMap().values.toList();
 
     if (list.length < 50) {
@@ -87,7 +88,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   refreshProducts() async {
-    var box = await Hive.openBox<ProductModel>('products');
+    var box = await Hive.openBox<ProductModel>(BoxName.products.name);
     await RemoteServices.fetchProducts().then((value) async {
       if (!value.hasError) {
         for (ProductModel product in value.data) {
@@ -98,7 +99,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   Future fetchCustomerById(String customerId) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     customer.value = box.get(customerId)!;
   }
 
@@ -223,7 +224,7 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
         box.put(invoiceId, value.data);
@@ -241,7 +242,7 @@ class CreateinvoiceController extends GetxController {
   Future searchCustomer({String searchString = ""}) async {
     List<ThirdPartyModel> customers = [];
 
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
 
     if (searchString == "") {
       customers = box.toMap().values.toList();

@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
@@ -55,13 +55,15 @@ class CustomerDetailScreen extends GetView<CustomerdetailController> {
                 controller: controller.tabController,
                 children: [
                   ValueListenableBuilder<Box>(
-                      valueListenable: Hive.box<ThirdPartyModel>('customers')
-                          .listenable(keys: [controller.customerId]),
+                      valueListenable:
+                          Hive.box<ThirdPartyModel>(BoxName.customers.name)
+                              .listenable(keys: [controller.customerId]),
                       builder: (context, customers, child) => CustomerInfo(
                           customer: customers.get(controller.customerId))),
                   ValueListenableBuilder(
-                      valueListenable: Hive.box<InvoiceModel>('invoices')
-                          .listenable(keys: [controller.customerId]),
+                      valueListenable:
+                          Hive.box<InvoiceModel>(BoxName.invoices.name)
+                              .listenable(keys: [controller.customerId]),
                       builder: (context, value, child) {
                         var invoices = value
                             .toMap()

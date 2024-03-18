@@ -4,7 +4,7 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/dependency_injection.dart';
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,11 +27,11 @@ void main() async {
   Hive.registerAdapter<GroupModel>(GroupModelAdapter());
   Hive.registerAdapter<ProductModel>(ProductModelAdapter());
 
-  await Hive.openBox<InvoiceModel>('invoices');
-  await Hive.openBox<ThirdPartyModel>('customers');
-  await Hive.openBox<List>('payments');
-  await Hive.openBox<ProductModel>('products');
-  await Hive.openBox<GroupModel>('groups');
+  await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
+  await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+  await Hive.openBox<List>(BoxName.payments.name);
+  await Hive.openBox<ProductModel>(BoxName.products.name);
+  await Hive.openBox<GroupModel>(BoxName.groups.name);
   await Hive.openBox('settings');
   await GetStorage.init();
 

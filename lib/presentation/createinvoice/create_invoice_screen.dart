@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
@@ -256,7 +257,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                                     showSearchBox: true),
                                 asyncItems: (String searchString) async {
                                   var box = await Hive.openBox<ProductModel>(
-                                      'products');
+                                      BoxName.products.name);
                                   var list = box.toMap().values.toList();
                                   list.sort((a, b) =>
                                       a.description!.compareTo(b.description!));

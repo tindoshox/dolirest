@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,7 +35,7 @@ class CustomerlistController extends GetxController {
     await RemoteServices.fetchThirdPartyList().then((value) async {
       isLoading(false);
       if (!value.hasError) {
-        var box = await Hive.openBox<ThirdPartyModel>('customers');
+        var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
         for (ThirdPartyModel customer in value.data) {
           box.put(customer.id, customer);
         }

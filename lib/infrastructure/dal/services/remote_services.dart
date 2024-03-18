@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';

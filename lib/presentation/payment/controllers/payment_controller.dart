@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -70,12 +71,12 @@ class PaymentController extends GetxController {
   }
 
   Future _fetchInvoiceById(String invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     invoice.value = box.get(invoiceId)!;
   }
 
   Future _fetchCustomerById(String customerId) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     customer.value = box.get(customerId)!;
   }
 
@@ -187,7 +188,7 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    var box = await Hive.openBox<List>('payments');
+    var box = await Hive.openBox<List>(BoxName.payments.name);
 
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
@@ -197,7 +198,7 @@ class PaymentController extends GetxController {
   }
 
   refreshInvoice(invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
       if (!value.hasError) {
         box.put(invoiceId, value.data);
@@ -207,7 +208,7 @@ class PaymentController extends GetxController {
 
   Future fetchInvoices({String searchString = ""}) async {
     List<InvoiceModel> invoices = List.empty();
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
 
     if (searchString.isEmpty) {
       invoices = box

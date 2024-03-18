@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -35,7 +36,7 @@ class CustomerdetailController extends GetxController
     isLoading(true);
 
     //Fetch invoice data
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     //Invoice data is fetched from storage
     if (box.get(customerId) == null) {
       await _refreshInvoiceData();
@@ -46,7 +47,7 @@ class CustomerdetailController extends GetxController
 
   // Fetch invoice data from server
   Future _refreshInvoiceData() async {
-    var box = await Hive.openBox<InvoiceModel>('invoices');
+    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
 
     await RemoteServices.fetchInvoiceList(customerId: customerId)
         .then((value) async {

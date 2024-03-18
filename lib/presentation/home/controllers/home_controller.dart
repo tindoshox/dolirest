@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/get_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -43,10 +43,10 @@ class HomeController extends GetxController {
 
   _loadInitialData() async {
     DialogHelper.showLoading('Loading initial data');
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     var list = box.toMap().values.toList();
 
-    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     var invoices = invoiceBox.toMap().values.toList();
 
     if (list.isEmpty) {
@@ -60,8 +60,8 @@ class HomeController extends GetxController {
   }
 
   Future _loadPaymentData() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
-    var paymentBox = await Hive.openBox<List>('payments');
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
+    var paymentBox = await Hive.openBox<List>(BoxName.payments.name);
     var invoices =
         invoiceBox.toMap().values.toList().where((i) => i.remaintopay != "0");
     var payments = paymentBox.toMap().values.toList();
@@ -89,7 +89,7 @@ class HomeController extends GetxController {
   Future _getAllCustomers() async {
     await RemoteServices.fetchThirdPartyList().then((value) async {
       if (!value.hasError) {
-        var box = await Hive.openBox<ThirdPartyModel>('customers');
+        var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
         for (ThirdPartyModel customer in value.data) {
           box.put(customer.id, customer);
         }
@@ -100,7 +100,7 @@ class HomeController extends GetxController {
   Future _getAllInvoices() async {
     await RemoteServices.fetchInvoiceList().then((value) async {
       if (!value.hasError) {
-        var box = await Hive.openBox<InvoiceModel>('invoices');
+        var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
         for (var invoice in value.data) {
           box.put(invoice.id, invoice);
         }

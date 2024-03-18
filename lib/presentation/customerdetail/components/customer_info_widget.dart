@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -36,7 +37,8 @@ class CustomerInfo extends StatelessWidget {
         ),
     ];
     return ValueListenableBuilder(
-      valueListenable: Hive.box<ThirdPartyModel>('customers').listenable(),
+      valueListenable:
+          Hive.box<ThirdPartyModel>(BoxName.customers.name).listenable(),
       builder: (context, box, widget) {
         return ListView.separated(
             itemBuilder: (context, index) {

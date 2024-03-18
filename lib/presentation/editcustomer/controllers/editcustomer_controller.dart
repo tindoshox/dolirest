@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
@@ -59,7 +60,7 @@ class EditcustomerController extends GetxController {
   }
 
   getTownSuggestions() async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     List<ThirdPartyModel> customers = box.toMap().values.toList();
 
     towns =
@@ -70,7 +71,7 @@ class EditcustomerController extends GetxController {
   }
 
   getAddressSuggestions({String? town = ""}) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     List<ThirdPartyModel> customers = box.toMap().values.toList();
     if (town != null && town != "") {
       customers.removeWhere((element) => element.town != town);
@@ -151,7 +152,7 @@ class EditcustomerController extends GetxController {
   }
 
   _fetchNewCustomer(data) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     await RemoteServices.fetchThirdPartyById(data).then((value) {
       if (!value.hasError) {
         box.put(data, value.data);
@@ -160,7 +161,7 @@ class EditcustomerController extends GetxController {
   }
 
   Future _fetchCustomerById(String id) async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
 
     customerToEdit.value = box.get(id)!;
     nameController.text = customerToEdit.value.name!;
@@ -183,7 +184,7 @@ class EditcustomerController extends GetxController {
         message: 'Customer updated',
       );
 
-      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
       box.put(customerId, value.data);
 
       Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {

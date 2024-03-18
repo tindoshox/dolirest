@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -25,7 +26,7 @@ class PaymentsDataTable extends StatelessWidget {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ValueListenableBuilder(
-            valueListenable: Hive.box<List>('payments').listenable(),
+            valueListenable: Hive.box<List>(BoxName.payments.name).listenable(),
             builder: (context, value, child) {
               var payments =
                   value.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();

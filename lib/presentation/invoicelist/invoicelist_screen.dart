@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
@@ -77,7 +78,8 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                   child: Scrollbar(
                     child: ValueListenableBuilder(
                       valueListenable:
-                          Hive.box<InvoiceModel>('invoices').listenable(),
+                          Hive.box<InvoiceModel>(BoxName.invoices.name)
+                              .listenable(),
                       builder: (context, value, child) {
                         var list = value.values
                             .where((element) => element.remaintopay != "0")

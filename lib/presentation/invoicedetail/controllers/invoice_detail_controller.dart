@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
@@ -65,9 +66,9 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     var invoice = invoiceBox.get(invoiceId)!;
-    var box = await Hive.openBox<List>('payments');
+    var box = await Hive.openBox<List>(BoxName.payments.name);
     var list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
 
     var amounts = list.map((payment) => intAmounts(payment.amount)).toList();
@@ -83,7 +84,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    var box = await Hive.openBox<List>('payments');
+    var box = await Hive.openBox<List>(BoxName.payments.name);
 
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
@@ -97,7 +98,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchCustomer() async {
-    var box = await Hive.openBox<ThirdPartyModel>('customers');
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     if (box.get(customerId) == null) {
       await _refreshCustomerData()
           .then((value) => customer.value = box.get(customerId)!);
@@ -107,7 +108,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
         InvoiceModel newInvoice = value.data;
@@ -122,7 +123,7 @@ class InvoiceDetailController extends GetxController
 
   Future _refreshCustomerData() async {
     await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
-      var box = await Hive.openBox<ThirdPartyModel>('customers');
+      var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
       if (!value.hasError) {
         box.put(customerId, value.data);
         customer.value = box.get(customerId)!;
@@ -135,7 +136,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future generateDocument() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>('invoices');
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     var invoice = invoiceBox.get(invoiceId)!;
     permissionReady = await checkPermission(platform);
 

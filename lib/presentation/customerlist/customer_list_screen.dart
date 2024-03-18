@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,8 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                   child: Scrollbar(
                     child: ValueListenableBuilder(
                       valueListenable:
-                          Hive.box<ThirdPartyModel>('customers').listenable(),
+                          Hive.box<ThirdPartyModel>(BoxName.customers.name)
+                              .listenable(),
                       builder: (context, value, child) {
                         var sortedValues = value.values.toList()
                           ..sort((a, b) => a.name.compareTo(b.name));

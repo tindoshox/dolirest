@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ class InvoicelistController extends GetxController {
     await RemoteServices.fetchInvoiceList().then((value) async {
       isLoading(false);
       if (!value.hasError) {
-        var box = await Hive.openBox<InvoiceModel>('invoices');
+        var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
         for (var invoice in value.data) {
           box.put(invoice.id, invoice);
         }
