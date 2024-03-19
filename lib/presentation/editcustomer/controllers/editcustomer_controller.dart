@@ -74,7 +74,7 @@ class EditcustomerController extends GetxController {
     var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
     List<ThirdPartyModel> customers = box.toMap().values.toList();
     if (town != null && town != "") {
-      customers.removeWhere((element) => element.town != town);
+      customers.where((element) => element.town == town.trim());
     }
     addresses = customers
         .map((customer) => customer.address.toString())
@@ -83,6 +83,7 @@ class EditcustomerController extends GetxController {
     addresses.removeWhere((element) => element == "");
 
     addresses.sort((a, b) => a.compareTo(b));
+    debugPrint('$town $addresses');
     //return addresses;
   }
 

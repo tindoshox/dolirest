@@ -41,10 +41,14 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                     Autocomplete(
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         if (textEditingValue.text == '') {
-                          return const Iterable<String>.empty();
+                          return controller.towns;
                         }
                         return controller.towns.where((String town) =>
-                            town.contains(textEditingValue.text));
+                            town.startsWith(textEditingValue.text));
+                      },
+                      onSelected: (town) {
+                        controller.townController.text = town.trim();
+                        controller.getAddressSuggestions(town: town.trim());
                       },
                       fieldViewBuilder: (context, townController, focusNode,
                           onFieldSubmitted) {
@@ -54,8 +58,11 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                             controller.getAddressSuggestions(
                                 town: town!.trim());
                           },
-                          onChanged: (value) =>
-                              controller.townController.text = value!.trim(),
+                          onChanged: (town) {
+                            controller.getAddressSuggestions(
+                                town: town!.trim());
+                            controller.townController.text = town.trim();
+                          },
                           name: 'customer_city',
                           controller: controller.customerId == ''
                               ? townController
@@ -72,18 +79,21 @@ class EditcustomerScreen extends GetView<EditcustomerController> {
                     Autocomplete(
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         if (textEditingValue.text == '') {
-                          return const Iterable<String>.empty();
+                          return controller.addresses;
                         }
                         return controller.addresses.where((String address) {
                           return address.contains(textEditingValue.text);
                         });
                       },
+                      onSelected: (address) {
+                        controller.addressController.text = address.trim();
+                      },
                       fieldViewBuilder: (BuildContext context,
                           addressController, focusNode, onFieldSubmitted) {
                         return CustomFormField(
                           prefixIcon: const Icon(Icons.location_pin),
-                          onChanged: (value) =>
-                              controller.addressController.text = value!.trim(),
+                          onChanged: (address) => controller
+                              .addressController.text = address!.trim(),
                           name: 'customer_address',
                           controller: controller.customerId == ''
                               ? addressController
