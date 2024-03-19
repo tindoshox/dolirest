@@ -83,8 +83,6 @@ class EditcustomerController extends GetxController {
     addresses.removeWhere((element) => element == "");
 
     addresses.sort((a, b) => a.compareTo(b));
-    debugPrint('$town $addresses');
-    //return addresses;
   }
 
   Future getGroups({String search = ""}) async {

@@ -80,8 +80,8 @@ class ReportsController extends GetxController {
     } else {
       groups.value = list;
     }
-    fromDateController.text = dateTimeToString(DateTime.now());
-    toDateController.text = dateTimeToString(DateTime.now());
+    fromDateController.text = Utils.dateTimeToString(DateTime.now());
+    toDateController.text = Utils.dateTimeToString(DateTime.now());
     super.onInit();
   }
 
@@ -141,7 +141,7 @@ class ReportsController extends GetxController {
 
   /// Generates the report if the form is valid.
   Future _generateReport(String body) async {
-    permissionReady = await checkPermission(platform);
+    permissionReady = await Utils.checkPermission(platform);
     if (permissionReady) {
       DialogHelper.showLoading(
           'Fetching ${selectedReport.value.displayName} report...');
@@ -154,7 +154,7 @@ class ReportsController extends GetxController {
             SnackBarHelper.errorSnackbar(message: value.errorMessage);
           } else {
             //Creates file in storage
-            createFileFromString(
+            Utils.createFileFromString(
                     value.data.content, '${selectedReport.value.reportid}.pdf')
                 .then((value) {
               DialogHelper.hideLoading();

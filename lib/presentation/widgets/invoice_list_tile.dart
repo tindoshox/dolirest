@@ -52,8 +52,8 @@ class InvoiceListTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 )),
                 Text(
-                  intToDateString(invoice.dateLimReglement!),
-                  style: overDueStyle(invoice.dateLimReglement!),
+                  Utils.intToDayFirst(invoice.dateLimReglement!),
+                  style: Utils.overDueStyle(invoice.dateLimReglement!),
                 )
               ],
             ),

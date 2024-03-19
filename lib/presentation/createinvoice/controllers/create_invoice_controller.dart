@@ -43,8 +43,8 @@ class CreateinvoiceController extends GetxController {
 
   @override
   onInit() {
-    invoiceDateController.text = dateTimeToString(invoiceDate.value);
-    dueDateController.text = dateTimeToString(dueDate.value);
+    invoiceDateController.text = Utils.dateTimeToString(invoiceDate.value);
+    dueDateController.text = Utils.dateTimeToString(dueDate.value);
 
     super.onInit();
   }
@@ -168,10 +168,10 @@ class CreateinvoiceController extends GetxController {
     /// Generate main draft
     var invoice = InvoiceModel(
         socid: customer.value.id,
-        date: dateTimeToInt(invoiceDate.value),
+        date: Utils.dateTimeToInt(invoiceDate.value),
         refClient: refController.text,
         type: '0',
-        dateLimReglement: dateTimeToInt(dueDate.value),
+        dateLimReglement: Utils.dateTimeToInt(dueDate.value),
         condReglementCode: 'RECEP',
         modeReglementCode: 'LIQ',
         lines: [line]).toJson();

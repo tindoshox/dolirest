@@ -64,7 +64,7 @@ class HomeScreen extends GetView<HomeController> {
                 children: [
                   Obx(() => ListTile(
                         title: Text(
-                          'DATABASE: ${subString(controller.baseUrl.value).toUpperCase()}',
+                          'DATABASE: ${Utils.subString(controller.baseUrl.value).toUpperCase()}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(

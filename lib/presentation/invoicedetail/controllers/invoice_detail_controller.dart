@@ -71,9 +71,10 @@ class InvoiceDetailController extends GetxController
     var box = await Hive.openBox<List>(BoxName.payments.name);
     var list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
 
-    var amounts = list.map((payment) => intAmounts(payment.amount)).toList();
+    var amounts =
+        list.map((payment) => Utils.intAmounts(payment.amount)).toList();
     var total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
-    var sumpayed = intAmounts(invoice.sumpayed);
+    var sumpayed = Utils.intAmounts(invoice.sumpayed);
 
     // Fetch payment list from storage
 
@@ -138,7 +139,7 @@ class InvoiceDetailController extends GetxController
   Future generateDocument() async {
     var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     var invoice = invoiceBox.get(invoiceId)!;
-    permissionReady = await checkPermission(platform);
+    permissionReady = await Utils.checkPermission(platform);
 
     DialogHelper.showLoading('Downloading document...');
     var body = json.encode(BuildDocumentRequestModel(
@@ -150,7 +151,7 @@ class InvoiceDetailController extends GetxController
       try {
         await RemoteServices.buildDocument(body).then((value) async {
           if (!value.hasError) {
-            createFileFromString(value.data.content, '${invoice.ref}.pdf')
+            Utils.createFileFromString(value.data.content, '${invoice.ref}.pdf')
                 .then((value) {
               OpenFilex.open(value);
             });
@@ -181,7 +182,7 @@ class InvoiceDetailController extends GetxController
         newDueDate != selectedDate.value &&
         newDueDate.isAfter(DateTime.now())) {
       selectedDate.value = newDueDate;
-      _updateDueDate(dateTimeToInt(newDueDate));
+      _updateDueDate(Utils.dateTimeToInt(newDueDate));
     } else {
       Get.snackbar('Due Date', 'Not updated. New date must be in the future.',
           backgroundColor: Colors.grey[900],

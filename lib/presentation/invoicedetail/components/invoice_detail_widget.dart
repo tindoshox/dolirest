@@ -1,7 +1,9 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:flutter/widgets.dart';
 
 class InvoiceDetailWidget extends StatelessWidget {
   const InvoiceDetailWidget(
@@ -45,10 +47,10 @@ class InvoiceDetailWidget extends StatelessWidget {
         title: Text(
           invoice.remaintopay == '0'
               ? ''
-              : 'Due Date: ${intToDateString(invoice.dateLimReglement)}',
-          style: overDueStyle(invoice.dateLimReglement),
+              : 'Due Date: ${Utils.intToDayFirst(invoice.dateLimReglement)}',
+          style: Utils.overDueStyle(invoice.dateLimReglement),
         ),
-        subtitle: Text('Invoice Date ${intToDateString(invoice.date)}'),
+        subtitle: Text('Invoice Date ${Utils.intToDayFirst(invoice.date)}'),
         trailing: invoice.remaintopay == '0'
             ? null
             : IconButton(
@@ -70,14 +72,16 @@ class InvoiceDetailWidget extends StatelessWidget {
             ),
             if (customer.phone != null && customer.phone.toString() != '')
               InkWell(
-                  onTap: () => makePhoneCall(customer.phone.toString().trim()),
+                  onTap: () =>
+                      Utils.makePhoneCall(customer.phone.toString().trim()),
                   child: Text(customer.phone.toString())),
             const SizedBox(
               height: 20,
             ),
             if (customer.fax != null && customer.fax.toString() != '')
               InkWell(
-                  onTap: () => makePhoneCall(customer.fax.toString().trim()),
+                  onTap: () =>
+                      Utils.makePhoneCall(customer.fax.toString().trim()),
                   child: Text(customer.fax.toString())),
           ],
         ),
@@ -112,14 +116,14 @@ class InvoiceDetailWidget extends StatelessWidget {
                 children: [
                   Text(invoice.lines![0].productLabel ??
                       invoice.lines![0].description),
-                  Text(amounts(invoice.lines![0].totalTtc.toString()))
+                  Text(Utils.amounts(invoice.lines![0].totalTtc.toString()))
                 ],
               ),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-                '${invoice.lines![0].qty} x ${amounts(invoice.lines![0].totalTtc.toString())}'),
+                '${invoice.lines![0].qty} x ${Utils.amounts(invoice.lines![0].totalTtc.toString())}'),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -135,25 +139,52 @@ class InvoiceDetailWidget extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Total: ${amounts(invoice.totalTtc!)}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      'Paid: ${int.parse(amounts(invoice.sumpayed))}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      'Balance: ${invoice.remaintopay}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ],
+                const Expanded(
+                  flex: 7,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Total:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        'Paid:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        'Balance:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        Utils.amounts(invoice.totalTtc!),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        '${int.parse(Utils.amounts(invoice.sumpayed))}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        '${invoice.remaintopay}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

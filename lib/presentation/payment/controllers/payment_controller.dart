@@ -41,8 +41,8 @@ class PaymentController extends GetxController {
     if (!fromHomeScreen) {
       fetchData(socid, invid);
     }
-    payDateController.text = dateTimeToString(payDate.value);
-    dueDateController.text = dateTimeToString(dueDate.value);
+    payDateController.text = Utils.dateTimeToString(payDate.value);
+    dueDateController.text = Utils.dateTimeToString(dueDate.value);
 
     super.onInit();
   }
@@ -60,8 +60,8 @@ class PaymentController extends GetxController {
   void clearInvoice() {
     customer(ThirdPartyModel());
     invoice(InvoiceModel());
-    payDateController.text = dateTimeToString(payDate.value);
-    dueDateController.text = dateTimeToString(dueDate.value);
+    payDateController.text = Utils.dateTimeToString(payDate.value);
+    dueDateController.text = Utils.dateTimeToString(dueDate.value);
   }
 
   /// Fetches customer and invoice data based on the given customer and invoice IDs.
@@ -93,7 +93,7 @@ class PaymentController extends GetxController {
       payDate.value = selectedDate;
       payDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
       dueDate.value = selectedDate.add(const Duration(days: 30));
-      dueDateController.text = dateTimeToString(dueDate.value);
+      dueDateController.text = Utils.dateTimeToString(dueDate.value);
     }
   }
 
@@ -108,7 +108,7 @@ class PaymentController extends GetxController {
     /// If a date is selected, updates the due date value and displays the selected date in the text field.
     if (selectedDate != null) {
       dueDate.value = selectedDate;
-      dueDateController.text = dateTimeToString(selectedDate);
+      dueDateController.text = Utils.dateTimeToString(selectedDate);
     }
   }
 
@@ -126,7 +126,7 @@ class PaymentController extends GetxController {
             "multicurrency_amount": ""
           }
         },
-        "datepaye": dateTimeToInt(payDate.value),
+        "datepaye": Utils.dateTimeToInt(payDate.value),
         "paymentid": 4,
         "closepaidinvoices": "yes",
         "accountid": 1,
@@ -179,7 +179,8 @@ class PaymentController extends GetxController {
 
   Future _updateDueDate(String invoiceId) async {
     var update =
-        InvoiceModel(dateLimReglement: dateTimeToInt(dueDate.value)).toJson();
+        InvoiceModel(dateLimReglement: Utils.dateTimeToInt(dueDate.value))
+            .toJson();
     update.removeWhere((key, value) => value == null);
 
     String body = jsonEncode(update);

@@ -145,9 +145,9 @@ class PaymentScreen extends GetView<PaymentController> {
                                                 child: Text(invoice.nom!),
                                               ),
                                               Text(
-                                                intToDateString(
+                                                Utils.intToDayFirst(
                                                     invoice.dateLimReglement!),
-                                                style: overDueStyle(
+                                                style: Utils.overDueStyle(
                                                     invoice.dateLimReglement!),
                                               ),
                                             ],
@@ -173,8 +173,8 @@ class PaymentScreen extends GetView<PaymentController> {
                       /*--Payment Date--*/
                       Obx(() => CustomFormField(
                             name: 'pay_date',
-                            hintText:
-                                dateTimeToString(controller.payDate.value),
+                            hintText: Utils.dateTimeToString(
+                                controller.payDate.value),
                             prefixIcon: const Icon(Icons.date_range),
                             validator: (payDate) =>
                                 controller.payDate.value.isAfter(DateTime.now())
@@ -192,8 +192,8 @@ class PaymentScreen extends GetView<PaymentController> {
                       /// Next Pay Date
                       Obx(() => CustomFormField(
                             name: 'due_date',
-                            hintText:
-                                dateTimeToString(controller.payDate.value),
+                            hintText: Utils.dateTimeToString(
+                                controller.payDate.value),
                             prefixIcon: const Icon(Icons.date_range),
                             validator: (dueDate) => controller.dueDate.value
                                     .isBefore(controller.payDate.value

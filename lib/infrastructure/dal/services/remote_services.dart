@@ -31,13 +31,15 @@ class RemoteServices {
   };
 
   /// CustomerList
-  static Future<DataOrException> fetchThirdPartyList() async {
+  static Future<DataOrException> fetchThirdPartyList(
+      {String dateModified = '1970-01-01'}) async {
     final queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
       "mode": "1",
       "limit": "0",
       "page": "1",
+      "sqlfilters": "(t.tms:>:'$dateModified')",
     };
     try {
       var response = await _client
@@ -48,8 +50,8 @@ class RemoteServices {
           .timeout(_timeout);
 
       String jsonString = response.body;
-      List<dynamic> jsonList = json.decode(jsonString);
 
+      List<dynamic> jsonList = json.decode(jsonString);
       List<ThirdPartyModel> customers = jsonList
           .map((jsonItem) =>
               ThirdPartyModel.fromJson(jsonItem as Map<String, dynamic>))
@@ -118,14 +120,14 @@ class RemoteServices {
 
   /// invoiceList
   static Future<DataOrException> fetchInvoiceList(
-      {String customerId = ""}) async {
+      {String customerId = "", String dateModified = '1970-01-01'}) async {
     final queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
       "page": "1",
       "limit": "0",
       "thirdparty_ids": customerId,
-      "sqlfilters": "(t.type:=:0)"
+      "sqlfilters": "(t.type:=:0) and (t.tms:>:'$dateModified')"
     };
 
     try {

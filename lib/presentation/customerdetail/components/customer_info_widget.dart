@@ -23,14 +23,14 @@ class CustomerInfo extends StatelessWidget {
       ),
       if (customer.phone != null && customer.phone.toString().trim().isNotEmpty)
         CustomerInfoRow(
-          onTap: () => makePhoneCall(customer.phone.toString().trim()),
+          onTap: () => Utils.makePhoneCall(customer.phone.toString().trim()),
           title: customer.phone!,
           leading: const Icon(Icons.phone_android),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
       if (customer.fax != null && customer.fax.toString().trim().isNotEmpty)
         CustomerInfoRow(
-          onTap: () => makePhoneCall(customer.fax.toString().trim()),
+          onTap: () => Utils.makePhoneCall(customer.fax.toString().trim()),
           title: customer.fax,
           leading: const Icon(Icons.phone_android_outlined),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/utils.dart';
 
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
@@ -78,10 +79,12 @@ class HomeController extends GetxController {
   }
 
   Future _invoicesRefreshSchedule() async {
-    Timer.periodic(const Duration(minutes: 5), (Timer timer) async {
+    Timer.periodic(const Duration(minutes: 15), (Timer timer) async {
       if (getBox.read('connected')) {
-        await _getAllCustomers();
-        await _getAllInvoices();
+        //await _getAllCustomers();
+        //await _getAllInvoices();
+        await _getModifiedCustomers();
+        await _getModifiedInvoices();
       }
     });
   }
@@ -97,12 +100,57 @@ class HomeController extends GetxController {
     });
   }
 
+  Future _getModifiedCustomers() async {
+    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+    var list = box.toMap().values.toList();
+    list.sort((a, b) => a.dateModification.compareTo(b.dateModification));
+
+    int dateModified = list[list.length - 1].dateModification;
+    await RemoteServices.fetchThirdPartyList(
+            dateModified: Utils.intToYearFirst(dateModified))
+        .then((value) async {
+      if (!value.hasError) {
+        var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+        for (ThirdPartyModel customer in value.data) {
+          box.put(customer.id, customer);
+        }
+      }
+    });
+  }
+
   Future _getAllInvoices() async {
     await RemoteServices.fetchInvoiceList().then((value) async {
       if (!value.hasError) {
         var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
         for (var invoice in value.data) {
           box.put(invoice.id, invoice);
+        }
+      }
+    });
+  }
+
+  Future _getModifiedInvoices() async {
+    var paymentBox = await Hive.openBox<List>(BoxName.payments.name);
+    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
+    var invoices = invoiceBox
+        .toMap()
+        .values
+        .toList()
+        .where((i) => i.remaintopay != "0")
+        .toList();
+    invoices.sort((a, b) => a.dateModification.compareTo(b.dateModification));
+    int dateModified = invoices[invoices.length - 1].dateModification;
+    await RemoteServices.fetchInvoiceList(
+            dateModified: Utils.intToYearFirst(dateModified))
+        .then((value) async {
+      if (!value.hasError) {
+        for (var invoice in value.data) {
+          invoiceBox.put(invoice.id, invoice);
+          await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
+            if (!value.hasError) {
+              paymentBox.put(invoice.id, value.data);
+            }
+          });
         }
       }
     });
