@@ -103,8 +103,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                             itemBuilder: (context, index) {
                               if (index < invoices.length) {
                                 var invoice = invoices[index];
-                                return InvoiceListTile(
-                                    invoices: invoices, invoice: invoice);
+                                return InvoiceListTile(invoice: invoice);
                               } else {
                                 return const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 32.0),

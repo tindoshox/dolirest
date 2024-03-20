@@ -7,11 +7,9 @@ import 'package:get/get.dart';
 class InvoiceListTile extends StatelessWidget {
   const InvoiceListTile({
     super.key,
-    required this.invoices,
     required this.invoice,
   });
 
-  final List<InvoiceModel> invoices;
   final InvoiceModel invoice;
 
   @override

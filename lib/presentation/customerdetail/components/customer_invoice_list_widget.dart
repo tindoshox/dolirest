@@ -15,7 +15,7 @@ class InvoiceListWidget extends StatelessWidget {
     return ListView.builder(
         itemCount: invoices.length,
         itemBuilder: (context, index) {
-          return InvoiceListTile(invoices: invoices, invoice: invoices[index]);
+          return InvoiceListTile(invoice: invoices[index]);
         });
   }
 }

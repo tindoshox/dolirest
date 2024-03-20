@@ -1,9 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/utils/utils.dart';
-import 'package:flutter/widgets.dart';
 
 class InvoiceDetailWidget extends StatelessWidget {
   const InvoiceDetailWidget(
