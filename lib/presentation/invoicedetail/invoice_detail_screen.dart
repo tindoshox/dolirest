@@ -29,7 +29,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
                       ? null
                       : () {
-                          bool connected = getBox.read('connected');
+                          bool connected = Storage.settings.get('connected');
                           if (connected) {
                             Get.toNamed(
                               Routes.PAYMENT,
@@ -45,7 +45,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
             CustomActionButton(
                 buttonText: 'Download',
                 onTap: () {
-                  bool connected = getBox.read('connected');
+                  bool connected = Storage.settings.get('connected');
                   if (connected) {
                     controller.generateDocument();
                   }
@@ -74,7 +74,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                             .listenable(keys: [controller.invoiceId]),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
-                          bool connected = getBox.read('connected');
+                          bool connected = Storage.settings.get('connected');
                           if (connected) {
                             controller.setDueDate();
                           }

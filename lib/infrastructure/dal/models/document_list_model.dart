@@ -4,14 +4,14 @@
 
 import 'dart:convert';
 
-List<DocumenListModel> documenListModelFromJson(String str) =>
-    List<DocumenListModel>.from(
-        json.decode(str).map((x) => DocumenListModel.fromJson(x)));
+List<DocumentListModel> documenListModelFromJson(String str) =>
+    List<DocumentListModel>.from(
+        json.decode(str).map((x) => DocumentListModel.fromJson(x)));
 
-String documenListModelToJson(List<DocumenListModel> data) =>
+String documenListModelToJson(List<DocumentListModel> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-class DocumenListModel {
+class DocumentListModel {
   String name;
   String path;
   String level1Name;
@@ -42,7 +42,7 @@ class DocumenListModel {
   String ref;
   String share;
 
-  DocumenListModel({
+  DocumentListModel({
     required this.name,
     required this.path,
     required this.level1Name,
@@ -74,8 +74,8 @@ class DocumenListModel {
     required this.share,
   });
 
-  factory DocumenListModel.fromJson(Map<String, dynamic> json) =>
-      DocumenListModel(
+  factory DocumentListModel.fromJson(Map<String, dynamic> json) =>
+      DocumentListModel(
         name: json["name"],
         path: json["path"],
         level1Name: json["level1name"],

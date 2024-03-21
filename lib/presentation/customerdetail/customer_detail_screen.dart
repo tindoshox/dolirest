@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
@@ -11,77 +10,86 @@ import 'package:dolirest/presentation/customerdetail/components/customer_invoice
 import 'package:dolirest/presentation/customerdetail/controllers/customer_detail_controller.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class CustomerDetailScreen extends GetView<CustomerdetailController> {
+class CustomerDetailScreen extends GetView<CustomerDetailController> {
   const CustomerDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       persistentFooterAlignment: AlignmentDirectional.center,
-      persistentFooterButtons: [
-        CustomActionButton(
-            buttonText: 'Edit',
-            onTap: () {
-              bool connected = getBox.read('connected');
-              if (connected) {
-                Get.offAndToNamed(Routes.EDITCUSTOMER,
-                    arguments: {'customerId': controller.customerId});
-              }
-            }),
-        CustomActionButton(
-            buttonText: 'New Invoice',
-            onTap: () {
-              bool connected = getBox.read('connected');
-              if (connected) {
-                Get.offAndToNamed(Routes.CREATEINVOICE, arguments: {
-                  'customerId': controller.customerId,
-                  'fromhome': false
-                });
-              }
-            }),
-      ],
+      persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(
         title: const Text('Customer Details'),
         bottom: TabBar(
             controller: controller.tabController,
             tabs: controller.customerTabs),
       ),
-      body: Obx(
-        () => controller.isLoading.value
-            ? const LoadingIndicator(
-                message: Text('loading...'),
-              )
-            : TabBarView(
-                controller: controller.tabController,
-                children: [
-                  ValueListenableBuilder<Box>(
-                      valueListenable:
-                          Hive.box<ThirdPartyModel>(BoxName.customers.name)
-                              .listenable(keys: [controller.customerId]),
-                      builder: (context, customers, child) => CustomerInfo(
-                          customer: customers.get(controller.customerId))),
-                  ValueListenableBuilder(
-                      valueListenable:
-                          Hive.box<InvoiceModel>(BoxName.invoices.name)
-                              .listenable(keys: [controller.customerId]),
-                      builder: (context, value, child) {
-                        List<InvoiceModel> invoices = value
-                            .toMap()
-                            .values
-                            .toList()
-                            .where((inv) => inv.socid == controller.customerId)
-                            .toList();
-                        return invoices.isEmpty
-                            ? const ListTile(
-                                title: Text(
-                                'No invoices.',
-                                textAlign: TextAlign.center,
-                              ))
-                            : InvoiceListWidget(invoices: invoices);
-                      }),
-                ],
-              ),
-      ),
+      body: _buildBody(),
+    );
+  }
+
+  List<Widget> _buildFooterButtons() {
+    return [
+      _actionButton('Edit', Routes.EDITCUSTOMER),
+      _actionButton('New Invoice', Routes.CREATEINVOICE,
+          additionalArgs: {'fromhome': false}),
+    ];
+  }
+
+  Widget _actionButton(String buttonText, String route,
+      {Map<String, dynamic>? additionalArgs}) {
+    return CustomActionButton(
+      buttonText: buttonText,
+      onTap: () async {
+        await controller.checkConnection().then((connected) {
+          if (connected) {
+            Get.offAndToNamed(route, arguments: {
+              'customerId': controller.customerId,
+              ...?additionalArgs
+            });
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildBody() {
+    return Obx(() => controller.isLoading.value
+        ? const LoadingIndicator(message: Text('Loading...'))
+        : TabBarView(
+            controller: controller.tabController,
+            children: [
+              _customerInfoTab(),
+              _invoicesTab(),
+            ],
+          ));
+  }
+
+  Widget _customerInfoTab() {
+    return ValueListenableBuilder<Box>(
+      valueListenable:
+          Storage.customers.listenable(keys: [controller.customerId]),
+      builder: (context, box, child) {
+        final customer = box.get(controller.customerId);
+        return CustomerInfoWidget(customer: customer);
+      },
+    );
+  }
+
+  Widget _invoicesTab() {
+    return ValueListenableBuilder<Box>(
+      valueListenable: Hive.box<InvoiceModel>(BoxName.invoices.name)
+          .listenable(keys: [controller.customerId]),
+      builder: (context, box, child) {
+        List<InvoiceModel> invoices = box.values
+            .where((invoice) => invoice.socid == controller.customerId)
+            .toList()
+            .cast();
+        return invoices.isEmpty
+            ? const ListTile(
+                title: Text('No invoices.', textAlign: TextAlign.center))
+            : InvoiceListWidget(invoices: invoices);
+      },
     );
   }
 }

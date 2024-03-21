@@ -5,7 +5,6 @@ import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -14,27 +13,27 @@ import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
 class PaymentController extends GetxController {
-  final payDateController = TextEditingController();
-  final dueDateController = TextEditingController();
-  final receiptController = TextEditingController();
-  final amountController = TextEditingController();
-  final invoiceController = TextEditingController();
+  TextEditingController payDateController = TextEditingController();
+  TextEditingController dueDateController = TextEditingController();
+  TextEditingController receiptController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController invoiceController = TextEditingController();
 
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final String invid = Get.arguments['invid'];
   final String socid = Get.arguments['socid'];
 
-  final paymentFormKey = GlobalKey<FormState>();
-  final dropdownKey = GlobalKey<DropdownSearchState>();
+  GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
+  GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
 
-  var payDate = DateTime.now().obs;
-  var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
+  Rx<DateTime> payDate = DateTime.now().obs;
+  Rx<DateTime> dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
-  var invoice = InvoiceModel().obs;
-  var customer = ThirdPartyModel().obs;
+  Rx<InvoiceModel> invoice = InvoiceModel().obs;
+  Rx<CustomerModel> customer = CustomerModel().obs;
 
-  var amount = ''.obs;
-  var receipt = ''.obs;
+  RxString amount = ''.obs;
+  RxString receipt = ''.obs;
 
   @override
   void onInit() {
@@ -58,7 +57,7 @@ class PaymentController extends GetxController {
   }
 
   void clearInvoice() {
-    customer(ThirdPartyModel());
+    customer(CustomerModel());
     invoice(InvoiceModel());
     payDateController.text = Utils.dateTimeToString(payDate.value);
     dueDateController.text = Utils.dateTimeToString(dueDate.value);
@@ -70,14 +69,12 @@ class PaymentController extends GetxController {
     await _fetchInvoiceById(invoiceId);
   }
 
-  Future _fetchInvoiceById(String invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    invoice.value = box.get(invoiceId)!;
+  _fetchInvoiceById(String invoiceId) {
+    invoice.value = Storage.invoices.get(invoiceId)!;
   }
 
-  Future _fetchCustomerById(String customerId) async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    customer.value = box.get(customerId)!;
+  _fetchCustomerById(String customerId) {
+    customer.value = Storage.customers.get(customerId)!;
   }
 
   void setPayDate() async {
@@ -119,7 +116,7 @@ class PaymentController extends GetxController {
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
       DialogHelper.showLoading('Processing Payment...');
-      var body = jsonEncode({
+      String body = jsonEncode({
         "arrayofamounts": {
           "${invoice.value.id}": {
             "amount": amount.value,
@@ -189,37 +186,33 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    var box = await Hive.openBox<List>(BoxName.payments.name);
-
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
-        box.put(invoiceId, value.data);
+        Storage.payments.put(invoiceId, value.data);
       }
     }));
   }
 
   refreshInvoice(invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
       if (!value.hasError) {
-        box.put(invoiceId, value.data);
+        Storage.invoices.put(invoiceId, value.data);
       }
     });
   }
 
   Future fetchInvoices({String searchString = ""}) async {
     List<InvoiceModel> invoices = List.empty();
-    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
 
     if (searchString.isEmpty) {
-      invoices = box
+      invoices = Storage.invoices
           .toMap()
           .values
           .toList()
           .where((invoice) => invoice.remaintopay != "0")
           .toList();
     } else {
-      invoices = box
+      invoices = Storage.invoices
           .toMap()
           .values
           .toList()

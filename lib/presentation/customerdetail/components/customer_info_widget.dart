@@ -4,67 +4,81 @@ import 'package:flutter/material.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class CustomerInfo extends StatelessWidget {
-  const CustomerInfo({super.key, required this.customer});
-  final ThirdPartyModel customer;
+class CustomerInfoWidget extends StatelessWidget {
+  const CustomerInfoWidget({super.key, required this.customer});
+  final CustomerModel customer;
+
   @override
   Widget build(BuildContext context) {
-    var children = [
-      CustomerInfoRow(
-        title: customer.name.toString(),
+    List<Widget> children = [
+      _buildCustomerInfoRow(
+        title: customer.name,
         leading: const Icon(Icons.person_outline),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        subtitle: Text(customer.codeClient.toString()),
+        subtitle: Text(customer.codeClient),
       ),
-      CustomerInfoRow(
+      _buildCustomerInfoRow(
         title: '${customer.town} ${customer.address}',
         leading: const Icon(Icons.location_city_outlined),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
       ),
-      if (customer.phone != null && customer.phone.toString().trim().isNotEmpty)
-        CustomerInfoRow(
-          onTap: () => Utils.makePhoneCall(customer.phone.toString().trim()),
+      if (customer.phone?.trim().isNotEmpty ?? false)
+        _buildCustomerInfoRow(
+          onTap: () => Utils.makePhoneCall(customer.phone!.trim()),
           title: customer.phone!,
           leading: const Icon(Icons.phone_android),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
-      if (customer.fax != null && customer.fax.toString().trim().isNotEmpty)
-        CustomerInfoRow(
-          onTap: () => Utils.makePhoneCall(customer.fax.toString().trim()),
-          title: customer.fax,
+      if (customer.fax?.trim().isNotEmpty ?? false)
+        _buildCustomerInfoRow(
+          onTap: () => Utils.makePhoneCall(customer.fax!.trim()),
+          title: customer.fax!,
           leading: const Icon(Icons.phone_android_outlined),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
     ];
     return ValueListenableBuilder(
       valueListenable:
-          Hive.box<ThirdPartyModel>(BoxName.customers.name).listenable(),
+          Hive.box<CustomerModel>(BoxName.customers.name).listenable(),
       builder: (context, box, widget) {
         return ListView.separated(
-            itemBuilder: (context, index) {
-              var child = children[index];
-              return child;
-            },
-            separatorBuilder: (context, index) => const Divider(
-                  color: Colors.grey,
-                  thickness: 1,
-                ),
-            itemCount: children.length);
+          itemBuilder: (context, index) => children[index],
+          separatorBuilder: (context, index) =>
+              const Divider(color: Colors.grey, thickness: 1),
+          itemCount: children.length,
+        );
       },
+    );
+  }
+
+  Widget _buildCustomerInfoRow({
+    required String title,
+    TextStyle? style,
+    Widget? leading,
+    Widget? subtitle,
+    Function()? onTap,
+  }) {
+    return CustomerInfoRow(
+      title: title,
+      style: style,
+      leading: leading,
+      subtitle: subtitle,
+      onTap: onTap,
     );
   }
 }
 
 class CustomerInfoRow extends StatelessWidget {
-  const CustomerInfoRow(
-      {super.key,
-      required this.title,
-      this.style,
-      this.leading,
-      this.subtitle,
-      this.onTap});
-  final String title;
+  const CustomerInfoRow({
+    super.key,
+    required this.title,
+    this.style,
+    this.leading,
+    this.subtitle,
+    this.onTap,
+  });
 
+  final String title;
   final TextStyle? style;
   final Widget? leading;
   final Widget? subtitle;
@@ -79,11 +93,12 @@ class CustomerInfoRow extends StatelessWidget {
         title: Row(
           children: [
             Flexible(
-                child: Text(
-              title.trim(),
-              style: style,
-              overflow: TextOverflow.ellipsis,
-            )),
+              child: Text(
+                title.trim(),
+                style: style,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         subtitle: subtitle,

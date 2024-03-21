@@ -13,7 +13,6 @@ import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:intl/intl.dart';
 
@@ -21,25 +20,25 @@ class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
 
-  var customer = ThirdPartyModel().obs;
+  Rx<CustomerModel> customer = CustomerModel().obs;
 
-  final createInvoiceKey = GlobalKey<FormState>();
-  final dropdownKey = GlobalKey<DropdownSearchState>();
+  GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
+  GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
 
-  final invoiceDateController = TextEditingController();
-  final dueDateController = TextEditingController();
-  final refController = TextEditingController();
-  final predefinedController = TextEditingController();
-  final freetextController = TextEditingController();
-  final priceController = TextEditingController();
-  final customerController = TextEditingController();
+  TextEditingController invoiceDateController = TextEditingController();
+  TextEditingController dueDateController = TextEditingController();
+  TextEditingController refController = TextEditingController();
+  TextEditingController predefinedController = TextEditingController();
+  TextEditingController freetextController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController customerController = TextEditingController();
 
-  var selectedProduct = ProductModel().obs;
-  var stockType = '1'.obs;
+  Rx<ProductModel> selectedProduct = ProductModel().obs;
+  RxString stockType = '1'.obs;
 
-  var invoiceDate = DateTime.now().obs;
+  Rx<DateTime> invoiceDate = DateTime.now().obs;
 
-  var dueDate = DateTime.now().add(const Duration(days: 31)).obs;
+  Rx<DateTime> dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
   @override
   onInit() {
@@ -51,8 +50,7 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    var box = await Hive.openBox<ProductModel>(BoxName.products.name);
-    var list = box.toMap().values.toList();
+    List<ProductModel> list = Storage.products.toMap().values.toList();
 
     if (list.length < 50) {
       await refreshProducts();
@@ -84,23 +82,21 @@ class CreateinvoiceController extends GetxController {
   }
 
   void clearCustomer() {
-    customer(ThirdPartyModel());
+    customer(CustomerModel());
   }
 
   refreshProducts() async {
-    var box = await Hive.openBox<ProductModel>(BoxName.products.name);
     await RemoteServices.fetchProducts().then((value) async {
       if (!value.hasError) {
         for (ProductModel product in value.data) {
-          box.put(product.id, product);
+          Storage.products.put(product.id, product);
         }
       }
     });
   }
 
-  Future fetchCustomerById(String customerId) async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    customer.value = box.get(customerId)!;
+  fetchCustomerById(String customerId) {
+    customer.value = Storage.customers.get(customerId)!;
   }
 
   ///
@@ -156,7 +152,7 @@ class CreateinvoiceController extends GetxController {
   /// Attempt draft creation
   Future _createInvoice() async {
     /// Generate product line
-    var line = Line(
+    Line line = Line(
         qty: '1',
         subprice: priceController.text,
         fkProduct: selectedProduct.value.id,
@@ -178,7 +174,7 @@ class CreateinvoiceController extends GetxController {
 
     invoice.removeWhere((key, value) => value == null);
 
-    var body = jsonEncode(invoice);
+    String body = jsonEncode(invoice);
 
     /// Submit for draft creation
 
@@ -198,7 +194,7 @@ class CreateinvoiceController extends GetxController {
   /// Invoice validation
   /// Happens if invoice creation is succesfull
   Future<void> _validateInvoice(invoiceId) async {
-    var body = '''{
+    String body = '''{
       "idwarehouse": 1,
       "notrigger": 0
       }''';
@@ -224,10 +220,9 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
-        box.put(invoiceId, value.data);
+        Storage.invoices.put(invoiceId, value.data);
       } else {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(
@@ -239,16 +234,14 @@ class CreateinvoiceController extends GetxController {
 
   ///
   ///Customer search for DropDown
-  Future searchCustomer({String searchString = ""}) async {
-    List<ThirdPartyModel> customers = [];
-
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+  searchCustomer({String searchString = ""}) {
+    List<CustomerModel> customers = [];
 
     if (searchString == "") {
-      customers = box.toMap().values.toList();
+      customers = Storage.customers.toMap().values.toList();
       customers.sort((a, b) => a.name.compareTo(b.name));
     } else {
-      customers = box
+      customers = Storage.customers
           .toMap()
           .values
           .toList()

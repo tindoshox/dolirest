@@ -8,27 +8,26 @@ import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 
 class SettingsController extends GetxController {
-  var serverUrl = '';
-  var apiKey = '';
-  final serverFormKey = GlobalKey<FormState>();
-  final urlController = TextEditingController();
-  final apiController = TextEditingController();
+  String serverUrl = '';
+  String apiKey = '';
+  GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
+  TextEditingController urlController = TextEditingController();
+  TextEditingController apiController = TextEditingController();
 
-  final count = 0.obs;
   @override
   void onInit() {
     readSettings();
     super.onInit();
   }
 
-  void readSettings() {
-    if (getBox.read('url') != null) {
-      serverUrl = getBox.read('url');
+  void readSettings() async {
+    if (Storage.settings.get('url') != null) {
+      serverUrl = Storage.settings.get('url');
       urlController.text = serverUrl;
     }
 
-    if (getBox.read('apikey') != null) {
-      apiKey = getBox.read('apikey');
+    if (Storage.settings.get('apikey') != null) {
+      apiKey = Storage.settings.get('apikey');
       apiController.text = apiKey;
     }
   }
@@ -40,10 +39,10 @@ class SettingsController extends GetxController {
     if (form.validate()) {
       DialogHelper.showLoading('Verifying Server Info...');
 
-      await RemoteServices.fetchUserInfo().then((value) {
+      await RemoteServices.fetchUserInfo().then((value) async {
         DialogHelper.hideLoading();
         if (!value.hasError) {
-          getBox.write('user', value.data.login.toString());
+          Storage.settings.put('user', value.data.login.toString());
           Get.offAndToNamed(Routes.HOME);
         } else {
           _clearStorage();
@@ -55,16 +54,13 @@ class SettingsController extends GetxController {
   }
 
   /// Writes the server info to the local storage.
-  void _writeStore() {
-    getBox.write('url', urlController.text.trim());
-    getBox.write('apikey', apiController.text.trim());
-    //Get.offAndToNamed(Routes.HOME);
+  void _writeStore() async {
+    Storage.settings.put('url', urlController.text.trim());
+    Storage.settings.put('apikey', apiController.text.trim());
   }
 
-  void _clearStorage() {
-    getBox.write('url', "");
-    getBox.write('apikey', "");
-    getBox.write('user', "");
+  void _clearStorage() async {
+    Storage.settings.clear();
   }
 
   void getClipboardText() async {

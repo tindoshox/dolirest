@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> subscription;
-  var connected = true.obs;
 
   @override
   void onInit() {
@@ -25,13 +24,11 @@ class NetworkController extends GetxController {
     super.dispose();
   }
 
-  void _updateConnectionStatus(ConnectivityResult connectivityResult) async {
+  void _updateConnectionStatus(ConnectivityResult connectivityResult) {
     if (connectivityResult == ConnectivityResult.none) {
-      connected(false);
-      getBox.write('connected', false);
+      Storage.settings.put('connected', false);
     } else {
-      connected(true);
-      getBox.write('connected', true);
+      Storage.settings.put('connected', true);
     }
   }
 }

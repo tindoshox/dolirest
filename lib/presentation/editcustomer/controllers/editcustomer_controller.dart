@@ -11,24 +11,24 @@ import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class EditcustomerController extends GetxController {
-  final customerFormKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final addressController = TextEditingController();
-  final townController = TextEditingController();
-  final phoneController = TextEditingController();
-  final faxController = TextEditingController();
+class EditCustomerController extends GetxController {
+  GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  TextEditingController townController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController faxController = TextEditingController();
 
-  var isLoading = false.obs;
+  RxBool isLoading = false.obs;
 
-  var customerToEdit = ThirdPartyModel().obs;
+  Rx<CustomerModel> customerToEdit = CustomerModel().obs;
   String customerId = Get.arguments['customerId'];
 
-  var selectedGroup = GroupModel().obs;
-  var groups = List<GroupModel>.empty().obs;
+  Rx<GroupModel> selectedGroup = GroupModel().obs;
+  RxList<GroupModel> groups = List<GroupModel>.empty().obs;
 
-  var addresses = <String>[];
-  var towns = <String>[];
+  List<String> addresses = <String>[];
+  List<String> towns = <String>[];
 
   @override
   void onInit() async {
@@ -36,8 +36,7 @@ class EditcustomerController extends GetxController {
       await _fetchCustomerById(customerId);
     }
 
-    var box = await Hive.openBox<GroupModel>('groups');
-    var list = box.toMap().values.toList();
+    List<GroupModel> list = Storage.groups.toMap().values.toList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -59,9 +58,9 @@ class EditcustomerController extends GetxController {
     faxController.dispose();
   }
 
-  getTownSuggestions() async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    List<ThirdPartyModel> customers = box.toMap().values.toList();
+  getTownSuggestions() {
+    Hive.box<CustomerModel>(BoxName.customers.name);
+    List<CustomerModel> customers = Storage.customers.toMap().values.toList();
 
     towns =
         customers.map((customer) => customer.town.toString()).toSet().toList();
@@ -70,11 +69,12 @@ class EditcustomerController extends GetxController {
     //return towns;
   }
 
-  getAddressSuggestions({String? town = ""}) async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    List<ThirdPartyModel> customers = box.toMap().values.toList();
+  getAddressSuggestions({String? town = ""}) {
+    debugPrint('City $town:');
+    Hive.box<CustomerModel>(BoxName.customers.name);
+    List<CustomerModel> customers = Storage.customers.toMap().values.toList();
     if (town != null && town != "") {
-      customers.where((element) => element.town == town.trim());
+      customers.removeWhere((element) => element.town != town.trim());
     }
     addresses = customers
         .map((customer) => customer.address.toString())
@@ -83,30 +83,29 @@ class EditcustomerController extends GetxController {
     addresses.removeWhere((element) => element == "");
 
     addresses.sort((a, b) => a.compareTo(b));
+    debugPrint(addresses.length.toString());
   }
 
-  Future getGroups({String search = ""}) async {
-    var box = await Hive.openBox<GroupModel>('groups');
-
+  getGroups({String search = ""}) {
     if (search.isNotEmpty) {
-      groups.value = box
+      groups.value = Storage.groups
           .toMap()
           .values
           .toList()
           .where((group) => group.name.contains(search))
           .toList();
     } else {
-      groups.value = box.toMap().values.toList();
+      groups.value = Storage.groups.toMap().values.toList();
     }
     return groups;
   }
 
   refreshGroups() async {
-    var box = await Hive.openBox<GroupModel>('groups');
+    Hive.box<GroupModel>('groups');
     await RemoteServices.fetchGroups().then((value) async {
       if (!value.hasError) {
         for (GroupModel group in value.data) {
-          box.put(group.id, group);
+          Storage.groups.put(group.id, group);
         }
       }
     });
@@ -115,7 +114,7 @@ class EditcustomerController extends GetxController {
   void validateAndSave() async {
     final FormState form = customerFormKey.currentState!;
     if (form.validate()) {
-      var customer = ThirdPartyModel(
+      var customer = CustomerModel(
               client: "1",
               codeClient: 'auto',
               name: nameController.text,
@@ -151,18 +150,18 @@ class EditcustomerController extends GetxController {
   }
 
   _fetchNewCustomer(data) async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+    Hive.box<CustomerModel>(BoxName.customers.name);
     await RemoteServices.fetchThirdPartyById(data).then((value) {
       if (!value.hasError) {
-        box.put(data, value.data);
+        Storage.customers.put(data, value.data);
       }
     });
   }
 
   Future _fetchCustomerById(String id) async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
+    Hive.box<CustomerModel>(BoxName.customers.name);
 
-    customerToEdit.value = box.get(id)!;
+    customerToEdit.value = Storage.customers.get(id)!;
     nameController.text = customerToEdit.value.name!;
     addressController.text = customerToEdit.value.address ?? '';
     townController.text = customerToEdit.value.town ?? '';
@@ -183,8 +182,8 @@ class EditcustomerController extends GetxController {
         message: 'Customer updated',
       );
 
-      var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-      box.put(customerId, value.data);
+      Hive.box<CustomerModel>(BoxName.customers.name);
+      Storage.customers.put(customerId, value.data);
 
       Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {
         'customerId': customerId,

@@ -10,13 +10,15 @@ import 'package:url_launcher/url_launcher.dart';
 class Utils {
   /// Returns a formatted date string from an integer representation of a date in milliseconds.
   static String intToDayFirst(int intDate) {
-    var dateTime = DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
+    final DateTime dateTime =
+        DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
 
     return DateFormat('dd-MM-yyyy').format(dateTime);
   }
 
   static intToYearFirst(int intDate) {
-    var dateTime = DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
+    final DateTime dateTime =
+        DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
@@ -27,7 +29,8 @@ class Utils {
 
   /// Returns an integer representation of a date from a [DateTime] object.
   static int dateTimeToInt(DateTime date) {
-    var convert = DateUtils.dateOnly(date).millisecondsSinceEpoch / 1000;
+    final double convert =
+        DateUtils.dateOnly(date).millisecondsSinceEpoch / 1000;
     return convert.toInt();
   }
 
@@ -50,7 +53,7 @@ class Utils {
 
   /// Returns the date portion of a [DateTime] object as a string.
   static String datePaid(DateTime input) {
-    var string = input.toString();
+    final String string = input.toString();
     return string.substring(0, string.indexOf(' '));
   }
 
@@ -80,9 +83,9 @@ class Utils {
   /// Creates a file from a base64-encoded string and returns the file path.
   static Future<String> createFileFromString(
       String encodedStr, String filename) async {
-    Uint8List bytes = base64.decode(encodedStr);
+    final Uint8List bytes = base64.decode(encodedStr);
     const String dir = '/storage/emulated/0/Download/';
-    File file = File("$dir/$filename.pdf");
+    final File file = File("$dir/$filename.pdf");
     await file.writeAsBytes(bytes);
     return file.path;
   }
@@ -93,17 +96,19 @@ class Utils {
       return true; // No need to check permissions for non-Android platforms.
     }
 
-    final status = await Permission.manageExternalStorage.status;
+    final PermissionStatus status =
+        await Permission.manageExternalStorage.status;
     if (status.isGranted) {
       return true; // Permission already granted.
     }
 
-    final result = await Permission.manageExternalStorage.request();
+    final PermissionStatus result =
+        await Permission.manageExternalStorage.request();
     return result.isGranted; // Returns true if granted, false otherwise.
   }
 
   static String subString(String s) {
-    final dotIndex = s.indexOf('.');
+    final int dotIndex = s.indexOf('.');
     return dotIndex == -1 ? s : s.substring(0, dotIndex);
   }
 }

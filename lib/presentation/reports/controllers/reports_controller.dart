@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
@@ -15,10 +15,10 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
-  final reportFormKey = GlobalKey<FormState>();
-  final fromDateController = TextEditingController();
-  final toDateController = TextEditingController();
-  var groups = List<GroupModel>.empty().obs;
+  GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
+  TextEditingController fromDateController = TextEditingController();
+  TextEditingController toDateController = TextEditingController();
+  RxList<GroupModel> groups = List<GroupModel>.empty().obs;
 
   late bool permissionReady;
   late TargetPlatform? platform;
@@ -57,11 +57,11 @@ class ReportsController extends GetxController {
         hasToDateParameter: true),
   ];
 
-  var fromdate = DateTime.now().obs;
-  var todate = DateTime.now().obs;
-  var selectedGroup = GroupModel().obs;
-  var selectedReport = ReportIdModel().obs;
-  var salesperson = ''.obs;
+  Rx<DateTime> fromdate = DateTime.now().obs;
+  Rx<DateTime> todate = DateTime.now().obs;
+  Rx<GroupModel> selectedGroup = GroupModel().obs;
+  Rx<ReportIdModel> selectedReport = ReportIdModel().obs;
+  RxString salesperson = ''.obs;
 
   /// Initializes the controller.
   @override
@@ -72,8 +72,7 @@ class ReportsController extends GetxController {
       platform = TargetPlatform.iOS;
     }
 
-    var box = await Hive.openBox<GroupModel>('groups');
-    var list = box.toMap().values.toList();
+    List<GroupModel> list = Storage.groups.toMap().values.toList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -86,27 +85,24 @@ class ReportsController extends GetxController {
   }
 
   Future getGroups({String search = ""}) async {
-    var box = await Hive.openBox<GroupModel>('groups');
-
     if (search.isNotEmpty) {
-      groups.value = box
+      groups.value = Storage.groups
           .toMap()
           .values
           .toList()
           .where((group) => group.name.contains(search))
           .toList();
     } else {
-      groups.value = box.toMap().values.toList();
+      groups.value = Storage.groups.toMap().values.toList();
     }
     return groups;
   }
 
   Future<List<GroupModel>> refreshGroups() async {
-    var box = await Hive.openBox<GroupModel>('groups');
     await RemoteServices.fetchGroups().then((value) async {
       if (!value.hasError) {
         for (GroupModel group in value.data) {
-          box.put(group.id, group);
+          Storage.groups.put(group.id, group);
         }
       }
     });

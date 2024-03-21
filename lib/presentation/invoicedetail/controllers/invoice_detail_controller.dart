@@ -13,23 +13,24 @@ import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final List<Tab> invoiceTabs =
-      [const Tab(text: 'Details'), const Tab(text: 'Payments')].obs;
-  var tabIndex = 0.obs;
+  final List<Tab> invoiceTabs = [
+    const Tab(text: 'Details'),
+    const Tab(text: 'Payments')
+  ];
+  RxInt tabIndex = 0.obs;
 
-  var customer = ThirdPartyModel().obs;
-  var isLoading = false.obs;
+  Rx<CustomerModel> customer = CustomerModel().obs;
+  RxBool isLoading = false.obs;
 
-  final invoiceId = Get.arguments['invoiceId'];
-  final customerId = Get.arguments['customerId'];
-  var selectedDate = DateTime.now().obs;
-  var documentList = <DocumenListModel>[];
+  String invoiceId = Get.arguments['invoiceId'];
+  String customerId = Get.arguments['customerId'];
+  Rx<DateTime> selectedDate = DateTime.now().obs;
+  List<DocumentListModel> documentList = <DocumentListModel>[];
 
   late TabController tabController;
   late TargetPlatform? platform;
@@ -66,15 +67,14 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    var invoice = invoiceBox.get(invoiceId)!;
-    var box = await Hive.openBox<List>(BoxName.payments.name);
-    var list = box.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+    InvoiceModel invoice = Storage.invoices.get(invoiceId)!;
+    List<PaymentModel> list =
+        Storage.payments.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
 
-    var amounts =
+    List<int> amounts =
         list.map((payment) => Utils.intAmounts(payment.amount)).toList();
-    var total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
-    var sumpayed = Utils.intAmounts(invoice.sumpayed);
+    int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
+    int sumpayed = Utils.intAmounts(invoice.sumpayed);
 
     // Fetch payment list from storage
 
@@ -85,11 +85,9 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    var box = await Hive.openBox<List>(BoxName.payments.name);
-
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
       if (!value.hasError) {
-        box.put(invoiceId, value.data);
+        Storage.payments.put(invoiceId, value.data);
       } else {
         SnackBarHelper.errorSnackbar(
             message:
@@ -98,22 +96,20 @@ class InvoiceDetailController extends GetxController
     }));
   }
 
-  Future _fetchCustomer() async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    if (box.get(customerId) == null) {
-      await _refreshCustomerData()
-          .then((value) => customer.value = box.get(customerId)!);
+  _fetchCustomer() {
+    if (Storage.customers.get(customerId) == null) {
+      _refreshCustomerData()
+          .then((value) => customer.value = Storage.customers.get(customerId)!);
     } else {
-      customer.value = box.get(customerId)!;
+      customer.value = Storage.customers.get(customerId)!;
     }
   }
 
   Future _refreshInvoiceData() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
     await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
       if (!value.hasError) {
         InvoiceModel newInvoice = value.data;
-        invoiceBox.put(newInvoice.id, newInvoice);
+        Storage.invoices.put(newInvoice.id, newInvoice);
       } else {
         Get.back();
         SnackBarHelper.errorSnackbar(
@@ -124,10 +120,9 @@ class InvoiceDetailController extends GetxController
 
   Future _refreshCustomerData() async {
     await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
-      var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
       if (!value.hasError) {
-        box.put(customerId, value.data);
-        customer.value = box.get(customerId)!;
+        Storage.customers.put(customerId, value.data);
+        customer.value = Storage.customers.get(customerId)!;
       } else {
         Get.back();
         SnackBarHelper.errorSnackbar(
@@ -137,12 +132,11 @@ class InvoiceDetailController extends GetxController
   }
 
   Future generateDocument() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    var invoice = invoiceBox.get(invoiceId)!;
+    InvoiceModel invoice = Storage.invoices.get(invoiceId)!;
     permissionReady = await Utils.checkPermission(platform);
 
     DialogHelper.showLoading('Downloading document...');
-    var body = json.encode(BuildDocumentRequestModel(
+    String body = json.encode(BuildDocumentRequestModel(
       modulepart: 'invoice',
       originalFile: '${invoice.ref}/${invoice.ref}.pdf',
     ));

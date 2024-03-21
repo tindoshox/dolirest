@@ -8,14 +8,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 part 'third_party_model.g.dart';
 
-ThirdPartyModel thirdPartyModelFromJson(String str) =>
-    ThirdPartyModel.fromJson(json.decode(str));
+CustomerModel thirdPartyModelFromJson(String str) =>
+    CustomerModel.fromJson(json.decode(str));
 
-String thirdPartyModelToJson(ThirdPartyModel data) =>
-    json.encode(data.toJson());
+String thirdPartyModelToJson(CustomerModel data) => json.encode(data.toJson());
 
 @HiveType(typeId: 3)
-class ThirdPartyModel {
+class CustomerModel {
   @HiveField(1)
   dynamic module;
   @HiveField(2)
@@ -311,7 +310,7 @@ class ThirdPartyModel {
   @HiveField(147)
   dynamic town;
 
-  ThirdPartyModel({
+  CustomerModel({
     this.module,
     this.supplierCategories,
     this.prefixCustomerIsRequired,
@@ -461,8 +460,7 @@ class ThirdPartyModel {
     this.town,
   });
 
-  factory ThirdPartyModel.fromJson(Map<String, dynamic> json) =>
-      ThirdPartyModel(
+  factory CustomerModel.fromJson(Map<String, dynamic> json) => CustomerModel(
         module: json["module"],
         supplierCategories: json["SupplierCategories"] == null
             ? []

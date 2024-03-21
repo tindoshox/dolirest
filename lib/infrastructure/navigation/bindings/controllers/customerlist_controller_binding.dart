@@ -5,8 +5,8 @@ import '../../../../presentation/customerlist/controllers/customer_list_controll
 class CustomerlistControllerBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<CustomerlistController>(
-      () => CustomerlistController(),
+    Get.lazyPut<CustomerListController>(
+      () => CustomerListController(),
     );
   }
 }

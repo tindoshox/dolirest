@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -8,20 +9,20 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class HomeController extends GetxController {
-  var currentUser = ''.obs;
-  var baseUrl = ''.obs;
+  RxString currentUser = ''.obs;
+  RxString baseUrl = ''.obs;
 
-  RxBool connected = RxBool(getBox.read('connected'));
+  RxBool connected = false.obs;
 
   @override
-  void onInit() {
-    currentUser.value = getBox.read('user');
-    baseUrl.value = getBox.read('url');
-    getBox.listenKey('connected', (value) async {
-      connected.value = value;
+  void onInit() async {
+    connected.value = Storage.settings.get('connected');
+    currentUser.value = Storage.settings.get('user');
+    baseUrl.value = Storage.settings.get('url');
+    Storage.settings.watch(key: 'connected').listen((event) {
+      connected.value = event.value;
     });
 
     super.onInit();
@@ -44,11 +45,9 @@ class HomeController extends GetxController {
 
   _loadInitialData() async {
     DialogHelper.showLoading('Loading initial data');
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    var list = box.toMap().values.toList();
+    List<CustomerModel> list = Storage.customers.values.toList();
 
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    var invoices = invoiceBox.toMap().values.toList();
+    List<InvoiceModel> invoices = Storage.invoices.toMap().values.toList();
 
     if (list.isEmpty) {
       await _getAllCustomers();
@@ -61,18 +60,21 @@ class HomeController extends GetxController {
   }
 
   Future _loadPaymentData() async {
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    var paymentBox = await Hive.openBox<List>(BoxName.payments.name);
-    var invoices =
-        invoiceBox.toMap().values.toList().where((i) => i.remaintopay != "0");
-    var payments = paymentBox.toMap().values.toList();
+    List<InvoiceModel> invoices = Storage.invoices
+        .toMap()
+        .values
+        .toList()
+        .where((i) => i.remaintopay != "0")
+        .toList();
+    List<PaymentModel> payments =
+        Storage.payments.toMap().values.toList().cast();
 
     if (payments.length < invoices.length) {
-      for (var invoice in invoices) {
+      for (InvoiceModel invoice in invoices) {
         if (invoice.remaintopay != "0") {
           await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
             if (!value.hasError) {
-              paymentBox.put(invoice.id, value.data);
+              Storage.payments.put(invoice.id, value.data);
             }
           });
         }
@@ -82,9 +84,7 @@ class HomeController extends GetxController {
 
   Future _invoicesRefreshSchedule() async {
     Timer.periodic(const Duration(minutes: 15), (Timer timer) async {
-      if (getBox.read('connected')) {
-        //await _getAllCustomers();
-        //await _getAllInvoices();
+      if (connected.value) {
         await _getModifiedCustomers();
         await _getModifiedInvoices();
       }
@@ -94,17 +94,15 @@ class HomeController extends GetxController {
   Future _getAllCustomers() async {
     await RemoteServices.fetchThirdPartyList().then((value) async {
       if (!value.hasError) {
-        var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-        for (ThirdPartyModel customer in value.data) {
-          box.put(customer.id, customer);
+        for (CustomerModel customer in value.data) {
+          Storage.customers.put(customer.id, customer);
         }
       }
     });
   }
 
   Future _getModifiedCustomers() async {
-    var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-    var list = box.toMap().values.toList();
+    List<CustomerModel> list = Storage.customers.toMap().values.toList();
     list.sort((a, b) => a.dateModification.compareTo(b.dateModification));
 
     int dateModified = list[list.length - 1].dateModification;
@@ -112,9 +110,8 @@ class HomeController extends GetxController {
             dateModified: Utils.intToYearFirst(dateModified))
         .then((value) async {
       if (!value.hasError) {
-        var box = await Hive.openBox<ThirdPartyModel>(BoxName.customers.name);
-        for (ThirdPartyModel customer in value.data) {
-          box.put(customer.id, customer);
+        for (CustomerModel customer in value.data) {
+          Storage.customers.put(customer.id, customer);
         }
       }
     });
@@ -123,18 +120,15 @@ class HomeController extends GetxController {
   Future _getUnpaidInvoices() async {
     await RemoteServices.fetchInvoiceList(status: 'unpaid').then((value) async {
       if (!value.hasError) {
-        var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-        for (var invoice in value.data) {
-          box.put(invoice.id, invoice);
+        for (InvoiceModel invoice in value.data) {
+          Storage.invoices.put(invoice.id, invoice);
         }
       }
     });
   }
 
   Future _getModifiedInvoices() async {
-    var paymentBox = await Hive.openBox<List>(BoxName.payments.name);
-    var invoiceBox = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-    var invoices = invoiceBox
+    List<InvoiceModel> invoices = Storage.invoices
         .toMap()
         .values
         .toList()
@@ -146,11 +140,11 @@ class HomeController extends GetxController {
             dateModified: Utils.intToYearFirst(dateModified))
         .then((value) async {
       if (!value.hasError) {
-        for (var invoice in value.data) {
-          invoiceBox.put(invoice.id, invoice);
+        for (InvoiceModel invoice in value.data) {
+          Storage.invoices.put(invoice.id, invoice);
           await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
             if (!value.hasError) {
-              paymentBox.put(invoice.id, value.data);
+              Storage.payments.put(invoice.id, value.data);
             }
           });
         }

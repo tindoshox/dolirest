@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
@@ -12,8 +13,8 @@ class PaymentScreen extends GetView<PaymentController> {
   const PaymentScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    var invoice = controller.invoice;
-    var customer = controller.customer;
+    Rx<InvoiceModel> invoice = controller.invoice;
+    Rx<CustomerModel> customer = controller.customer;
 
     return Scaffold(
       appBar: AppBar(

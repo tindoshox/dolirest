@@ -16,60 +16,84 @@ class InvoiceListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        onTap: () {
-          Get.toNamed(
-            Routes.INVOICEDETAIL,
-            arguments: {
-              'customerId': invoice.socid,
-              'invoiceId': invoice.id,
-            },
-          );
-        },
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              invoice.ref!,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'BALANCE: ${invoice.remaintopay}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    child: Text(
-                  invoice.nom!,
-                  overflow: TextOverflow.ellipsis,
-                )),
-                Text(
-                  Utils.intToDayFirst(invoice.dateLimReglement!),
-                  style: Utils.overDueStyle(invoice.dateLimReglement!),
-                )
-              ],
-            ),
-            //Product name
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(invoice.lines![0].productLabel ??
-                    invoice.lines![0].description),
-                Text(
-                  invoice.sumpayed == null ? 'UNPAID' : 'STARTED',
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ],
-            )
-          ],
-        ),
+        onTap: () => _onInvoiceTap(),
+        title: _buildTitle(),
+        subtitle: _buildSubtitle(),
       ),
+    );
+  }
+
+  void _onInvoiceTap() {
+    Get.toNamed(
+      Routes.INVOICEDETAIL,
+      arguments: {
+        'customerId': invoice.socid,
+        'invoiceId': invoice.id,
+      },
+    );
+  }
+
+  Widget _buildTitle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          invoice.ref ?? 'N/A', // Handle potential null
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          'BALANCE: ${invoice.remaintopay}',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubtitle() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCustomerRow(),
+        _buildProductRow(),
+      ],
+    );
+  }
+
+  Widget _buildCustomerRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            invoice.nom ?? 'Unknown', // Handle potential null
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Text(
+          Utils.intToDayFirst(
+              invoice.dateLimReglement ?? ''), // Handle potential null
+          style: Utils.overDueStyle(invoice.dateLimReglement ?? ''),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductRow() {
+    final productLabel = invoice.lines?.isNotEmpty ?? false
+        ? invoice.lines![0].productLabel ??
+            invoice.lines![0].description ??
+            'N/A'
+        : 'N/A'; // Safely access the first element
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(productLabel),
+        Text(
+          invoice.sumpayed == null ? 'UNPAID' : 'STARTED',
+          style: const TextStyle(fontSize: 10),
+        ),
+      ],
     );
   }
 }

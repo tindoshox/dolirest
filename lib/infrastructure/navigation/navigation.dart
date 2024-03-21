@@ -39,7 +39,7 @@ class Nav {
     ),
     GetPage(
       name: Routes.CUSTOMERLIST,
-      page: () => const CustomerlistScreen(),
+      page: () => const CustomerListScreen(),
       binding: CustomerlistControllerBinding(),
       transition: transition,
       transitionDuration: transitionDuration,
@@ -67,8 +67,8 @@ class Nav {
     ),
     GetPage(
       name: Routes.EDITCUSTOMER,
-      page: () => const EditcustomerScreen(),
-      binding: EditcustomerControllerBinding(),
+      page: () => const EditCustomerScreen(),
+      binding: EditCustomerControllerBinding(),
       transition: transition,
       transitionDuration: transitionDuration,
     ),

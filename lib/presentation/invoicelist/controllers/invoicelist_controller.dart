@@ -5,18 +5,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class InvoicelistController extends GetxController {
-  var isLoading = false.obs;
+  RxBool isLoading = false.obs;
 
-  var isLastPage = false;
+  bool isLastPage = false;
 
-  final searchController = TextEditingController();
-  final scrollController = ScrollController();
+  TextEditingController searchController = TextEditingController();
+  ScrollController scrollController = ScrollController();
 
-  var searchString = ''.obs;
-  var searchIcon = true.obs;
+  RxString searchString = ''.obs;
+  RxBool searchIcon = true.obs;
 
   @override
   void onClose() {
@@ -35,9 +34,8 @@ class InvoicelistController extends GetxController {
     await RemoteServices.fetchInvoiceList(status: "unpaid").then((value) async {
       isLoading(false);
       if (!value.hasError) {
-        var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-        for (var invoice in value.data) {
-          box.put(invoice.id, invoice);
+        for (InvoiceModel invoice in value.data) {
+          Storage.invoices.put(invoice.id, invoice);
         }
 
         SnackBarHelper.successSnackbar(message: 'Inovice data refreshed');
@@ -45,5 +43,15 @@ class InvoicelistController extends GetxController {
         SnackBarHelper.errorSnackbar(message: 'Could not refresh invoice data');
       }
     });
+  }
+
+  toggleSearch() {
+    if (searchController.text.isEmpty) {
+      searchIcon.value = !searchIcon.value;
+    }
+    if (!searchIcon.value) {
+      searchController.clear();
+      searchString.value = "";
+    }
   }
 }

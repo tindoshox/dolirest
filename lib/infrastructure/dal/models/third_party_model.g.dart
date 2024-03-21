@@ -6,17 +6,17 @@ part of 'third_party_model.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ThirdPartyModelAdapter extends TypeAdapter<ThirdPartyModel> {
+class ThirdPartyModelAdapter extends TypeAdapter<CustomerModel> {
   @override
   final int typeId = 3;
 
   @override
-  ThirdPartyModel read(BinaryReader reader) {
+  CustomerModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ThirdPartyModel(
+    return CustomerModel(
       module: fields[1] as dynamic,
       supplierCategories: (fields[2] as List?)?.cast<dynamic>(),
       prefixCustomerIsRequired: fields[3] as dynamic,
@@ -168,7 +168,7 @@ class ThirdPartyModelAdapter extends TypeAdapter<ThirdPartyModel> {
   }
 
   @override
-  void write(BinaryWriter writer, ThirdPartyModel obj) {
+  void write(BinaryWriter writer, CustomerModel obj) {
     writer
       ..writeByte(147)
       ..writeByte(1)

@@ -20,10 +20,10 @@ import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
 
 class RemoteServices {
-  static final _client = RetryClient(http.Client());
-  static const _timeout = Duration(seconds: 60);
-  static final _url = getBox.read('url');
-  static final _apikey = getBox.read('apikey');
+  static final RetryClient _client = RetryClient(http.Client());
+  static const Duration _timeout = Duration(seconds: 60);
+  static final String _url = Storage.settings.get('url');
+  static final String _apikey = Storage.settings.get('apikey');
   static final Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -33,7 +33,7 @@ class RemoteServices {
   /// CustomerList
   static Future<DataOrException> fetchThirdPartyList(
       {String dateModified = '1970-01-01'}) async {
-    final queryParameters = {
+    final Map<String, String> queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
       "mode": "1",
@@ -52,11 +52,11 @@ class RemoteServices {
       String jsonString = response.body;
 
       List<dynamic> jsonList = json.decode(jsonString);
-      List<ThirdPartyModel> customers = List.empty();
+      List<CustomerModel> customers = List.empty();
       if (jsonList.isNotEmpty) {
         customers = jsonList
             .map((jsonItem) =>
-                ThirdPartyModel.fromJson(jsonItem as Map<String, dynamic>))
+                CustomerModel.fromJson(jsonItem as Map<String, dynamic>))
             .toList();
       }
 
@@ -126,7 +126,7 @@ class RemoteServices {
       {String customerId = "",
       String dateModified = '1970-01-01',
       String status = ""}) async {
-    final queryParameters = {
+    final Map<String, String> queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
       "page": "1",
@@ -152,6 +152,8 @@ class RemoteServices {
             .map((jsonItem) =>
                 InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
             .toList();
+      } else {
+        invoices = jsonList.cast();
       }
 
       return DataOrException(
