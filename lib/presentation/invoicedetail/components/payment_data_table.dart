@@ -21,7 +21,7 @@ class PaymentsDataTable extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: ValueListenableBuilder(
-        valueListenable: Hive.box<List>(BoxName.payments.name).listenable(),
+        valueListenable: Storage.payments.listenable(),
         builder: (BuildContext context, Box<List> box, Widget? child) {
           final List<PaymentModel> payments = box.get(invoiceId,
               defaultValue: <PaymentModel>[])!.cast<PaymentModel>();

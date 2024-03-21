@@ -1,4 +1,3 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +21,8 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ValueListenableBuilder(
-              valueListenable: Hive.box<InvoiceModel>(BoxName.invoices.name)
-                  .listenable(keys: [controller.customerId]),
+              valueListenable:
+                  Storage.invoices.listenable(keys: [controller.customerId]),
               builder: (context, invoice, child) => CustomActionButton(
                   buttonText: 'Payment',
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
@@ -69,9 +68,8 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                 controller: controller.tabController,
                 children: [
                   ValueListenableBuilder(
-                    valueListenable:
-                        Hive.box<InvoiceModel>(BoxName.invoices.name)
-                            .listenable(keys: [controller.invoiceId]),
+                    valueListenable: Storage.invoices
+                        .listenable(keys: [controller.invoiceId]),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
                           bool connected = Storage.settings.get('connected');
@@ -86,9 +84,8 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                     child: ListView(
                       children: [
                         ValueListenableBuilder(
-                          valueListenable:
-                              Hive.box<InvoiceModel>(BoxName.invoices.name)
-                                  .listenable(keys: [controller.customerId]),
+                          valueListenable: Storage.invoices
+                              .listenable(keys: [controller.customerId]),
                           builder: (context, invoices, child) {
                             return invoices
                                         .get(controller.invoiceId)!

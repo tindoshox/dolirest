@@ -28,12 +28,12 @@ void main() async {
   Hive.registerAdapter<GroupModel>(GroupModelAdapter());
   Hive.registerAdapter<ProductModel>(ProductModelAdapter());
 
-  await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
-  await Hive.openBox<CustomerModel>(BoxName.customers.name);
-  await Hive.openBox<List>(BoxName.payments.name);
-  await Hive.openBox<ProductModel>(BoxName.products.name);
-  await Hive.openBox<GroupModel>(BoxName.groups.name);
-  await Hive.openBox(BoxName.settings.name);
+  await Hive.openBox<InvoiceModel>('invoices');
+  await Hive.openBox<CustomerModel>('customers');
+  await Hive.openBox<List>('payments');
+  await Hive.openBox<ProductModel>('products');
+  await Hive.openBox<GroupModel>('groups');
+  await Hive.openBox('settings');
 
   runApp(const Main());
   DependencyInjection.init();

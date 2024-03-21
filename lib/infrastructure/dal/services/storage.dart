@@ -4,20 +4,11 @@ import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-enum BoxName {
-  invoices,
-  customers,
-  payments,
-  products,
-  groups,
-  settings,
-}
-
 class Storage {
-  static Box<InvoiceModel> invoices = Hive.box(BoxName.invoices.name);
-  static Box<CustomerModel> customers = Hive.box(BoxName.customers.name);
-  static Box<List> payments = Hive.box(BoxName.payments.name);
-  static Box<ProductModel> products = Hive.box(BoxName.products.name);
-  static Box<GroupModel> groups = Hive.box(BoxName.groups.name);
-  static Box settings = Hive.box(BoxName.settings.name);
+  static Box<InvoiceModel> invoices = Hive.box('invoices');
+  static Box<CustomerModel> customers = Hive.box('customers');
+  static Box<List> payments = Hive.box('payments');
+  static Box<ProductModel> products = Hive.box('products');
+  static Box<GroupModel> groups = Hive.box('groups');
+  static Box settings = Hive.box('settings');
 }

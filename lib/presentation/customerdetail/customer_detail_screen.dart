@@ -78,8 +78,8 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   Widget _invoicesTab() {
     return ValueListenableBuilder<Box>(
-      valueListenable: Hive.box<InvoiceModel>(BoxName.invoices.name)
-          .listenable(keys: [controller.customerId]),
+      valueListenable:
+          Storage.invoices.listenable(keys: [controller.customerId]),
       builder: (context, box, child) {
         List<InvoiceModel> invoices = box.values
             .where((invoice) => invoice.socid == controller.customerId)

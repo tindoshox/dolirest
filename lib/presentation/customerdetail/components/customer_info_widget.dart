@@ -38,8 +38,7 @@ class CustomerInfoWidget extends StatelessWidget {
         ),
     ];
     return ValueListenableBuilder(
-      valueListenable:
-          Hive.box<CustomerModel>(BoxName.customers.name).listenable(),
+      valueListenable: Storage.customers.listenable(),
       builder: (context, box, widget) {
         return ListView.separated(
           itemBuilder: (context, index) => children[index],

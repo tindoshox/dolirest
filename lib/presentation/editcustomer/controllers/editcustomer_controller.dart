@@ -59,7 +59,6 @@ class EditCustomerController extends GetxController {
   }
 
   getTownSuggestions() {
-    Hive.box<CustomerModel>(BoxName.customers.name);
     List<CustomerModel> customers = Storage.customers.toMap().values.toList();
 
     towns =
@@ -71,7 +70,7 @@ class EditCustomerController extends GetxController {
 
   getAddressSuggestions({String? town = ""}) {
     debugPrint('City $town:');
-    Hive.box<CustomerModel>(BoxName.customers.name);
+
     List<CustomerModel> customers = Storage.customers.toMap().values.toList();
     if (town != null && town != "") {
       customers.removeWhere((element) => element.town != town.trim());
@@ -150,7 +149,6 @@ class EditCustomerController extends GetxController {
   }
 
   _fetchNewCustomer(data) async {
-    Hive.box<CustomerModel>(BoxName.customers.name);
     await RemoteServices.fetchThirdPartyById(data).then((value) {
       if (!value.hasError) {
         Storage.customers.put(data, value.data);
@@ -159,8 +157,6 @@ class EditCustomerController extends GetxController {
   }
 
   Future _fetchCustomerById(String id) async {
-    Hive.box<CustomerModel>(BoxName.customers.name);
-
     customerToEdit.value = Storage.customers.get(id)!;
     nameController.text = customerToEdit.value.name!;
     addressController.text = customerToEdit.value.address ?? '';
@@ -182,7 +178,6 @@ class EditCustomerController extends GetxController {
         message: 'Customer updated',
       );
 
-      Hive.box<CustomerModel>(BoxName.customers.name);
       Storage.customers.put(customerId, value.data);
 
       Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {
