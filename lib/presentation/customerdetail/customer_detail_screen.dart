@@ -65,13 +65,19 @@ class CustomerDetailScreen extends GetView<CustomerdetailController> {
                           Hive.box<InvoiceModel>(BoxName.invoices.name)
                               .listenable(keys: [controller.customerId]),
                       builder: (context, value, child) {
-                        var invoices = value
+                        List<InvoiceModel> invoices = value
                             .toMap()
                             .values
                             .toList()
                             .where((inv) => inv.socid == controller.customerId)
                             .toList();
-                        return InvoiceListWidget(invoices: invoices);
+                        return invoices.isEmpty
+                            ? const ListTile(
+                                title: Text(
+                                'No invoices.',
+                                textAlign: TextAlign.center,
+                              ))
+                            : InvoiceListWidget(invoices: invoices);
                       }),
                 ],
               ),

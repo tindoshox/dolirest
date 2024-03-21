@@ -22,7 +22,7 @@ class SettingsScreen extends GetView<SettingsController> {
             child: Text(
               textAlign: TextAlign.justify,
               'About API Keys \n\n'
-              'The API key is your private secret and should never be made public. This API key is used to connect this app without a usernamer or password.',
+              'The API key is your private secret and should never be made public. This API key is used to connect this app without a username or password.',
             ),
           ),
         ),

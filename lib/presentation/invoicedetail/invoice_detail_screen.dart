@@ -89,12 +89,24 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                           valueListenable:
                               Hive.box<InvoiceModel>(BoxName.invoices.name)
                                   .listenable(keys: [controller.customerId]),
-                          builder: (context, invoices, child) =>
-                              PaymentsDataTable(
-                            invoiceId: controller.invoiceId,
-                            totalTtc:
-                                invoices.get(controller.invoiceId)!.totalTtc,
-                          ),
+                          builder: (context, invoices, child) {
+                            return invoices
+                                        .get(controller.invoiceId)!
+                                        .totalpaid ==
+                                    0
+                                ? const ListTile(
+                                    title: Text(
+                                      'No payments.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  )
+                                : PaymentsDataTable(
+                                    invoiceId: controller.invoiceId,
+                                    totalTtc: invoices
+                                        .get(controller.invoiceId)!
+                                        .totalTtc,
+                                  );
+                          },
                         )
                       ],
                     ),

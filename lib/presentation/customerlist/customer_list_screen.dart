@@ -99,59 +99,69 @@ class CustomerlistScreen extends GetView<CustomerlistController> {
                                     customer.fax.toString().contains(search))
                                 .toList()
                             : sortedValues;
-                        return ListView.builder(
-                            controller: controller.scrollController,
-                            itemCount: customers.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index < customers.length) {
-                                var customer = customers[index];
-                                return Card(
-                                  child: ListTile(
-                                    onTap: () => Get.toNamed(
-                                        Routes.CUSTOMERDETAIL,
-                                        arguments: {
-                                          'customerId': customer.id.toString(),
-                                        }),
-                                    leading: const Icon(
-                                      Icons.person_2_sharp,
-                                      size: 40,
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            customers[index].name!,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                        return customers.isEmpty
+                            ? const ListTile(
+                                title: Text(
+                                  'No customers found',
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : ListView.builder(
+                                controller: controller.scrollController,
+                                itemCount: customers.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index < customers.length) {
+                                    var customer = customers[index];
+                                    return Card(
+                                      child: ListTile(
+                                        onTap: () => Get.toNamed(
+                                            Routes.CUSTOMERDETAIL,
+                                            arguments: {
+                                              'customerId':
+                                                  customer.id.toString(),
+                                            }),
+                                        leading: const Icon(
+                                          Icons.person_2_sharp,
+                                          size: 40,
                                         ),
-                                      ],
-                                    ),
-                                    subtitle: Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            '${customer.address} ${customer.town}',
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                        title: Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                customers[index].name!,
+                                                style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                // if (loadingMore) {
-                                //   return const ThirdPartyListLoadingTile();
-                                // }
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 32.0),
-                                  child: Center(
-                                      child: Text('nothing more to load!')),
-                                );
-                              }
-                            });
+                                        subtitle: Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                '${customer.address} ${customer.town}',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    // if (loadingMore) {
+                                    //   return const ThirdPartyListLoadingTile();
+                                    // }
+                                    return const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 32.0),
+                                      child: Center(
+                                          child: Text('nothing more to load!')),
+                                    );
+                                  }
+                                });
                       },
                     ),
                   ),

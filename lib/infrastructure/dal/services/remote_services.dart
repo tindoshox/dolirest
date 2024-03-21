@@ -52,10 +52,13 @@ class RemoteServices {
       String jsonString = response.body;
 
       List<dynamic> jsonList = json.decode(jsonString);
-      List<ThirdPartyModel> customers = jsonList
-          .map((jsonItem) =>
-              ThirdPartyModel.fromJson(jsonItem as Map<String, dynamic>))
-          .toList();
+      List<ThirdPartyModel> customers = List.empty();
+      if (jsonList.isNotEmpty) {
+        customers = jsonList
+            .map((jsonItem) =>
+                ThirdPartyModel.fromJson(jsonItem as Map<String, dynamic>))
+            .toList();
+      }
 
       return DataOrException(
         data: customers,
@@ -120,12 +123,15 @@ class RemoteServices {
 
   /// invoiceList
   static Future<DataOrException> fetchInvoiceList(
-      {String customerId = "", String dateModified = '1970-01-01'}) async {
+      {String customerId = "",
+      String dateModified = '1970-01-01',
+      String status = ""}) async {
     final queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
       "page": "1",
       "limit": "0",
+      "status": status,
       "thirdparty_ids": customerId,
       "sqlfilters": "(t.type:=:0) and (t.tms:>:'$dateModified')"
     };
@@ -140,10 +146,13 @@ class RemoteServices {
       String jsonString = response.body;
       List<dynamic> jsonList = json.decode(jsonString);
 
-      List<InvoiceModel> invoices = jsonList
-          .map((jsonItem) =>
-              InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
-          .toList();
+      List<InvoiceModel> invoices = List.empty();
+      if (jsonList.isNotEmpty) {
+        invoices = jsonList
+            .map((jsonItem) =>
+                InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
+            .toList();
+      }
 
       return DataOrException(
         data: invoices,

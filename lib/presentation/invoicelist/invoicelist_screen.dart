@@ -97,20 +97,29 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                                 )
                                 .toList()
                             : sortedValues;
-                        return ListView.builder(
-                            controller: controller.scrollController,
-                            itemCount: invoices.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index < invoices.length) {
-                                var invoice = invoices[index];
-                                return InvoiceListTile(invoice: invoice);
-                              } else {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 32.0),
-                                  child: Center(child: Text('End of list!')),
-                                );
-                              }
-                            });
+                        return invoices.isEmpty
+                            ? const ListTile(
+                                title: Text(
+                                  'No invoices found',
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : ListView.builder(
+                                controller: controller.scrollController,
+                                itemCount: invoices.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index < invoices.length) {
+                                    var invoice = invoices[index];
+                                    return InvoiceListTile(invoice: invoice);
+                                  } else {
+                                    return const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 32.0),
+                                      child:
+                                          Center(child: Text('End of list!')),
+                                    );
+                                  }
+                                });
                       },
                     ),
                   ),

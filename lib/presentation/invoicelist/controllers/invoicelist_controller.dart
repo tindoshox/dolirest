@@ -32,7 +32,7 @@ class InvoicelistController extends GetxController {
   getAllInvoices() async {
     isLoading(true);
 
-    await RemoteServices.fetchInvoiceList().then((value) async {
+    await RemoteServices.fetchInvoiceList(status: "unpaid").then((value) async {
       isLoading(false);
       if (!value.hasError) {
         var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);

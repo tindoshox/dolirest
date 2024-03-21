@@ -54,7 +54,7 @@ class HomeController extends GetxController {
       await _getAllCustomers();
     }
     if (invoices.isEmpty) {
-      await _getAllInvoices();
+      await _getUnpaidInvoices();
     }
 
     DialogHelper.hideLoading();
@@ -69,11 +69,13 @@ class HomeController extends GetxController {
 
     if (payments.length < invoices.length) {
       for (var invoice in invoices) {
-        await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
-          if (!value.hasError) {
-            paymentBox.put(invoice.id, value.data);
-          }
-        });
+        if (invoice.remaintopay != "0") {
+          await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
+            if (!value.hasError) {
+              paymentBox.put(invoice.id, value.data);
+            }
+          });
+        }
       }
     }
   }
@@ -118,8 +120,8 @@ class HomeController extends GetxController {
     });
   }
 
-  Future _getAllInvoices() async {
-    await RemoteServices.fetchInvoiceList().then((value) async {
+  Future _getUnpaidInvoices() async {
+    await RemoteServices.fetchInvoiceList(status: 'unpaid').then((value) async {
       if (!value.hasError) {
         var box = await Hive.openBox<InvoiceModel>(BoxName.invoices.name);
         for (var invoice in value.data) {
