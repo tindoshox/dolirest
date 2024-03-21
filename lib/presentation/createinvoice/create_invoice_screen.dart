@@ -115,7 +115,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                       CustomFormField(
                         name: 'invoice_date',
                         prefixIcon: const Icon(Icons.date_range),
-                        validator: (invoicDate) =>
+                        validator: (invoiceDate) =>
                             controller.invoiceDate.value.isAfter(DateTime.now())
                                 ? 'Date cannot be in the future'
                                 : null,

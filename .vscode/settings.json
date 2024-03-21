@@ -1,3 +1,33 @@
 {
-    "CodeGPT.apiKey": "Google AI Studio"
+    "CodeGPT.apiKey": "Google AI Studio",
+    "cSpell.words": [
+        "apikey",
+        "ARGB",
+        "autocorrect",
+        "autofocus",
+        "Createinvoice",
+        "customerdetail",
+        "Customerlist",
+        "debouncer",
+        "Dolibarr",
+        "dolirest",
+        "EDITCUSTOMER",
+        "freetext",
+        "fromhome",
+        "Getx",
+        "invid",
+        "invoicedetail",
+        "INVOICELIST",
+        "LTRB",
+        "Reglement",
+        "remaintopay",
+        "reportid",
+        "SMBI",
+        "snackbars",
+        "socid",
+        "spinkit",
+        "sumpayed",
+        "totalpaid",
+        "unfocus"
+    ]
 }
