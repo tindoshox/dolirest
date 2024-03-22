@@ -1,4 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -60,12 +62,13 @@ class InvoiceListTile extends StatelessWidget {
   }
 
   Widget _buildCustomerRow() {
+    final CustomerModel? customer = Storage.customers.get(invoice.socid);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
           child: Text(
-            invoice.nom ?? 'Unknown', // Handle potential null
+            customer?.name ?? 'Unknown', // Handle potential null
             overflow: TextOverflow.ellipsis,
           ),
         ),

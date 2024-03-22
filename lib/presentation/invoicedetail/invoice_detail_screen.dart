@@ -62,7 +62,7 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
       body: Obx(
         () => controller.isLoading.value
             ? const LoadingIndicator(
-                message: Text('loading...'),
+                message: Text('Loading payment history...'),
               )
             : TabBarView(
                 controller: controller.tabController,
@@ -80,33 +80,23 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                         customer: controller.customer.value,
                         invoice: invoices.get(controller.invoiceId)!),
                   ),
-                  Scrollbar(
-                    child: ListView(
-                      children: [
-                        ValueListenableBuilder(
-                          valueListenable: Storage.invoices
-                              .listenable(keys: [controller.customerId]),
-                          builder: (context, invoices, child) {
-                            return invoices
-                                        .get(controller.invoiceId)!
-                                        .totalpaid ==
-                                    0
-                                ? const ListTile(
-                                    title: Text(
-                                      'No payments.',
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  )
-                                : PaymentsDataTable(
-                                    invoiceId: controller.invoiceId,
-                                    totalTtc: invoices
-                                        .get(controller.invoiceId)!
-                                        .totalTtc,
-                                  );
-                          },
-                        )
-                      ],
-                    ),
+                  ValueListenableBuilder(
+                    valueListenable: Storage.invoices
+                        .listenable(keys: [controller.customerId]),
+                    builder: (context, invoices, child) {
+                      return invoices.get(controller.invoiceId)!.totalpaid == 0
+                          ? const ListTile(
+                              title: Text(
+                                'No payments.',
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          : PaymentsDataTable(
+                              invoiceId: controller.invoiceId,
+                              totalTtc:
+                                  invoices.get(controller.invoiceId)!.totalTtc,
+                            );
+                    },
                   ),
                 ],
               ),

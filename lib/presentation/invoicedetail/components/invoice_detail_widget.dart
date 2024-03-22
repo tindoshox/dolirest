@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:flutter/widgets.dart';
 
 class InvoiceDetailWidget extends StatelessWidget {
   const InvoiceDetailWidget({
@@ -29,34 +31,27 @@ class InvoiceDetailWidget extends StatelessWidget {
   List<Widget> _buildChildren() {
     return [
       _buildInvoiceHeader(),
-      _buildDueDateTile(),
       _buildCustomerDetails(),
+      _buildDueDateTile(),
       _buildInvoiceItems(),
+      _buildTotals(invoice)
     ];
   }
 
   Widget _buildInvoiceHeader() {
     return ListTile(
-      isThreeLine: true,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            invoice.ref ?? '',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          if (invoice.refClient != null)
-            Text('Deliver Note: ${invoice.refClient}'),
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(customer.name ?? ''),
-          Text('Balance Due: ${invoice.remaintopay}')
-        ],
-      ),
-    );
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              invoice.ref ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            if (invoice.refClient != null)
+              Text('Deliver Note: ${invoice.refClient}'),
+          ],
+        ),
+        subtitle: Text('Balance Due: ${invoice.remaintopay}'));
   }
 
   Widget _buildDueDateTile() {
@@ -76,24 +71,32 @@ class InvoiceDetailWidget extends StatelessWidget {
 
   Widget _buildCustomerDetails() {
     return ListTile(
-      isThreeLine: true,
-      title: Text(
-        '${customer.town}: ${customer.address}',
-        style: const TextStyle(fontSize: 14),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(height: 20),
-          if (customer.phone != null && customer.phone!.isNotEmpty)
-            InkWell(
-                onTap: () => Utils.makePhoneCall(customer.phone!.trim()),
-                child: Text(customer.phone!)),
-          const SizedBox(height: 20),
-          if (customer.fax != null && customer.fax!.isNotEmpty)
-            InkWell(
-                onTap: () => Utils.makePhoneCall(customer.fax!.trim()),
-                child: Text(customer.fax!)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(customer.name ?? ''),
+              Text(
+                '${customer.town}: ${customer.address}',
+              ),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (customer.phone != null && customer.phone!.isNotEmpty)
+                InkWell(
+                    onTap: () => Utils.makePhoneCall(customer.phone!.trim()),
+                    child: Text(customer.phone!)),
+              if (customer.fax != null && customer.fax!.isNotEmpty)
+                InkWell(
+                    onTap: () => Utils.makePhoneCall(customer.fax!.trim()),
+                    child: Text(customer.fax!)),
+            ],
+          )
         ],
       ),
     );
@@ -105,48 +108,178 @@ class InvoiceDetailWidget extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.all(10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Items',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('Amount',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))
-            ],
+          child: Flexible(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: Row(
+                    children: [
+                      Text('Items',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Qty',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('Unit',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('Total',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
         const Divider(color: Colors.grey),
         if (invoice.lines != null && invoice.lines!.isNotEmpty)
           ...invoice.lines!.map((line) => _buildInvoiceLine(line)),
-        const Divider(color: Colors.grey, thickness: 1),
       ],
     );
   }
 
   Widget _buildInvoiceLine(Line line) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(line.productLabel ?? line.description ?? ''),
-              Text(Utils.amounts(line.totalTtc.toString())),
+              Flexible(
+                flex: 3,
+                child: Row(
+                  children: [
+                    Text(
+                      line.productLabel ?? line.description ?? '',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(line.qty ?? ''),
+                  ],
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(Utils.amounts(line.subprice)),
+                  ],
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(Utils.amounts(line.totalTtc.toString())),
+                  ],
+                ),
+              ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-                '${line.qty} x ${Utils.amounts(line.totalTtc.toString())}'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotals(InvoiceModel invoice) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Flexible(
+                flex: 7,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Invoice Total:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Paid:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Balance:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                flex: 3,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          Utils.amounts(invoice.totalTtc),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          Utils.amounts(invoice.sumpayed),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          invoice.remaintopay ?? '0',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          if (line.description !=
-              null) // Only display if description is not null
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(line.description!),
-            ),
         ],
       ),
     );

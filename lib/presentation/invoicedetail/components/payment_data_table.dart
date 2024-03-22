@@ -16,42 +16,96 @@ class PaymentsDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> columns = ['Date', 'Receipt', 'Amount', 'Bal'];
+    return ValueListenableBuilder(
+      valueListenable: Storage.payments.listenable(),
+      builder: (BuildContext context, Box<List> box, Widget? child) {
+        final List<PaymentModel> payments = box.get(invoiceId,
+            defaultValue: <PaymentModel>[])!.cast<PaymentModel>();
+        int price = int.parse(Utils.amounts(totalTtc));
+        return CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              title: Row(
+                children: [
+                  _buildCell(
+                      text: 'Date', mainAxisAlignment: MainAxisAlignment.start),
+                  _buildCell(text: 'Receipt'),
+                  _buildCell(text: 'Amount'),
+                  _buildCell(
+                      text: 'Balance',
+                      mainAxisAlignment: MainAxisAlignment.end),
+                ],
+              ),
+              pinned: true,
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  var payment = payments[index];
+                  price -= Utils.intAmounts(payment.amount);
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: ValueListenableBuilder(
-        valueListenable: Storage.payments.listenable(),
-        builder: (BuildContext context, Box<List> box, Widget? child) {
-          final List<PaymentModel> payments = box.get(invoiceId,
-              defaultValue: <PaymentModel>[])!.cast<PaymentModel>();
-          int price = int.parse(Utils.amounts(totalTtc));
-          return DataTable(
-            columnSpacing: 30,
-            columns: _getColumns(columns),
-            rows: _getRows(payments, price),
-          );
-        },
-      ),
+                  return payments.isEmpty
+                      ? const ListTile(
+                          title: Text('No Payments'),
+                          titleAlignment: ListTileTitleAlignment.center,
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 3),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  _buildCell(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      text: Utils.datePaid(payment.date!),
+                                      style: null),
+                                  _buildCell(
+                                      text: payment.num ??
+                                          payment.type.toString().toLowerCase(),
+                                      style: null),
+                                  _buildCell(
+                                      text: Utils.amounts(payment.amount),
+                                      style: null),
+                                  _buildCell(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      text: price.toString(),
+                                      style: null)
+                                ],
+                              ),
+                              const Divider(
+                                thickness: 0.5,
+                              )
+                            ],
+                          ),
+                        );
+                },
+                childCount: payments.length,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  List<DataRow> _getRows(List<PaymentModel> payments, int price) {
-    return payments.map((PaymentModel payment) {
-      price -= Utils.intAmounts(payment.amount);
-      return DataRow(
-          cells: _getCells([
-        Text(Utils.datePaid(payment.date!)),
-        Text(payment.num ?? payment.type.toString().toLowerCase()),
-        Text(Utils.amounts(payment.amount)),
-        Text(price.toString()),
-      ]));
-    }).toList();
+  Flexible _buildCell(
+      {String text = 'Heading',
+      MainAxisAlignment mainAxisAlignment = MainAxisAlignment.center,
+      TextStyle? style = const TextStyle(fontSize: 20)}) {
+    return Flexible(
+      flex: 2,
+      child: Row(
+        mainAxisAlignment: mainAxisAlignment,
+        children: [
+          Text(
+            text,
+            style: style,
+          ),
+        ],
+      ),
+    );
   }
-
-  List<DataCell> _getCells(List<dynamic> cells) =>
-      cells.map((data) => DataCell(data)).toList();
-
-  List<DataColumn> _getColumns(List<String> columns) =>
-      columns.map((String column) => DataColumn(label: Text(column))).toList();
 }

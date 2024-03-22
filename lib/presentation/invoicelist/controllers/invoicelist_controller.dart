@@ -1,7 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
@@ -38,7 +37,7 @@ class InvoicelistController extends GetxController {
           Storage.invoices.put(invoice.id, invoice);
         }
 
-        SnackBarHelper.successSnackbar(message: 'Inovice data refreshed');
+        SnackBarHelper.successSnackbar(message: 'Invoice data refreshed');
       } else {
         SnackBarHelper.errorSnackbar(message: 'Could not refresh invoice data');
       }

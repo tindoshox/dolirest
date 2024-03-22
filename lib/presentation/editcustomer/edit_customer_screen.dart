@@ -20,7 +20,8 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
       ),
       body: Center(
         child: controller.isLoading.value
-            ? const LoadingIndicator(message: Text('Loading...'))
+            ? const LoadingIndicator(
+                message: Text('Loading customer invoices...'))
             : _buildForm(context),
       ),
     );
