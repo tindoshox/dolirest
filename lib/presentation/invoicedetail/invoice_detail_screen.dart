@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicedetail/components/invoice_detail_widget.dart';
-import 'package:dolirest/presentation/invoicedetail/components/payment_data_table.dart';
+import 'package:dolirest/presentation/invoicedetail/components/payment_list.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -91,10 +91,15 @@ class InvoicedetailScreen extends GetView<InvoiceDetailController> {
                                 textAlign: TextAlign.center,
                               ),
                             )
-                          : PaymentsDataTable(
-                              invoiceId: controller.invoiceId,
-                              totalTtc:
-                                  invoices.get(controller.invoiceId)!.totalTtc,
+                          : Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: PaymentsList(
+                                invoiceId: controller.invoiceId,
+                                totalTtc: invoices
+                                    .get(controller.invoiceId)!
+                                    .totalTtc,
+                              ),
                             );
                     },
                   ),

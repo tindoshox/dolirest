@@ -144,9 +144,9 @@ class PaymentController extends GetxController {
   _processPayment(body) async {
     await RemoteServices.addpayment(body).then((value) async {
       if (!value.hasError) {
-        await _updateDueDate(invid);
-        await refreshPayments(invid);
-        await refreshInvoice(invid);
+        await _updateDueDate(invoice.value.id);
+        await refreshPayments(invoice.value.id);
+        await refreshInvoice(invoice.value.id);
 
         if (fromHomeScreen) {
           DialogHelper.hideLoading();
@@ -165,7 +165,7 @@ class PaymentController extends GetxController {
         } else {
           DialogHelper.hideLoading();
           Get.back();
-          SnackBarHelper.successSnackbar(message: 'Payment succesful');
+          SnackBarHelper.successSnackbar(message: 'Payment successful');
         }
       } else {
         DialogHelper.hideLoading();

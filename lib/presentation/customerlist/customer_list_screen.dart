@@ -112,11 +112,13 @@ class _CustomerList extends GetView<CustomerListController> {
                     .toList()
                 : sortedValues;
             return customers.isEmpty
-                ? const ListTile(
-                    title: Text(
-                    'No customers found',
-                    textAlign: TextAlign.center,
-                  ))
+                ? ListTile(
+                    title: const Text('No customers found',
+                        textAlign: TextAlign.center),
+                    trailing: ElevatedButton(
+                        onPressed: () => controller.getAllCustomers(),
+                        child: const Text('Refresh')),
+                  )
                 : ListView.builder(
                     controller: controller.scrollController,
                     itemCount: customers.length + 1,

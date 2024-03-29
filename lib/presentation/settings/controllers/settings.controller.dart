@@ -6,6 +6,8 @@ import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+// ignore: unused_import
+import 'package:path_provider/path_provider.dart';
 
 class SettingsController extends GetxController {
   String serverUrl = '';
@@ -13,24 +15,6 @@ class SettingsController extends GetxController {
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
   TextEditingController urlController = TextEditingController();
   TextEditingController apiController = TextEditingController();
-
-  @override
-  void onInit() {
-    readSettings();
-    super.onInit();
-  }
-
-  void readSettings() async {
-    if (Storage.settings.get('url') != null) {
-      serverUrl = Storage.settings.get('url');
-      urlController.text = serverUrl;
-    }
-
-    if (Storage.settings.get('apikey') != null) {
-      apiKey = Storage.settings.get('apikey');
-      apiController.text = apiKey;
-    }
-  }
 
   /// Validates the form and adds the server if the form is valid.
   Future validate() async {

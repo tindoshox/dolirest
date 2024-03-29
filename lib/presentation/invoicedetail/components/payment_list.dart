@@ -4,8 +4,8 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class PaymentsDataTable extends StatelessWidget {
-  const PaymentsDataTable({
+class PaymentsList extends StatelessWidget {
+  const PaymentsList({
     super.key,
     required this.totalTtc,
     required this.invoiceId,
@@ -22,40 +22,46 @@ class PaymentsDataTable extends StatelessWidget {
         final List<PaymentModel> payments = box.get(invoiceId,
             defaultValue: <PaymentModel>[])!.cast<PaymentModel>();
         int price = int.parse(Utils.amounts(totalTtc));
-        return CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              title: Row(
-                children: [
-                  _buildCell(
-                      text: 'Date', mainAxisAlignment: MainAxisAlignment.start),
-                  _buildCell(text: 'Receipt'),
-                  _buildCell(text: 'Amount'),
-                  _buildCell(
-                      text: 'Balance',
-                      mainAxisAlignment: MainAxisAlignment.end),
-                ],
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyHeaderDelegate(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Flex(
+                      direction: Axis.horizontal,
+                      children: [
+                        _buildCell(
+                            text: 'Date',
+                            mainAxisAlignment: MainAxisAlignment.start),
+                        _buildCell(text: 'Receipt'),
+                        _buildCell(text: 'Amt'),
+                        _buildCell(
+                            text: 'Balance',
+                            mainAxisAlignment: MainAxisAlignment.end),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              pinned: true,
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  var payment = payments[index];
-                  price -= Utils.intAmounts(payment.amount);
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    var payment = payments[index];
+                    price -= Utils.intAmounts(payment.amount);
 
-                  return payments.isEmpty
-                      ? const ListTile(
-                          title: Text('No Payments'),
-                          titleAlignment: ListTileTitleAlignment.center,
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 3),
-                          child: Column(
+                    return payments.isEmpty
+                        ? const ListTile(
+                            title: Text('No Payments'),
+                            titleAlignment: ListTileTitleAlignment.center,
+                          )
+                        : Column(
                             children: [
-                              Row(
+                              Flex(
+                                direction: Axis.horizontal,
                                 children: [
                                   _buildCell(
                                       mainAxisAlignment:
@@ -79,13 +85,13 @@ class PaymentsDataTable extends StatelessWidget {
                                 thickness: 0.5,
                               )
                             ],
-                          ),
-                        );
-                },
-                childCount: payments.length,
+                          );
+                  },
+                  childCount: payments.length,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -107,5 +113,28 @@ class PaymentsDataTable extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyHeaderDelegate({required this.child});
+
+  @override
+  double get minExtent => 0;
+
+  @override
+  double get maxExtent => 40; // Adjust this value according to your needs
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) {
+    return child != oldDelegate.child;
   }
 }

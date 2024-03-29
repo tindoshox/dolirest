@@ -33,7 +33,7 @@ class HomeScreen extends GetView<HomeController> {
     return PopupMenuButton(
       itemBuilder: (context) => [
         _buildPopupMenuItem(
-          onTap: () => Get.toNamed(Routes.SETTINGS),
+          onTap: () => controller.logout(),
           value: '/settings',
           text: "Settings",
         ),

@@ -41,14 +41,13 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     return CustomActionButton(
       buttonText: buttonText,
       onTap: () async {
-        await controller.checkConnection().then((connected) {
-          if (connected) {
-            Get.offAndToNamed(route, arguments: {
-              'customerId': controller.customerId,
-              ...?additionalArgs
-            });
-          }
-        });
+        bool connected = await controller.checkConnection();
+        if (connected) {
+          Get.offAndToNamed(route, arguments: {
+            'customerId': controller.customerId,
+            ...?additionalArgs
+          });
+        }
       },
     );
   }

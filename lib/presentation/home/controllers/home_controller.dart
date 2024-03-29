@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -86,6 +87,7 @@ class HomeController extends GetxController {
     Timer.periodic(const Duration(minutes: 15), (Timer timer) async {
       if (connected.value) {
         await _getModifiedCustomers();
+
         await _getModifiedInvoices();
       }
     });
@@ -104,17 +106,19 @@ class HomeController extends GetxController {
   Future _getModifiedCustomers() async {
     List<CustomerModel> list = Storage.customers.toMap().values.toList();
     list.sort((a, b) => a.dateModification.compareTo(b.dateModification));
+    if (list.isNotEmpty) {
+      int dateModified = list[list.length - 1].dateModification;
 
-    int dateModified = list[list.length - 1].dateModification;
-    await RemoteServices.fetchThirdPartyList(
-            dateModified: Utils.intToYearFirst(dateModified))
-        .then((value) async {
-      if (!value.hasError) {
-        for (CustomerModel customer in value.data) {
-          Storage.customers.put(customer.id, customer);
+      await RemoteServices.fetchThirdPartyList(
+              dateModified: Utils.intToYearFirst(dateModified))
+          .then((value) async {
+        if (!value.hasError) {
+          for (CustomerModel customer in value.data) {
+            Storage.customers.put(customer.id, customer);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   Future _getUnpaidInvoices() async {
@@ -135,20 +139,40 @@ class HomeController extends GetxController {
         .where((i) => i.remaintopay != "0")
         .toList();
     invoices.sort((a, b) => a.dateModification.compareTo(b.dateModification));
-    int dateModified = invoices[invoices.length - 1].dateModification;
-    await RemoteServices.fetchInvoiceList(
-            dateModified: Utils.intToYearFirst(dateModified))
-        .then((value) async {
-      if (!value.hasError) {
-        for (InvoiceModel invoice in value.data) {
-          Storage.invoices.put(invoice.id, invoice);
-          await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
-            if (!value.hasError) {
-              Storage.payments.put(invoice.id, value.data);
-            }
-          });
+    if (invoices.isNotEmpty) {
+      int dateModified = invoices[invoices.length - 1].dateModification;
+      await RemoteServices.fetchInvoiceList(
+              dateModified: Utils.intToYearFirst(dateModified))
+          .then((value) async {
+        if (!value.hasError) {
+          for (InvoiceModel invoice in value.data) {
+            Storage.invoices.put(invoice.id, invoice);
+            await RemoteServices.fetchPaymentsByInvoice(invoice.id)
+                .then((value) {
+              if (!value.hasError) {
+                Storage.payments.put(invoice.id, value.data);
+              }
+            });
+          }
         }
-      }
+      });
+    }
+  }
+
+  logout() async {
+    await clearStorage().then((logout) {
+      Get.offAllNamed(Routes.SETTINGS);
     });
+  }
+
+  clearStorage() async {
+    await Storage.settings.delete('apikey');
+    await Storage.settings.delete('url');
+    await Storage.settings.delete('user');
+    await Storage.invoices.clear();
+    await Storage.customers.clear();
+    await Storage.payments.clear();
+    await Storage.products.clear();
+    await Storage.groups.clear();
   }
 }

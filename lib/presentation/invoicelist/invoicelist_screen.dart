@@ -106,9 +106,13 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     .toList()
                 : list;
             return invoices.isEmpty
-                ? const ListTile(
-                    title:
-                        Text('No invoices found', textAlign: TextAlign.center))
+                ? ListTile(
+                    title: const Text('No invoices found',
+                        textAlign: TextAlign.center),
+                    trailing: ElevatedButton(
+                        onPressed: () => controller.getAllInvoices(),
+                        child: const Text('Refresh')),
+                  )
                 : ListView.builder(
                     controller: controller.scrollController,
                     itemCount: invoices.length + 1,

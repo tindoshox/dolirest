@@ -1,9 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/utils/utils.dart';
-import 'package:flutter/widgets.dart';
 
 class InvoiceDetailWidget extends StatelessWidget {
   const InvoiceDetailWidget({
@@ -103,60 +101,22 @@ class InvoiceDetailWidget extends StatelessWidget {
   }
 
   Widget _buildInvoiceItems() {
+    //1
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.all(10),
-          child: Flexible(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: Row(
-                    children: [
-                      Text('Items',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Qty',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text('Unit',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text('Total',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                )
-              ],
-            ),
+        Padding(
+          //1
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildLineItemText(flex: 3, text: 'Item'),
+              _buildLineItemText(text: 'Qty'),
+              _buildLineItemText(text: 'Unit'),
+              _buildLineItemText(text: 'Total'),
+            ],
           ),
         ),
         const Divider(color: Colors.grey),
@@ -166,50 +126,86 @@ class InvoiceDetailWidget extends StatelessWidget {
     );
   }
 
+  Flexible _buildLineItemText(
+      {String text = 'placeholder',
+      int flex = 1,
+      TextOverflow overflow = TextOverflow.ellipsis}) {
+    return Flexible(
+      flex: flex,
+      child: Row(
+        children: [
+          Text(
+            text,
+            overflow: overflow,
+            //style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInvoiceLine(Line line) {
+    //2
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildLineItemText(
+                  flex: 3, text: line.productLabel ?? line.description ?? ''),
+              _buildLineItemText(text: line.qty ?? ''),
+              _buildLineItemText(text: Utils.amounts(line.subprice)),
+              _buildLineItemText(text: Utils.amounts(line.totalTtc)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotals(InvoiceModel invoice) {
+    //3
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+          Flex(
+            direction: Axis.horizontal,
             children: [
               Flexible(
-                flex: 3,
+                flex: 7,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      line.productLabel ?? line.description ?? '',
-                      overflow: TextOverflow.ellipsis,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _buildTotalsText(text: 'Invoice Total:'),
+                        _buildTotalsText(text: 'paid:'),
+                        _buildTotalsText(text: 'Balance:'),
+                      ],
                     ),
                   ],
                 ),
               ),
               Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(line.qty ?? ''),
-                  ],
-                ),
-              ),
-              Flexible(
-                flex: 1,
+                flex: 3,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(Utils.amounts(line.subprice)),
-                  ],
-                ),
-              ),
-              Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(Utils.amounts(line.totalTtc.toString())),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _buildTotalsText(text: Utils.amounts(invoice.totalTtc)),
+                        _buildTotalsText(text: Utils.amounts(invoice.sumpayed)),
+                        _buildTotalsText(text: invoice.remaintopay ?? '0'),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -220,68 +216,10 @@ class InvoiceDetailWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTotals(InvoiceModel invoice) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Flexible(
-                flex: 7,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Invoice Total:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Paid:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Balance:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Flexible(
-                flex: 3,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          Utils.amounts(invoice.totalTtc),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          Utils.amounts(invoice.sumpayed),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          invoice.remaintopay ?? '0',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+  Text _buildTotalsText({String text = 'placeholder'}) {
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.bold),
     );
   }
 }
