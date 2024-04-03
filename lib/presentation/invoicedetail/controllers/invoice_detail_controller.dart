@@ -31,6 +31,7 @@ class InvoiceDetailController extends GetxController
   String customerId = Get.arguments['customerId'];
   Rx<DateTime> selectedDate = DateTime.now().obs;
   List<DocumentListModel> documentList = <DocumentListModel>[];
+  TextEditingController refController = TextEditingController();
 
   late TabController tabController;
   late TargetPlatform? platform;
@@ -155,7 +156,7 @@ class InvoiceDetailController extends GetxController
           }
         });
       } catch (e) {
-        Get.snackbar('Error', 'an unkown error occured');
+        Get.snackbar('Error', 'an unknown error occurred');
       }
     } else {
       DialogHelper.hideLoading();
