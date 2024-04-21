@@ -7,13 +7,13 @@ import 'package:get/get.dart';
 
 class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> subscription;
+  late StreamSubscription<List<ConnectivityResult>> subscription;
 
   @override
   void onInit() {
     super.onInit();
-    subscription =
-        _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+    subscription = _connectivity.onConnectivityChanged
+        .listen((List<ConnectivityResult> result) {
       _updateConnectionStatus(result);
     });
   }
@@ -24,11 +24,12 @@ class NetworkController extends GetxController {
     super.dispose();
   }
 
-  void _updateConnectionStatus(ConnectivityResult connectivityResult) {
-    if (connectivityResult == ConnectivityResult.none) {
-      Storage.settings.put('connected', false);
-    } else {
+  void _updateConnectionStatus(List<ConnectivityResult> connectivityResult) {
+    if (connectivityResult.contains(ConnectivityResult.wifi) ||
+        connectivityResult.contains(ConnectivityResult.mobile)) {
       Storage.settings.put('connected', true);
+    } else {
+      Storage.settings.put('connected', false);
     }
   }
 }
