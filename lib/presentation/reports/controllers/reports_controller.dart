@@ -151,7 +151,7 @@ class ReportsController extends GetxController {
           } else {
             //Creates file in storage
             Utils.createFileFromString(
-                    value.data.content, '${selectedReport.value.reportid}.pdf')
+                    value.data.content, selectedReport.value.reportid)
                 .then((value) {
               DialogHelper.hideLoading();
 
