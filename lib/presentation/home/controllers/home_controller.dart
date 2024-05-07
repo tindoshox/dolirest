@@ -46,15 +46,20 @@ class HomeController extends GetxController {
 
   _loadInitialData() async {
     DialogHelper.showLoading('Loading initial data');
-    List<CustomerModel> list = Storage.customers.values.toList();
+    List<CustomerModel> customers = Storage.customers.values.toList();
 
     List<InvoiceModel> invoices = Storage.invoices.toMap().values.toList();
 
-    if (list.isEmpty) {
+    if (customers.isEmpty) {
       await _getAllCustomers();
+    } else {
+      await _getModifiedCustomers();
     }
+
     if (invoices.isEmpty) {
       await _getUnpaidInvoices();
+    } else {
+      await _getModifiedInvoices();
     }
 
     DialogHelper.hideLoading();
