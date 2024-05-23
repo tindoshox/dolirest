@@ -60,7 +60,7 @@ class CustomActionButton extends StatelessWidget {
         minimumSize: minimumSize,
         side: BorderSide(
           width: 1,
-          color: buttonColor ?? Theme.of(context).colorScheme.onBackground,
+          color: buttonColor ?? Theme.of(context).colorScheme.onSurface,
         ),
       ),
       child: Text(buttonText),
