@@ -60,7 +60,7 @@ class Nav {
     ),
     GetPage(
       name: Routes.INVOICEDETAIL,
-      page: () => const InvoicedetailScreen(),
+      page: () => const InvoiceDetailScreen(),
       binding: InvoicedetailControllerBinding(),
       transition: transition,
       transitionDuration: transitionDuration,

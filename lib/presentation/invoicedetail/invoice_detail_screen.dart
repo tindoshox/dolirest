@@ -11,8 +11,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/invoice_detail_controller.dart';
 
-class InvoicedetailScreen extends GetView<InvoiceDetailController> {
-  const InvoicedetailScreen({super.key});
+class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
+  const InvoiceDetailScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
