@@ -42,7 +42,7 @@ class DolibarrUserModel {
   dynamic clicktodialPoste;
   int? datelastlogin;
   int? datepreviouslogin;
-  String? flagdelsessionsbefore;
+  dynamic flagdelsessionsbefore;
   String? iplastlogin;
   String? ippreviouslogin;
   String? datestartvalidity;

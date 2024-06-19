@@ -213,10 +213,20 @@ class PaymentScreen extends GetView<PaymentController> {
                         onChanged: (value) => controller.receipt.value = value!,
                         prefixIcon: const Icon(Icons.numbers),
                         keyboardType: TextInputType.number,
-                        validator: (receipt) =>
-                            GetUtils.isLengthLessThan(receipt, 4)
-                                ? 'Invalid receipt number'
-                                : null,
+                        validator: (receipt) {
+                          if (receipt!.isEmpty) {
+                            return 'Amount is required';
+                          }
+                          if (receipt.length < 4) {
+                            return 'Invalid receipt number';
+                          }
+                          // ignore: invalid_use_of_protected_member
+                          if (controller.receiptNumbers.value
+                              .contains(receipt)) {
+                            return 'Receipt number already used for this customer';
+                          }
+                          return null;
+                        },
                         controller: controller.receiptController,
                         labelText: 'Receipt No',
                       ),

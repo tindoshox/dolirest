@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 

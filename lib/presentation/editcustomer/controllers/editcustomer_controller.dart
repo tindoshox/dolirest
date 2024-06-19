@@ -69,8 +69,6 @@ class EditCustomerController extends GetxController {
   }
 
   getAddressSuggestions({String? town = ""}) {
-    debugPrint('City $town:');
-
     List<CustomerModel> customers = Storage.customers.toMap().values.toList();
     if (town != null && town != "") {
       customers.removeWhere((element) => element.town != town.trim());
@@ -82,7 +80,6 @@ class EditCustomerController extends GetxController {
     addresses.removeWhere((element) => element == "");
 
     addresses.sort((a, b) => a.compareTo(b));
-    debugPrint(addresses.length.toString());
   }
 
   getGroups({String search = ""}) {

@@ -12,7 +12,7 @@ class SettingsScreen extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SettingsScreen'),
+        title: const Text('Settings'),
         centerTitle: true,
       ),
       body: ListView(children: [

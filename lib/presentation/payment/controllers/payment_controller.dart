@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -34,6 +35,7 @@ class PaymentController extends GetxController {
 
   RxString amount = ''.obs;
   RxString receipt = ''.obs;
+  RxList receiptNumbers = [].obs;
 
   @override
   void onInit() {
@@ -67,10 +69,19 @@ class PaymentController extends GetxController {
   void fetchData(String customerId, String invoiceId) async {
     await _fetchCustomerById(customerId);
     await _fetchInvoiceById(invoiceId);
+    await _fetchPayments(invoiceId);
   }
 
   _fetchInvoiceById(String invoiceId) {
     invoice.value = Storage.invoices.get(invoiceId)!;
+  }
+
+  Future _fetchPayments(invoiceId) async {
+    List<PaymentModel> list =
+        Storage.payments.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+
+    receiptNumbers.value =
+        list.map((payment) => payment.num.toString()).toList();
   }
 
   _fetchCustomerById(String customerId) {

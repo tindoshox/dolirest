@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
@@ -352,7 +353,7 @@ class RemoteServices {
       } else {
         return DataOrException(
           hasError: true,
-          errorMessage: "Unkown error",
+          errorMessage: "Unknown error",
         );
       }
     }
