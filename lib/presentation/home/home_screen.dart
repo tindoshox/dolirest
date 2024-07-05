@@ -1,4 +1,4 @@
-import 'package:double_back_to_close/double_back_to_close.dart';
+seeimport 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -137,8 +137,7 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   Widget _buildTile(int index) {
-    // Assuming a method to generate tiles based on index
-    // This is a placeholder for the actual implementation
+   
     switch (index) {
       case 0:
         return HomeScreenTile(
