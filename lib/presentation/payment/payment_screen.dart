@@ -69,9 +69,7 @@ class PaymentScreen extends GetView<PaymentController> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: DropdownSearch<InvoiceModel>(
                             key: controller.dropdownKey,
-                            compareFn: (item1, item2) => item1 == item2,
-                            clearButtonProps:
-                                const ClearButtonProps(isVisible: true),
+                            compareFn: (item1, item2) => item1.id == item2.id,
                             onChanged: (invoice) {
                               if (invoice != null) {
                                 controller.fetchData(
@@ -84,9 +82,8 @@ class PaymentScreen extends GetView<PaymentController> {
                                 value == null ? 'Invoice is required' : null,
                             itemAsString: (InvoiceModel? invoice) =>
                                 invoice!.ref!,
-                            dropdownDecoratorProps:
-                                const DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
+                            decoratorProps: const DropDownDecoratorProps(
+                              decoration: InputDecoration(
                                 labelText: 'Invoice',
                                 icon: Icon(Icons.person_outline),
                                 border: UnderlineInputBorder(),
@@ -95,6 +92,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                 ),
                               ),
                             ),
+                            suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
                             popupProps: PopupProps.modalBottomSheet(
                                 searchFieldProps: const TextFieldProps(
                                     textCapitalization:
@@ -112,61 +110,61 @@ class PaymentScreen extends GetView<PaymentController> {
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold)),
-                                isFilterOnline: true,
-                                itemBuilder: (context, InvoiceModel? invoice,
-                                    isSelected) {
+                                itemBuilder: (context, invoice, isSelected, l) {
                                   return ListTile(
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            invoice!.ref!,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          Text(
-                                            'BALANCE: ${invoice.remaintopay}',
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Flexible(
-                                                child: Text(invoice.nom!),
-                                              ),
-                                              Text(
-                                                Utils.intToDayFirst(
-                                                    invoice.dateLimReglement!),
-                                                style: Utils.overDueStyle(
-                                                    invoice.dateLimReglement!),
-                                              ),
-                                            ],
-                                          ),
-                                          Text(invoice.lines![0].productLabel ??
-                                              invoice.lines![0].description)
-                                        ],
-                                      ));
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          invoice.ref,
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          'BALANCE: ${invoice.remaintopay}',
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Flexible(
+                                              child: Text(invoice.nom!),
+                                            ),
+                                            Text(
+                                              Utils.intToDayFirst(
+                                                  invoice.dateLimReglement!),
+                                              style: Utils.overDueStyle(
+                                                  invoice.dateLimReglement!),
+                                            ),
+                                          ],
+                                        ),
+                                        Text(invoice.lines![0].productLabel ??
+                                            invoice.lines![0].description)
+                                      ],
+                                    ),
+                                  );
                                 },
                                 emptyBuilder: ((context, searchEntry) =>
                                     const Center(
                                         child: Text('Invoice not found'))),
                                 showSearchBox: true),
-                            asyncItems: (String searchString) async {
-                              List<InvoiceModel> invoices = await controller
-                                  .fetchInvoices(searchString: searchString);
-                              return invoices;
+                            items: (filter, loadProps) async {
+                              return await controller.fetchInvoices();
                             },
+                            filterFn: (item, filter) =>
+                                item.nom.contains(filter) ||
+                                item.ref.contains(filter),
                           ),
                         ),
                       /*---*/

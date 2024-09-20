@@ -212,28 +212,14 @@ class PaymentController extends GetxController {
     });
   }
 
-  Future fetchInvoices({String searchString = ""}) async {
-    List<InvoiceModel> invoices = List.empty();
-
-    if (searchString.isEmpty) {
-      invoices = Storage.invoices
+   fetchInvoices()  {
+    return Storage.invoices
           .toMap()
           .values
           .toList()
           .where((invoice) => invoice.remaintopay != "0")
           .toList();
-    } else {
-      invoices = Storage.invoices
-          .toMap()
-          .values
-          .toList()
-          .where((invoice) => invoice.remaintopay != "0")
-          .where((invoice) =>
-              invoice.nom!.contains(searchString) ||
-              invoice.ref!.contains(searchString))
-          .toList();
-    }
 
-    return invoices;
+          
   }
 }

@@ -135,9 +135,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
         onChanged: (group) {
           controller.selectedGroup.value = group!;
         },
+        compareFn: (item1, item2) => item1.id==item2.id,
         validator: (value) => value == null ? 'Group is required' : null,
-        dropdownDecoratorProps: const DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
+        decoratorProps: const DropDownDecoratorProps(
+          decoration: InputDecoration(
             labelText: 'Group',
             icon: Icon(Icons.group_outlined),
             border: UnderlineInputBorder(),
@@ -146,6 +147,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           ),
         ),
         itemAsString: (GroupModel group) => group.name,
+        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           modalBottomSheetProps: ModalBottomSheetProps(
             shape: const RoundedRectangleBorder(),
@@ -154,8 +156,8 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           title: const Text('Search Group',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          isFilterOnline: true,
-          itemBuilder: (context, GroupModel group, isSelected) {
+          
+          itemBuilder: (context, group, isSelected,l) {
             return ListTile(
               title: Text(group.name),
             );
@@ -164,7 +166,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
               const Center(child: Text('Group Not Found')),
           showSearchBox: true,
         ),
-        asyncItems: (String searchString) async {
+        items: (String searchString, l) async {
           List<GroupModel> groups =
               await controller.getGroups(search: searchString);
           return groups;

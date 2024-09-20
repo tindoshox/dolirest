@@ -1,4 +1,4 @@
-seeimport 'package:double_back_to_close/double_back_to_close.dart';
+import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -32,11 +32,7 @@ class HomeScreen extends GetView<HomeController> {
   Widget _buildPopupMenu() {
     return PopupMenuButton(
       itemBuilder: (context) => [
-        _buildPopupMenuItem(
-          onTap: () => controller.logout(),
-          value: '/settings',
-          text: "Settings",
-        ),
+       
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
@@ -85,7 +81,7 @@ class HomeScreen extends GetView<HomeController> {
       child: Column(
         children: [
           _buildDatabaseTile(),
-          _buildNetworkStatusTile(),
+         // _buildNetworkStatusTile(),
           const SizedBox(height: 110),
           const Image(image: AssetImage('assets/images/smbi.png')),
         ],
@@ -106,19 +102,19 @@ class HomeScreen extends GetView<HomeController> {
         ));
   }
 
-  Obx _buildNetworkStatusTile() {
-    return Obx(() => ListTile(
-          title: Text(
-            controller.connected.value ? '' : 'Network Disconnected',
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.amber),
-          ),
-          subtitle: Text(
-            controller.connected.value ? '' : 'Data capture is disabled',
-            style: const TextStyle(color: Colors.amber),
-          ),
-        ));
-  }
+  // Obx _buildNetworkStatusTile() {
+  //   return Obx(() => ListTile(
+  //         title: Text(
+  //           controller.connected.value ? '' : 'Network Disconnected',
+  //           style: const TextStyle(
+  //               fontWeight: FontWeight.bold, color: Colors.amber),
+  //         ),
+  //         subtitle: Text(
+  //           controller.connected.value ? '' : 'Data capture is disabled',
+  //           style: const TextStyle(color: Colors.amber),
+  //         ),
+  //       ));
+  // }
 
   Widget _buildTiles() {
     return Align(
@@ -158,9 +154,9 @@ class HomeScreen extends GetView<HomeController> {
       case 2:
         return HomeScreenTile(
           onTap: () {
-            if (controller.connected.value) {
+           
               Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
-            }
+            
           },
           title: 'New Customer',
           icon: Icons.person_add_alt_outlined,
@@ -168,10 +164,10 @@ class HomeScreen extends GetView<HomeController> {
       case 3:
         return HomeScreenTile(
           onTap: () {
-            if (controller.connected.value) {
+           
               Get.toNamed(Routes.PAYMENT,
                   arguments: {'fromhome': true, 'invid': '', 'socid': ''});
-            }
+            
           },
           title: 'Record Payment',
           icon: Icons.currency_exchange,
@@ -179,9 +175,9 @@ class HomeScreen extends GetView<HomeController> {
       case 4:
         return HomeScreenTile(
           onTap: () {
-            if (controller.connected.value) {
+           
               Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
-            }
+            
           },
           title: 'New Invoice',
           icon: Icons.inventory_sharp,
@@ -190,9 +186,9 @@ class HomeScreen extends GetView<HomeController> {
       case 5:
         return HomeScreenTile(
           onTap: () {
-            if (controller.connected.value) {
+           
               Get.toNamed(Routes.REPORTS);
-            }
+            
           },
           title: 'Reports',
           icon: Icons.receipt_long_outlined,

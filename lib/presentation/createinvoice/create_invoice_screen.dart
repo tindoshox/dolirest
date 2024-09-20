@@ -77,7 +77,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: DropdownSearch<CustomerModel>(
-        clearButtonProps: const ClearButtonProps(isVisible: true),
+       
         onChanged: (customer) {
           if (customer != null) {
             controller.fetchCustomerById(customer.id!);
@@ -86,8 +86,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           }
         },
         validator: (value) => value == null ? 'Customer is required' : null,
-        dropdownDecoratorProps: const DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
+        decoratorProps: const DropDownDecoratorProps(
+          decoration: InputDecoration(
             labelText: 'Customer',
             icon: Icon(Icons.person_outline),
             border: UnderlineInputBorder(),
@@ -97,6 +97,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           ),
         ),
         itemAsString: (CustomerModel? customer) => customer!.name!,
+        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           searchFieldProps: const TextFieldProps(
               textCapitalization: TextCapitalization.characters),
@@ -107,11 +108,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           title: const Text('Search Customer',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          isFilterOnline: true,
-          itemBuilder: (context, CustomerModel? customer, isSelected) {
+          itemBuilder: (context, customer, isSelected,l) {
             return ListTile(
               title: Text(
-                customer!.name!,
+                customer.name,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -126,11 +126,12 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           ),
           showSearchBox: true,
         ),
-        asyncItems: (String searchString) async {
+        items: (String searchString, l) async {
           List<CustomerModel> customers =
               await controller.searchCustomer(searchString: searchString);
           return customers;
         },
+        compareFn: (item1, item2) => item1.id==item2.id,
       ),
     );
   }
@@ -247,6 +248,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         },
         validator: (value) => value == null ? 'Product is required' : null,
         itemAsString: (ProductModel product) => '${product.label}',
+        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           searchFieldProps: const TextFieldProps(
               textCapitalization: TextCapitalization.characters),
@@ -259,8 +261,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          isFilterOnline: true,
-          itemBuilder: (context, ProductModel product, isSelected) {
+         
+          itemBuilder: (context, product, isSelected, l) {
             return ListTile(
               title: Text('${product.label}'),
               subtitle: Text(Utils.amounts('${product.price}')),
@@ -270,7 +272,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               const Center(child: Text('Product Not Found')),
           showSearchBox: true,
         ),
-        asyncItems: (String searchString) async {
+        items: (String searchString, l) async {
           List<ProductModel> products = Storage.products
               .toMap()
               .values
