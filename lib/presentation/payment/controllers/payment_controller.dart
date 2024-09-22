@@ -197,29 +197,19 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
-      if (!value.hasError) {
-        Storage.payments.put(invoiceId, value.data);
-      }
-    }));
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
   }
 
   refreshInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceById(invoiceId).then((value) async {
-      if (!value.hasError) {
-        Storage.invoices.put(invoiceId, value.data);
-      }
-    });
+    await RemoteServices.fetchInvoiceById(invoiceId);
   }
 
-   fetchInvoices()  {
+  fetchInvoices() {
     return Storage.invoices
-          .toMap()
-          .values
-          .toList()
-          .where((invoice) => invoice.remaintopay != "0")
-          .toList();
-
-          
+        .toMap()
+        .values
+        .toList()
+        .where((invoice) => invoice.remaintopay != "0")
+        .toList();
   }
 }

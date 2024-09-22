@@ -57,10 +57,10 @@ class InvoiceDetailWidget extends StatelessWidget {
       title: Text(
         invoice.remaintopay == '0'
             ? ''
-            : 'Due Date: ${Utils.intToDayFirst(invoice.dateLimReglement)}',
+            : 'Due Date: ${Utils.intToDMY(invoice.dateLimReglement)}',
         style: Utils.overDueStyle(invoice.dateLimReglement),
       ),
-      subtitle: Text('Invoice Date ${Utils.intToDayFirst(invoice.date)}'),
+      subtitle: Text('Invoice Date ${Utils.intToDMY(invoice.date)}'),
       trailing: invoice.remaintopay == '0'
           ? null
           : IconButton(icon: const Icon(Icons.edit), onPressed: onPressed),

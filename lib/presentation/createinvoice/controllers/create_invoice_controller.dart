@@ -86,13 +86,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   refreshProducts() async {
-    await RemoteServices.fetchProducts().then((value) async {
-      if (!value.hasError) {
-        for (ProductModel product in value.data) {
-          Storage.products.put(product.id, product);
-        }
-      }
-    });
+    await RemoteServices.fetchProducts();
   }
 
   fetchCustomerById(String customerId) {
@@ -220,16 +214,7 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
-      if (!value.hasError) {
-        Storage.invoices.put(invoiceId, value.data);
-      } else {
-        DialogHelper.hideLoading();
-        SnackBarHelper.errorSnackbar(
-          message: value.errorMessage,
-        );
-      }
-    });
+    await RemoteServices.fetchInvoiceById(invoiceId);
   }
 
   ///

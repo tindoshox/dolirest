@@ -86,7 +86,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
   Widget buildInvoiceList() {
     String search = controller.searchString.value;
     return RefreshIndicator(
-      onRefresh: () => controller.getAllInvoices(),
+      onRefresh: () => controller.refreshInvoiceList(),
       child: Scrollbar(
         child: ValueListenableBuilder(
           valueListenable: Storage.invoices.listenable(),
@@ -110,7 +110,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     title: const Text('No invoices found',
                         textAlign: TextAlign.center),
                     trailing: ElevatedButton(
-                        onPressed: () => controller.getAllInvoices(),
+                        onPressed: () => controller.refreshInvoiceList(),
                         child: const Text('Refresh')),
                   )
                 : ListView.builder(

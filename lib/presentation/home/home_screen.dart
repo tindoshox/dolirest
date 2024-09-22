@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
-import 'package:dolirest/utils/utils.dart';
 
 import 'controllers/home_controller.dart';
 
@@ -14,25 +13,28 @@ class HomeScreen extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: DoubleBack(
+      drawer: _buildDrawer(),
+      body: const DoubleBack(
         message: 'Press back again to exit',
-        child: _buildBody(),
+        child: Column(
+          children: [Text('Due Today')],
+        ),
       ),
     );
   }
 
   AppBar _buildAppBar() {
+    final statusIcon = _getStatusIcon(controller.connected.value);
     return AppBar(
       title: const Text("Dashboard"),
       centerTitle: true,
-      actions: [_buildPopupMenu()],
+      actions: [statusIcon, _buildPopupMenu()],
     );
   }
 
   Widget _buildPopupMenu() {
     return PopupMenuButton(
       itemBuilder: (context) => [
-       
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
@@ -67,75 +69,53 @@ class HomeScreen extends GetView<HomeController> {
     );
   }
 
-  Widget _buildBody() {
-    return Stack(
+  Widget _buildDrawer() {
+    return NavigationDrawer(
       children: [
-        _buildUserInfo(),
-        _buildTiles(),
+        const DrawerHeader(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 12, 46, 196),
+            image: DecorationImage(
+              image: AssetImage('assets/images/smbi.png'),
+              fit: BoxFit.contain,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                bottom: 8.0,
+                left: 4.0,
+                child: Text(
+                  "DoliREST",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+              )
+            ],
+          ),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children:
+              List.generate(7, (index) => _buildTile(index), growable: true),
+        )
       ],
     );
   }
 
-  Widget _buildUserInfo() {
-    return Center(
-      child: Column(
-        children: [
-          _buildDatabaseTile(),
-         // _buildNetworkStatusTile(),
-          const SizedBox(height: 110),
-          const Image(image: AssetImage('assets/images/smbi.png')),
-        ],
-      ),
-    );
-  }
-
-  Obx _buildDatabaseTile() {
-    return Obx(() => ListTile(
-          title: Text(
-            'DATABASE: ${Utils.subString(controller.baseUrl.value).toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-            'USER: ${controller.currentUser.value.toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ));
-  }
-
-  // Obx _buildNetworkStatusTile() {
-  //   return Obx(() => ListTile(
-  //         title: Text(
-  //           controller.connected.value ? '' : 'Network Disconnected',
-  //           style: const TextStyle(
-  //               fontWeight: FontWeight.bold, color: Colors.amber),
-  //         ),
-  //         subtitle: Text(
-  //           controller.connected.value ? '' : 'Data capture is disabled',
-  //           style: const TextStyle(color: Colors.amber),
-  //         ),
-  //       ));
-  // }
-
-  Widget _buildTiles() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SizedBox(
-        height: 300,
-        child: GridView.count(
-          childAspectRatio: 2,
-          primary: false,
-          reverse: false,
-          crossAxisCount: 2,
-          children: List.generate(6, (index) => _buildTile(index)),
-        ),
-      ),
-    );
-  }
-
   Widget _buildTile(int index) {
-   
     switch (index) {
       case 0:
+        return HomeScreenTile(
+          onTap: () {
+            Get.toNamed(Routes.HOME);
+          },
+          title: 'Dashboard',
+          icon: Icons.dashboard_outlined,
+        );
+      case 1:
         return HomeScreenTile(
           onTap: () {
             Get.toNamed(Routes.CUSTOMERLIST);
@@ -143,7 +123,7 @@ class HomeScreen extends GetView<HomeController> {
           title: 'Customers',
           icon: Icons.people_alt_outlined,
         );
-      case 1:
+      case 2:
         return HomeScreenTile(
           onTap: () {
             Get.toNamed(Routes.INVOICELIST);
@@ -151,44 +131,36 @@ class HomeScreen extends GetView<HomeController> {
           title: 'Invoices',
           icon: Icons.list_alt,
         );
-      case 2:
+      case 3:
         return HomeScreenTile(
           onTap: () {
-           
-              Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
-            
+            Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
           },
           title: 'New Customer',
           icon: Icons.person_add_alt_outlined,
         );
-      case 3:
+      case 4:
         return HomeScreenTile(
           onTap: () {
-           
-              Get.toNamed(Routes.PAYMENT,
-                  arguments: {'fromhome': true, 'invid': '', 'socid': ''});
-            
+            Get.toNamed(Routes.PAYMENT,
+                arguments: {'fromhome': true, 'invid': '', 'socid': ''});
           },
           title: 'Record Payment',
           icon: Icons.currency_exchange,
         );
-      case 4:
+      case 5:
         return HomeScreenTile(
           onTap: () {
-           
-              Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
-            
+            Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
           },
           title: 'New Invoice',
           icon: Icons.inventory_sharp,
         );
 
-      case 5:
+      case 6:
         return HomeScreenTile(
           onTap: () {
-           
-              Get.toNamed(Routes.REPORTS);
-            
+            Get.toNamed(Routes.REPORTS);
           },
           title: 'Reports',
           icon: Icons.receipt_long_outlined,
@@ -221,5 +193,19 @@ class _AppIcon extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Widget _makeIcon(String text, IconData icon) {
+  return Tooltip(
+      message: text,
+      child: SizedBox(width: 40, height: null, child: Icon(icon, size: 24)));
+}
+
+Widget _getStatusIcon(bool status) {
+  if (!status) {
+    return _makeIcon('No connection', Icons.cloud_off);
+  } else {
+    return _makeIcon('Connected', Icons.cloud_queue);
   }
 }

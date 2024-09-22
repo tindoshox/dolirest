@@ -94,7 +94,7 @@ class _CustomerList extends GetView<CustomerListController> {
   Widget _buildCustomerListView() {
     String search = controller.searchString.value;
     return RefreshIndicator(
-      onRefresh: () => controller.getAllCustomers(),
+      onRefresh: () => controller.refreshCusomerList(),
       child: Scrollbar(
         child: ValueListenableBuilder(
           valueListenable: Storage.customers.listenable(),
@@ -116,7 +116,7 @@ class _CustomerList extends GetView<CustomerListController> {
                     title: const Text('No customers found',
                         textAlign: TextAlign.center),
                     trailing: ElevatedButton(
-                        onPressed: () => controller.getAllCustomers(),
+                        onPressed: () => controller.refreshCusomerList(),
                         child: const Text('Refresh')),
                   )
                 : ListView.builder(

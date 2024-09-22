@@ -86,15 +86,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId).then((value) {
-      if (!value.hasError) {
-        Storage.payments.put(invoiceId, value.data);
-      } else {
-        SnackBarHelper.errorSnackbar(
-            message:
-                '${value.errorMessage}: Failed to refresh payment history');
-      }
-    }));
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
   }
 
   _fetchCustomer() {
@@ -107,29 +99,11 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    await RemoteServices.fetchInvoiceById(invoiceId).then((value) {
-      if (!value.hasError) {
-        InvoiceModel newInvoice = value.data;
-        Storage.invoices.put(newInvoice.id, newInvoice);
-      } else {
-        Get.back();
-        SnackBarHelper.errorSnackbar(
-            message: '${value.errorMessage}: Failed to refresh Invoice data');
-      }
-    });
+    await RemoteServices.fetchInvoiceById(invoiceId);
   }
 
   Future _refreshCustomerData() async {
-    await RemoteServices.fetchThirdPartyById(customerId).then((value) async {
-      if (!value.hasError) {
-        Storage.customers.put(customerId, value.data);
-        customer.value = Storage.customers.get(customerId)!;
-      } else {
-        Get.back();
-        SnackBarHelper.errorSnackbar(
-            message: '${value.errorMessage}: Failed to refresh customer data');
-      }
-    });
+    await RemoteServices.fetchThirdPartyById(customerId);
   }
 
   Future generateDocument() async {

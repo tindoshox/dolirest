@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
@@ -24,10 +25,18 @@ class NetworkController extends GetxController {
     super.dispose();
   }
 
-  void _updateConnectionStatus(List<ConnectivityResult> connectivityResult) {
+  Future<void> _updateConnectionStatus(
+      List<ConnectivityResult> connectivityResult) async {
     if (connectivityResult.contains(ConnectivityResult.wifi) ||
         connectivityResult.contains(ConnectivityResult.mobile)) {
-      Storage.settings.put('connected', true);
+      try {
+        final result = await InternetAddress.lookup('example.com');
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          Storage.settings.put('connected', true);
+        }
+      } on SocketException catch (_) {
+        Storage.settings.put('connected', false);
+      }
     } else {
       Storage.settings.put('connected', false);
     }

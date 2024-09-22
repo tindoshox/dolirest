@@ -1,5 +1,5 @@
-
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
@@ -15,12 +15,10 @@ class HomeController extends GetxController {
   RxString currentUser = ''.obs;
   RxString baseUrl = ''.obs;
 
- var connected = false.obs;
- 
- 
-@override
+  var connected = false.obs;
+
+  @override
   void onInit() async {
-    connected.value = Storage.settings.get('connected');
     currentUser.value = Storage.settings.get('user');
     baseUrl.value = Storage.settings.get('url');
     Storage.settings.watch(key: 'connected').listen((event) {
@@ -30,14 +28,14 @@ class HomeController extends GetxController {
     super.onInit();
   }
 
-    @override
+  @override
   void onReady() {
-    var  invoices=Storage.invoices.toMap().length;
-    if (connected.value && invoices ==0) {
+    var invoices = Storage.invoices.toMap().length;
+    if (connected.value && invoices == 0) {
       _loadInitialData();
     }
     if (connected.value) {
-      _invoicesRefreshSchedule();
+      _dataRefreshSchedule();
     }
     if (connected.value) {
       _loadPaymentData();
@@ -46,14 +44,14 @@ class HomeController extends GetxController {
     super.onReady();
   }
 
-    _loadInitialData() async {
-      DialogHelper.showLoading('Loading data');
+  _loadInitialData() async {
+    DialogHelper.showLoading('Loading data');
     List<CustomerModel> customers = Storage.customers.values.toList();
 
     List<InvoiceModel> invoices = Storage.invoices.toMap().values.toList();
 
     if (customers.isEmpty) {
-      await _getAllCustomers();
+      await _refreshCustomers();
     } else {
       await _getModifiedCustomers();
     }
@@ -64,12 +62,23 @@ class HomeController extends GetxController {
       await _getModifiedInvoices();
     }
 
-   DialogHelper.hideLoading();
-  
+    DialogHelper.hideLoading();
   }
 
-   Future _invoicesRefreshSchedule() async {
-    Timer.periodic(const Duration(minutes: 15), (Timer timer) async {
+  Future _connectivity() async {
+    Timer.periodic(const Duration(minutes: 1), (Timer timer) async {
+      try {
+        final result =
+            await InternetAddress.lookup(Storage.settings.get('url'));
+        connected.value = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      } on SocketException catch (_) {
+        connected.value = false;
+      }
+    });
+  }
+
+  Future _dataRefreshSchedule() async {
+    Timer.periodic(const Duration(seconds: 30), (Timer timer) async {
       if (connected.value) {
         await _getModifiedCustomers();
 
@@ -78,7 +87,7 @@ class HomeController extends GetxController {
     });
   }
 
-  Future _getAllCustomers() async {
+  Future _refreshCustomers() async {
     await RemoteServices.fetchThirdPartyList().then((value) async {
       if (!value.hasError) {
         for (CustomerModel customer in value.data) {
@@ -88,55 +97,39 @@ class HomeController extends GetxController {
     });
   }
 
-    Future _loadPaymentData() async {
+  Future _loadPaymentData() async {
     List<InvoiceModel> invoices = Storage.invoices
         .toMap()
         .values
         .toList()
         .where((i) => i.remaintopay != "0")
         .toList();
-    List<PaymentModel> payments =
-        Storage.payments.toMap().values.toList().cast();
 
-    if (payments.length < invoices.length) {
-      for (InvoiceModel invoice in invoices) {
-        if (invoice.remaintopay != "0") {
-          await RemoteServices.fetchPaymentsByInvoice(invoice.id).then((value) {
-            if (!value.hasError) {
-              Storage.payments.put(invoice.id, value.data);
-            }
-          });
-        }
+    for (InvoiceModel invoice in invoices) {
+      List<PaymentModel> list = Storage.payments
+          .get(invoice.id, defaultValue: [])!.cast<PaymentModel>();
+      List<int> amounts =
+          list.map((payment) => Utils.intAmounts(payment.amount)).toList();
+      int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
+      if (Utils.intAmounts(invoice.sumpayed) != total) {
+        await RemoteServices.fetchPaymentsByInvoice(invoice.id);
       }
     }
   }
 
-   Future _getModifiedCustomers() async {
+  Future _getModifiedCustomers() async {
     List<CustomerModel> list = Storage.customers.toMap().values.toList();
     list.sort((a, b) => a.dateModification.compareTo(b.dateModification));
     if (list.isNotEmpty) {
       int dateModified = list[list.length - 1].dateModification;
 
       await RemoteServices.fetchThirdPartyList(
-              dateModified: Utils.intToYearFirst(dateModified))
-          .then((value) async {
-        if (!value.hasError) {
-          for (CustomerModel customer in value.data) {
-            Storage.customers.put(customer.id, customer);
-          }
-        }
-      });
+          dateModified: Utils.intToYMD(dateModified));
     }
   }
 
   Future _getUnpaidInvoices() async {
-    await RemoteServices.fetchInvoiceList(status: 'unpaid').then((value) async {
-      if (!value.hasError) {
-        for (InvoiceModel invoice in value.data) {
-          Storage.invoices.put(invoice.id, invoice);
-        }
-      }
-    });
+    await RemoteServices.fetchInvoiceList(status: 'unpaid');
   }
 
   Future _getModifiedInvoices() async {
@@ -150,24 +143,18 @@ class HomeController extends GetxController {
     if (invoices.isNotEmpty) {
       int dateModified = invoices[invoices.length - 1].dateModification;
       await RemoteServices.fetchInvoiceList(
-              dateModified: Utils.intToYearFirst(dateModified))
-          .then((value) async {
-        if (!value.hasError) {
-          for (InvoiceModel invoice in value.data) {
-            Storage.invoices.put(invoice.id, invoice);
-            await RemoteServices.fetchPaymentsByInvoice(invoice.id)
-                .then((value) {
-              if (!value.hasError) {
-                Storage.payments.put(invoice.id, value.data);
-              }
-            });
-          }
-        }
-      });
+          dateModified: Utils.intToYMD(dateModified));
     }
   }
 
-
-
-
+  dueToday() async {
+    List<InvoiceModel> invoices = Storage.invoices
+        .toMap()
+        .values
+        .toList()
+        .where((i) => i.remaintopay != "0")
+        .where((i) => Utils.intToDd(i.dateLimReglement) == DateTime.now().day)
+        .toList();
+    return invoices.sort((a, b) => a.nom.compareTo(b.nom));
+  }
 }

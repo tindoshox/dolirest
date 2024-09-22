@@ -9,17 +9,23 @@ import 'package:url_launcher/url_launcher.dart';
 
 class Utils {
   /// Returns a formatted date string from an integer representation of a date in milliseconds.
-  static String intToDayFirst(int intDate) {
+  static String intToDMY(int intDate) {
     final DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
 
     return DateFormat('dd-MM-yyyy').format(dateTime);
   }
 
-  static intToYearFirst(int intDate) {
+  static intToYMD(int intDate) {
     final DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
     return DateFormat('yyyy-MM-dd').format(dateTime);
+  }
+
+  static intToDd(int intDate) {
+    final DateTime dateTime =
+        DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
+    return DateFormat('dd').format(dateTime);
   }
 
   /// Returns a [DateTime] object from an integer representation of a date in milliseconds.

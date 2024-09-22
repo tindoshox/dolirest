@@ -92,7 +92,9 @@ class PaymentScreen extends GetView<PaymentController> {
                                 ),
                               ),
                             ),
-                            suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
+                            suffixProps: const DropdownSuffixProps(
+                                clearButtonProps:
+                                    ClearButtonProps(isVisible: true)),
                             popupProps: PopupProps.modalBottomSheet(
                                 searchFieldProps: const TextFieldProps(
                                     textCapitalization:
@@ -142,7 +144,7 @@ class PaymentScreen extends GetView<PaymentController> {
                                               child: Text(invoice.nom!),
                                             ),
                                             Text(
-                                              Utils.intToDayFirst(
+                                              Utils.intToDMY(
                                                   invoice.dateLimReglement!),
                                               style: Utils.overDueStyle(
                                                   invoice.dateLimReglement!),

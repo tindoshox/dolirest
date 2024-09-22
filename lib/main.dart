@@ -5,7 +5,6 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
-import 'package:dolirest/infrastructure/dal/services/dependency_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,6 @@ void main() async {
   await Hive.openBox('settings');
 
   runApp(const Main());
-  DependencyInjection.init();
 }
 
 class Main extends StatelessWidget {

@@ -73,7 +73,7 @@ class InvoiceListTile extends StatelessWidget {
           ),
         ),
         Text(
-          Utils.intToDayFirst(
+          Utils.intToDMY(
               invoice.dateLimReglement ?? ''), // Handle potential null
           style: Utils.overDueStyle(invoice.dateLimReglement ?? ''),
         ),
