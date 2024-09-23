@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -24,6 +24,7 @@ class HomeController extends GetxController {
     Storage.settings.watch(key: 'connected').listen((event) {
       connected.value = event.value;
     });
+    _connectivity();
 
     super.onInit();
   }
@@ -145,16 +146,5 @@ class HomeController extends GetxController {
       await RemoteServices.fetchInvoiceList(
           dateModified: Utils.intToYMD(dateModified));
     }
-  }
-
-  dueToday() async {
-    List<InvoiceModel> invoices = Storage.invoices
-        .toMap()
-        .values
-        .toList()
-        .where((i) => i.remaintopay != "0")
-        .where((i) => Utils.intToDd(i.dateLimReglement) == DateTime.now().day)
-        .toList();
-    return invoices.sort((a, b) => a.nom.compareTo(b.nom));
   }
 }

@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -77,7 +77,6 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: DropdownSearch<CustomerModel>(
-       
         onChanged: (customer) {
           if (customer != null) {
             controller.fetchCustomerById(customer.id!);
@@ -97,7 +96,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           ),
         ),
         itemAsString: (CustomerModel? customer) => customer!.name!,
-        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
+        suffixProps: const DropdownSuffixProps(
+            clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           searchFieldProps: const TextFieldProps(
               textCapitalization: TextCapitalization.characters),
@@ -108,7 +108,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           title: const Text('Search Customer',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          itemBuilder: (context, customer, isSelected,l) {
+          itemBuilder: (context, customer, isSelected, l) {
             return ListTile(
               title: Text(
                 customer.name,
@@ -131,7 +131,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               await controller.searchCustomer(searchString: searchString);
           return customers;
         },
-        compareFn: (item1, item2) => item1.id==item2.id,
+        compareFn: (item1, item2) => item1.id == item2.id,
       ),
     );
   }
@@ -248,7 +248,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         },
         validator: (value) => value == null ? 'Product is required' : null,
         itemAsString: (ProductModel product) => '${product.label}',
-        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
+        suffixProps: const DropdownSuffixProps(
+            clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           searchFieldProps: const TextFieldProps(
               textCapitalization: TextCapitalization.characters),
@@ -261,7 +262,6 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-         
           itemBuilder: (context, product, isSelected, l) {
             return ListTile(
               title: Text('${product.label}'),

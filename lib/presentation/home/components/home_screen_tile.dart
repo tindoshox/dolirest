@@ -15,18 +15,26 @@ class HomeScreenTile extends StatelessWidget {
   final Color? color;
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      leading: Icon(
-        icon,
-        size: 25,
-      ),
-      title: Text(
-        title,
-        maxLines: 2,
-        softWrap: true,
-        style: const TextStyle(fontSize: 20),
-      ),
-    );
+    return InkWell(
+        onTap: onTap,
+        child: Card(
+          color: color,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 60,
+              ),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                softWrap: true,
+              )
+            ],
+          ),
+        ));
   }
 }

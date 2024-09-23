@@ -6,7 +6,7 @@ import 'dart:convert';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
-part 'third_party_model.g.dart';
+part 'customer_model.g.dart';
 
 CustomerModel thirdPartyModelFromJson(String str) =>
     CustomerModel.fromJson(json.decode(str));

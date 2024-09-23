@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';

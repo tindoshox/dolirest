@@ -4,11 +4,12 @@ import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
-import 'package:dolirest/infrastructure/dal/models/third_party_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -22,7 +23,7 @@ void main() async {
   await Hive.initFlutter(dir.path);
   Hive.registerAdapter<InvoiceModel>(InvoiceModelAdapter());
   Hive.registerAdapter<Line>(LineAdapter());
-  Hive.registerAdapter(ThirdPartyModelAdapter());
+  Hive.registerAdapter(CustomerModelAdapter());
   Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
   Hive.registerAdapter<GroupModel>(GroupModelAdapter());
   Hive.registerAdapter<ProductModel>(ProductModelAdapter());
@@ -34,7 +35,7 @@ void main() async {
   await Hive.openBox<GroupModel>('groups');
   await Hive.openBox('settings');
 
-  runApp(const Main());
+  runApp(const ProviderScope(child: Main()));
 }
 
 class Main extends StatelessWidget {

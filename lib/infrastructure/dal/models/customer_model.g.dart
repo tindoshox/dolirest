@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'third_party_model.dart';
+part of 'customer_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ThirdPartyModelAdapter extends TypeAdapter<CustomerModel> {
+class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
   @override
   final int typeId = 3;
 
@@ -473,7 +473,7 @@ class ThirdPartyModelAdapter extends TypeAdapter<CustomerModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ThirdPartyModelAdapter &&
+      other is CustomerModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
