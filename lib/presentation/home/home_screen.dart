@@ -1,3 +1,4 @@
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
@@ -24,16 +25,16 @@ class HomeScreen extends GetView<HomeController> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      leading: const Image(
-        image: AssetImage('assets/images/smbi.png'),
-        height: 4,
+      leading: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Image(
+          image: AssetImage('assets/images/smbi.png'),
+          height: 4,
+        ),
       ),
       title: const Text("Dashboard"),
       centerTitle: true,
-      actions: [
-        Obx(() => _getStatusIcon(controller.connected.value)),
-        _buildPopupMenu()
-      ],
+      actions: [Obx(() => getStatusIcon()), _buildPopupMenu()],
     );
   }
 
@@ -78,7 +79,6 @@ class HomeScreen extends GetView<HomeController> {
     return Stack(
       children: [
         _buildUserInfo(),
-        Text(controller.connected.value.toString()),
         _buildTiles(),
       ],
     );
@@ -212,19 +212,5 @@ class _AppIcon extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-Widget _makeIcon(String text, IconData icon) {
-  return Tooltip(
-      message: text,
-      child: SizedBox(width: 40, height: null, child: Icon(icon, size: 24)));
-}
-
-Widget _getStatusIcon(bool status) {
-  if (!status) {
-    return _makeIcon('No connection', Icons.cloud_off);
-  } else {
-    return _makeIcon('Connected', Icons.cloud_queue);
   }
 }

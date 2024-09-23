@@ -32,7 +32,6 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
 
   AppBar buildAppBar() {
     return AppBar(
-      automaticallyImplyLeading: false,
       title: Obx(() => controller.searchIcon.value
           ? const Text('Invoices')
           : buildSearchField()),

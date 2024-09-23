@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
@@ -628,6 +629,22 @@ class RemoteServices {
           "Unknown error",
         );
       }
+    }
+  }
+
+  // Actual HTTP request to check server reachability
+  static Future<bool> checkServerReachability() async {
+    try {
+      final response = await _client
+          .get(
+            Uri.https(_url, ApiRoutes.status),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+      debugPrint(response.statusCode.toString());
+      return response.statusCode == 200 || response.statusCode == 401;
+    } catch (e) {
+      return false;
     }
   }
 }

@@ -24,7 +24,6 @@ class CustomerListScreen extends GetView<CustomerListController> {
         child: const Icon(Icons.arrow_upward),
       ),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         title: Obx(
           () => controller.searchIconVisible.value
               ? const Text('Customers')

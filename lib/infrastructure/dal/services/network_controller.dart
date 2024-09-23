@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 
 import 'package:get/get.dart';
@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> subscription;
+  Timer? _serverCheckTimer;
+  var connected = false.obs;
 
   @override
   void onInit() {
@@ -17,6 +19,16 @@ class NetworkController extends GetxController {
         .listen((List<ConnectivityResult> result) {
       _updateConnectionStatus(result);
     });
+
+    Storage.settings.watch(key: 'connected').listen((event) {
+      connected.value = event.value;
+    });
+  }
+
+  @override
+  void onReady() {
+    _startServerReachabilityCheck();
+    super.onReady();
   }
 
   @override
@@ -29,16 +41,22 @@ class NetworkController extends GetxController {
       List<ConnectivityResult> connectivityResult) async {
     if (connectivityResult.contains(ConnectivityResult.wifi) ||
         connectivityResult.contains(ConnectivityResult.mobile)) {
-      try {
-        final result = await InternetAddress.lookup('example.com');
-        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-          Storage.settings.put('connected', true);
-        }
-      } on SocketException catch (_) {
-        Storage.settings.put('connected', false);
-      }
+      var connectivity = await RemoteServices.checkServerReachability();
+
+      Storage.settings.put('connected', connectivity);
     } else {
       Storage.settings.put('connected', false);
     }
+  }
+
+  // Start a periodic check to see if the server is reachable
+  void _startServerReachabilityCheck() {
+    _serverCheckTimer?.cancel(); // Cancel any existing timer
+    _serverCheckTimer =
+        Timer.periodic(const Duration(seconds: 60), (timer) async {
+      bool isReachable = await RemoteServices.checkServerReachability();
+
+      Storage.settings.put('connected', isReachable);
+    });
   }
 }

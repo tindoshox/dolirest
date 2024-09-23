@@ -93,7 +93,9 @@ class InvoiceListTile extends StatelessWidget {
       children: [
         Text(productLabel),
         Text(
-          invoice.sumpayed == null ? 'UNPAID' : 'STARTED',
+          invoice.remaintopay == "0"
+              ? "FULLY PAID"
+              : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
           style: const TextStyle(fontSize: 10),
         ),
       ],

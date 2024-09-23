@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,7 @@ class PaymentScreen extends GetView<PaymentController> {
 
     return Scaffold(
       appBar: AppBar(
+        actions: [Obx(() => getStatusIcon())],
         title: const Text('Record Payment'),
       ),
       body: Center(

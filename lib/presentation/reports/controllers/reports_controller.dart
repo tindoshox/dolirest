@@ -99,13 +99,7 @@ class ReportsController extends GetxController {
   }
 
   Future<List<GroupModel>> refreshGroups() async {
-    await RemoteServices.fetchGroups().then((value) async {
-      if (!value.hasError) {
-        for (GroupModel group in value.data) {
-          Storage.groups.put(group.id, group);
-        }
-      }
-    });
+    await RemoteServices.fetchGroups();
 
     return groups;
   }
@@ -193,5 +187,9 @@ class ReportsController extends GetxController {
       todate.value = selectedDate;
       toDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
     }
+  }
+
+  void clearGroup() {
+    selectedGroup(GroupModel());
   }
 }

@@ -242,4 +242,8 @@ class CreateinvoiceController extends GetxController {
 
     return customers;
   }
+
+  void clearProduct() {
+    selectedProduct(ProductModel());
+  }
 }

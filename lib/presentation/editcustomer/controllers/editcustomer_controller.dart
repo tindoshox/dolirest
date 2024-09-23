@@ -98,13 +98,7 @@ class EditCustomerController extends GetxController {
 
   refreshGroups() async {
     Hive.box<GroupModel>('groups');
-    await RemoteServices.fetchGroups().then((value) async {
-      if (!value.hasError) {
-        for (GroupModel group in value.data) {
-          Storage.groups.put(group.id, group);
-        }
-      }
-    });
+    await RemoteServices.fetchGroups();
   }
 
   void validateAndSave() async {
@@ -181,5 +175,9 @@ class EditCustomerController extends GetxController {
         'customerId': customerId,
       });
     });
+  }
+
+  void clearGroup() {
+    selectedGroup(GroupModel());
   }
 }

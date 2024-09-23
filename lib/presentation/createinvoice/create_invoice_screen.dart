@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
@@ -24,6 +25,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   AppBar _buildAppBar() {
     return AppBar(
       title: const Text('Create Invoice'),
+      actions: [Obx(() => getStatusIcon())],
     );
   }
 
@@ -243,8 +245,12 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
       child: DropdownSearch<ProductModel>(
         compareFn: (item1, item2) => item1 == item2,
         onChanged: (product) {
-          controller.selectedProduct.value = product!;
-          controller.priceController.text = Utils.amounts('${product.price}');
+          if (product != null) {
+            controller.selectedProduct.value = product;
+            controller.priceController.text = Utils.amounts('${product.price}');
+          } else {
+            controller.clearProduct();
+          }
         },
         validator: (value) => value == null ? 'Product is required' : null,
         itemAsString: (ProductModel product) => '${product.label}',

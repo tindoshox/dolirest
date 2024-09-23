@@ -8,4 +8,5 @@ class ApiRoutes {
   static const products = "${apiStub}products";
   static const buildDocument = "${apiStub}documents/builddoc";
   static const buildReport = "${apiStub}reports/builddoc";
+  static const status = "${apiStub}status";
 }

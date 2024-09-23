@@ -5,11 +5,12 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/services/dependancy_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -35,7 +36,8 @@ void main() async {
   await Hive.openBox<GroupModel>('groups');
   await Hive.openBox('settings');
 
-  runApp(const ProviderScope(child: Main()));
+  runApp(const Main());
+  DependencyInjection.init();
 }
 
 class Main extends StatelessWidget {
@@ -46,7 +48,7 @@ class Main extends StatelessWidget {
     final initialRoute =
         Storage.settings.get('apikey') == null ? Routes.SETTINGS : Routes.HOME;
     return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: kDebugMode,
       themeMode: ThemeMode.system,
       theme: ThemeData(
           colorScheme: const ColorScheme.light(),

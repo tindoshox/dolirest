@@ -1,3 +1,4 @@
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:get/get.dart';
@@ -22,6 +23,7 @@ class ReportsScreen extends GetView<ReportsController> {
       ],
       appBar: AppBar(
         title: const Text('Reports'),
+        actions: [Obx(() => getStatusIcon())],
       ),
       body: Form(
         key: controller.reportFormKey,
@@ -51,7 +53,6 @@ class ReportsScreen extends GetView<ReportsController> {
                       ),
                     ),
                     itemAsString: (ReportIdModel report) => report.displayName,
-                    suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
                     popupProps: PopupProps.modalBottomSheet(
                         modalBottomSheetProps: ModalBottomSheetProps(
                             padding: const EdgeInsets.only(top: 20),
@@ -64,9 +65,7 @@ class ReportsScreen extends GetView<ReportsController> {
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                       
-                        itemBuilder:
-                            (context, report, isSelected,l) {
+                        itemBuilder: (context, report, isSelected, l) {
                           return ListTile(
                             title: Text(report.displayName),
                           );
@@ -74,8 +73,9 @@ class ReportsScreen extends GetView<ReportsController> {
                         emptyBuilder: (context, searchEntry) =>
                             const Center(child: Text('Report Not Found')),
                         showSearchBox: true),
-                    items:(searchString,l)=> controller.reportList,
-                    compareFn: (item1, item2) => item1.reportid==item2.reportid,
+                    items: (searchString, l) => controller.reportList,
+                    compareFn: (item1, item2) =>
+                        item1.reportid == item2.reportid,
                   ),
                 ),
 
@@ -119,11 +119,15 @@ class ReportsScreen extends GetView<ReportsController> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: DropdownSearch<GroupModel>(
                       onChanged: (group) {
-                        controller.selectedGroup.value = group!;
+                        if (group != null) {
+                          controller.selectedGroup.value = group;
+                        } else {
+                          controller.clearGroup();
+                        }
                       },
-                      compareFn: (item1, item2) => item1.id==item2.id,
-                       suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
-
+                      compareFn: (item1, item2) => item1.id == item2.id,
+                      suffixProps: const DropdownSuffixProps(
+                          clearButtonProps: ClearButtonProps(isVisible: true)),
                       decoratorProps: const DropDownDecoratorProps(
                         decoration: InputDecoration(
                           labelText: 'Group',
@@ -144,8 +148,7 @@ class ReportsScreen extends GetView<ReportsController> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold)),
-                         
-                          itemBuilder: (context,  group, isSelected,l) {
+                          itemBuilder: (context, group, isSelected, l) {
                             return ListTile(
                               title: Text('${group.name}'),
                             );
@@ -153,7 +156,7 @@ class ReportsScreen extends GetView<ReportsController> {
                           emptyBuilder: (context, searchEntry) =>
                               const Center(child: Text('Group Not Found')),
                           showSearchBox: true),
-                      items: (String searchString,l) async {
+                      items: (String searchString, l) async {
                         List<GroupModel> groups =
                             await controller.getGroups(search: searchString);
                         return groups;

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
@@ -24,7 +23,6 @@ class HomeController extends GetxController {
     Storage.settings.watch(key: 'connected').listen((event) {
       connected.value = event.value;
     });
-    _connectivity();
 
     super.onInit();
   }
@@ -64,18 +62,6 @@ class HomeController extends GetxController {
     }
 
     DialogHelper.hideLoading();
-  }
-
-  Future _connectivity() async {
-    Timer.periodic(const Duration(minutes: 1), (Timer timer) async {
-      try {
-        final result =
-            await InternetAddress.lookup(Storage.settings.get('url'));
-        connected.value = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      } on SocketException catch (_) {
-        connected.value = false;
-      }
-    });
   }
 
   Future _dataRefreshSchedule() async {

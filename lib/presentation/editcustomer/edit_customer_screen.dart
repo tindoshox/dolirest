@@ -2,6 +2,7 @@ import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -17,6 +18,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
       appBar: AppBar(
         title: Text(
             controller.customerId.isEmpty ? 'New Customer' : 'Edit Customer'),
+        actions: [Obx(() => getStatusIcon())],
       ),
       body: Center(
         child: controller.isLoading.value
@@ -133,9 +135,13 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: DropdownSearch<GroupModel>(
         onChanged: (group) {
-          controller.selectedGroup.value = group!;
+          if (group != null) {
+            controller.selectedGroup.value = group;
+          } else {
+            controller.clearGroup();
+          }
         },
-        compareFn: (item1, item2) => item1.id==item2.id,
+        compareFn: (item1, item2) => item1.id == item2.id,
         validator: (value) => value == null ? 'Group is required' : null,
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
@@ -147,7 +153,8 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           ),
         ),
         itemAsString: (GroupModel group) => group.name,
-        suffixProps:const DropdownSuffixProps(clearButtonProps: ClearButtonProps(isVisible: true)),
+        suffixProps: const DropdownSuffixProps(
+            clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           modalBottomSheetProps: ModalBottomSheetProps(
             shape: const RoundedRectangleBorder(),
@@ -156,8 +163,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           title: const Text('Search Group',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          
-          itemBuilder: (context, group, isSelected,l) {
+          itemBuilder: (context, group, isSelected, l) {
             return ListTile(
               title: Text(group.name),
             );
