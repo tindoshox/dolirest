@@ -31,8 +31,28 @@ class RemoteServices {
     'DOLAPIKEY': _apikey
   };
 
+  static DataOrException _error(Exception e) {
+    if (e is SocketException) {
+      return DataOrException(
+        hasError: true,
+        errorMessage: "Unable to connect to server",
+      );
+    } else if (e is TimeoutException) {
+      return DataOrException(
+        hasError: true,
+        errorMessage: "Timeout error",
+      );
+    } else {
+      return DataOrException(
+        hasError: true,
+        errorMessage: "Unknown error",
+      );
+    }
+  }
+
   /// CustomerList
-  static fetchThirdPartyList({String dateModified = '1970-01-01'}) async {
+  static Future<DataOrException> fetchThirdPartyList(
+      {String dateModified = '1970-01-01'}) async {
     final Map<String, String> queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
@@ -62,8 +82,9 @@ class RemoteServices {
           Storage.customers.put(customer.id, customer);
         }
       }
-    } catch (e) {
-      throw Exception('Failed to fetch customer data');
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -77,29 +98,16 @@ class RemoteServices {
           )
           .timeout(_timeout);
 
-      return DataOrException(
-        data: thirdPartyModelFromJson(response.body),
-        statusCode: response.statusCode,
-      );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+      Storage.customers.put(customerId, thirdPartyModelFromJson(response.body));
+
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
   /// invoiceList
-  static fetchInvoiceList({
+  static Future<DataOrException> fetchInvoiceList({
     String customerId = "",
     String dateModified = '1970-01-01',
     String status = "",
@@ -133,33 +141,17 @@ class RemoteServices {
         for (InvoiceModel invoice in invoices) {
           Storage.invoices.put(invoice.id, invoice);
         }
-      } else {
-        invoices = jsonList.cast();
       }
 
-      return DataOrException(
-        data: invoices,
-        statusCode: response.statusCode,
-      );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
   /// Customer Payment List
-  static fetchPaymentsByInvoice(String invoiceId) async {
+  static Future<DataOrException> fetchPaymentsByInvoice(
+      String invoiceId) async {
     try {
       var response = await _client
           .get(
@@ -171,20 +163,9 @@ class RemoteServices {
         var payments = paymentModelFromJson(response.body);
         Storage.payments.put(invoiceId, payments);
       }
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -197,25 +178,10 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: invoiceModelFromJson(response.body),
-        statusCode: response.statusCode,
-      );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+      Storage.invoices.put(invoiceId, invoiceModelFromJson(response.body));
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -232,23 +198,11 @@ class RemoteServices {
           .timeout(_timeout);
 
       return DataOrException(
-        //data: invoiceModelFromJson(response.body),
+        data: invoiceModelFromJson(response.body),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -267,20 +221,8 @@ class RemoteServices {
         data: response.body.replaceAll('"', ''),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -300,25 +242,13 @@ class RemoteServices {
         data: thirdPartyModelFromJson(response.body),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
   /// Fetch Groups
-  static fetchGroups() async {
+  static Future<DataOrException> fetchGroups() async {
     final queryParameters = {
       "sortfield": "nom",
       "sortorder": "ASC",
@@ -331,13 +261,12 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
+      String jsonString = response.body;
 
-      if (response.statusCode == 200) {
-        String jsonString = response.body;
-
-        List<dynamic> jsonList = json.decode(jsonString);
-
-        List<GroupModel> groups = jsonList
+      List<dynamic> jsonList = json.decode(jsonString);
+      List<GroupModel> groups = List.empty();
+      if (jsonList.isNotEmpty) {
+        groups = jsonList
             .map((jsonItem) =>
                 GroupModel.fromJson(jsonItem as Map<String, dynamic>))
             .toList();
@@ -345,20 +274,10 @@ class RemoteServices {
           Storage.groups.put(group.id, group);
         }
       }
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+
+      return DataOrException();
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -376,20 +295,8 @@ class RemoteServices {
         data: userModelFromJson(response.body),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -410,25 +317,13 @@ class RemoteServices {
         data: response.body.replaceAll('"', ''),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
   /// Fetch Products
-  static fetchProducts() async {
+  static Future<DataOrException> fetchProducts() async {
     final queryParameters = {
       "sortfield": "label",
       "sortorder": "ASC",
@@ -440,33 +335,24 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      if (response.statusCode == 200) {
-        String jsonString = response.body;
-        List<dynamic> jsonList = json.decode(jsonString);
+      String jsonString = response.body;
 
-        List<ProductModel> products = jsonList
+      List<dynamic> jsonList = json.decode(jsonString);
+      List<ProductModel> products = List.empty();
+      if (jsonList.isNotEmpty) {
+        products = jsonList
             .map((jsonItem) =>
                 ProductModel.fromJson(jsonItem as Map<String, dynamic>))
             .toList();
-
         for (ProductModel product in products) {
           Storage.products.put(product.id, product);
         }
       }
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+      return DataOrException(
+        statusCode: response.statusCode,
+      );
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -484,20 +370,8 @@ class RemoteServices {
         data: response.statusCode,
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -511,25 +385,12 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
       return DataOrException(
         data: response.body.replaceAll('"', ''),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -546,25 +407,31 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
+      debugPrint(response.body);
       return DataOrException(
         data: response.body.replaceAll('"', ''),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
+    }
+  }
+
+  static deleteInvoice(invoiceId) async {
+    try {
+      var response = await _client
+          .delete(
+            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+      debugPrint(response.body);
+      return DataOrException(
+        data: response.body.replaceAll('"', ''),
+        statusCode: response.statusCode,
+      );
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -583,20 +450,8 @@ class RemoteServices {
         data: buildDucumentResponseModelFromJson(response.body),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -609,26 +464,14 @@ class RemoteServices {
             body: body,
             headers: _headers,
           )
-          .timeout(_timeout);
+          .timeout(const Duration(seconds: 60));
 
       return DataOrException(
         data: buildReportResponseModelFromJson(response.body),
         statusCode: response.statusCode,
       );
-    } catch (e) {
-      if (e is SocketException) {
-        throw const SocketException(
-          "No Internet",
-        );
-      } else if (e is TimeoutException) {
-        throw TimeoutException(
-          "Timeout error",
-        );
-      } else {
-        throw Exception(
-          "Unknown error",
-        );
-      }
+    } on Exception catch (e) {
+      return _error(e);
     }
   }
 
@@ -641,7 +484,7 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      debugPrint(response.statusCode.toString());
+
       return response.statusCode == 200 || response.statusCode == 401;
     } catch (e) {
       return false;

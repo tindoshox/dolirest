@@ -130,7 +130,7 @@ class EditCustomerController extends GetxController {
     await RemoteServices.createCustomer(body).then((value) async {
       DialogHelper.hideLoading();
       if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
+        SnackbarHelper.errorSnackbar(message: value.errorMessage);
       } else {
         await _fetchNewCustomer(value.data);
         Get.offAndToNamed(Routes.CUSTOMERDETAIL,
@@ -162,10 +162,10 @@ class EditCustomerController extends GetxController {
       DialogHelper.hideLoading();
 
       if (value.hasError) {
-        SnackBarHelper.errorSnackbar(message: value.errorMessage);
+        SnackbarHelper.errorSnackbar(message: value.errorMessage);
       }
 
-      SnackBarHelper.successSnackbar(
+      SnackbarHelper.successSnackbar(
         message: 'Customer updated',
       );
 

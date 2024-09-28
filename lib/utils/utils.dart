@@ -68,6 +68,11 @@ class Utils {
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
+  /// Returns a formatted date string from a [DateTime] object.
+  static String dateMonth(DateTime date) {
+    return DateFormat('yyyy-MM').format(date);
+  }
+
   /// Launches the default phone app and dials the specified phone number.
   static Future<void> makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(

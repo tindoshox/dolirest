@@ -1,3 +1,6 @@
+import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
+
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
@@ -6,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/home_controller.dart';
 
@@ -76,9 +80,12 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   Widget _buildBody() {
-    return Stack(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildUserInfo(),
+        _buildInvoices(),
+        _buildCashflow(),
         _buildTiles(),
       ],
     );
@@ -114,11 +121,11 @@ class HomeScreen extends GetView<HomeController> {
     return Obx(() => ListTile(
           title: Text(
             'DATABASE: ${Utils.subString(controller.baseUrl.value).toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           trailing: Text(
             'USER: ${controller.currentUser.value.toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ));
   }
@@ -144,10 +151,11 @@ class HomeScreen extends GetView<HomeController> {
       case 2:
         return HomeScreenTile(
           onTap: () {
-            if (!controller.connected.value) {
-              SnackBarHelper.networkSnackbar();
+            if (Get.find<NetworkController>().connected.value) {
+              Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
+            } else {
+              SnackbarHelper.networkSnackbar();
             }
-            Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
           },
           title: 'New Customer',
           icon: Icons.person_add_alt_outlined,
@@ -155,11 +163,12 @@ class HomeScreen extends GetView<HomeController> {
       case 3:
         return HomeScreenTile(
           onTap: () {
-            if (!controller.connected.value) {
-              SnackBarHelper.networkSnackbar();
+            if (Get.find<NetworkController>().connected.value) {
+              Get.toNamed(Routes.PAYMENT,
+                  arguments: {'fromhome': true, 'invid': '', 'socid': ''});
+            } else {
+              SnackbarHelper.networkSnackbar();
             }
-            Get.toNamed(Routes.PAYMENT,
-                arguments: {'fromhome': true, 'invid': '', 'socid': ''});
           },
           title: 'Record Payment',
           icon: Icons.currency_exchange,
@@ -167,10 +176,11 @@ class HomeScreen extends GetView<HomeController> {
       case 4:
         return HomeScreenTile(
           onTap: () {
-            if (!controller.connected.value) {
-              SnackBarHelper.networkSnackbar();
+            if (Get.find<NetworkController>().connected.value) {
+              Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
+            } else {
+              SnackbarHelper.networkSnackbar();
             }
-            Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
           },
           title: 'New Invoice',
           icon: Icons.inventory_sharp,
@@ -179,7 +189,9 @@ class HomeScreen extends GetView<HomeController> {
       case 5:
         return HomeScreenTile(
           onTap: () {
-            Get.toNamed(Routes.REPORTS);
+            if (Get.find<NetworkController>().connected.value) {
+              Get.toNamed(Routes.REPORTS);
+            }
           },
           title: 'Reports',
           icon: Icons.receipt_long_outlined,
@@ -193,6 +205,89 @@ class HomeScreen extends GetView<HomeController> {
         );
     }
   }
+}
+
+_buildCashflow() {
+  return Align(
+    alignment: Alignment.center,
+    child: ValueListenableBuilder(
+        valueListenable: Storage.payments.listenable(),
+        builder: (context, box, widget) {
+          var list = box.values.toList();
+          var flat = list.expand((i) => i).toList();
+
+          //Month Collection
+          var monthCollections = flat
+              .where((f) =>
+                  Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
+              .toList();
+          List<int> monthAmounts = monthCollections
+              .map((payment) => Utils.intAmounts(payment.amount))
+              .toList();
+          int monthTotal =
+              monthAmounts.isEmpty ? 0 : monthAmounts.reduce((a, b) => a + b);
+          //Day Collections
+          var dayCollections = flat
+              .where((f) =>
+                  Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
+              .toList();
+          List<int> dayAmounts = dayCollections
+              .map((payment) => Utils.intAmounts(payment.amount))
+              .toList();
+          int dayTotal =
+              dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
+          return Column(
+            children: [
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.money_outlined),
+                  title: Text("Collected this month: R$monthTotal"),
+                ),
+              ),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.money_outlined),
+                  title: Text("Collected today: R$dayTotal"),
+                ),
+              ),
+            ],
+          );
+        }),
+  );
+}
+
+_buildInvoices() {
+  return ValueListenableBuilder(
+    valueListenable: Storage.invoices.listenable(),
+    builder: (context, box, widget) {
+      int openInvoices = box.values.where((i) => i.remaintopay != 0).length;
+      int overDues = box.values
+          .where((i) =>
+              Utils.intToDateTime(i.dateLimReglement).isBefore(DateTime.now()))
+          .length;
+      int sales = box.values
+          .where((i) =>
+              Utils.dateMonth(Utils.intToDateTime(i.date)) ==
+              Utils.dateMonth(DateTime.now()))
+          .length;
+      return Column(
+        children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.inventory_outlined),
+              title: Text("Open Invoices: $openInvoices. (Overdue: $overDues)"),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.inventory_outlined),
+              title: Text("Items Sold This Month: $sales"),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class _AppIcon extends StatelessWidget {

@@ -134,7 +134,7 @@ class CreateinvoiceController extends GetxController {
             .then((value) async {
           if (value.hasError) {
             DialogHelper.hideLoading();
-            SnackBarHelper.errorSnackbar(message: 'Product has no stock');
+            SnackbarHelper.errorSnackbar(message: 'Product has no stock');
           }
           await _createInvoice();
         });
@@ -175,12 +175,12 @@ class CreateinvoiceController extends GetxController {
     await RemoteServices.createInvoice(body).then((value) async {
       if (value.hasError) {
         DialogHelper.hideLoading();
-        SnackBarHelper.errorSnackbar(
+        SnackbarHelper.errorSnackbar(
           message: value.errorMessage,
         );
+      } else {
+        await _validateInvoice(value.data);
       }
-
-      await _validateInvoice(value.data);
     });
   }
 
@@ -195,10 +195,12 @@ class CreateinvoiceController extends GetxController {
 
     await RemoteServices.validateInvoice(body, invoiceId).then((value) async {
       if (value.hasError) {
-        DialogHelper.hideLoading();
-        SnackBarHelper.errorSnackbar(
-          message: value.errorMessage,
-        );
+        debugPrint(value.statusCode.toString());
+        await RemoteServices.deleteInvoice(invoiceId).then((v) {
+          DialogHelper.hideLoading();
+          Get.offAndToNamed(Routes.CREATEINVOICE);
+          SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
+        });
       } else {
         await _getNewInvoice(invoiceId).then((value) {
           DialogHelper.hideLoading();

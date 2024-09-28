@@ -176,11 +176,11 @@ class PaymentController extends GetxController {
         } else {
           DialogHelper.hideLoading();
           Get.back();
-          SnackBarHelper.successSnackbar(message: 'Payment successful');
+          SnackbarHelper.successSnackbar(message: 'Payment successful');
         }
       } else {
         DialogHelper.hideLoading();
-        SnackBarHelper.errorSnackbar(message: 'Payment not saved');
+        SnackbarHelper.errorSnackbar(message: 'Payment not saved');
       }
     });
   }

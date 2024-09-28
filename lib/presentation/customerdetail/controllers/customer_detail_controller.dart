@@ -53,8 +53,4 @@ class CustomerDetailController extends GetxController
       }
     });
   }
-
-  checkConnection() {
-    return Storage.settings.get('connected') ?? false;
-  }
 }

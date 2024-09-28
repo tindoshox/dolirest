@@ -141,7 +141,7 @@ class ReportsController extends GetxController {
         await RemoteServices.buildReport(body).then((value) async {
           if (value.hasError) {
             DialogHelper.hideLoading();
-            SnackBarHelper.errorSnackbar(message: value.errorMessage);
+            SnackbarHelper.errorSnackbar(message: value.errorMessage);
           } else {
             //Creates file in storage
             Utils.createFileFromString(

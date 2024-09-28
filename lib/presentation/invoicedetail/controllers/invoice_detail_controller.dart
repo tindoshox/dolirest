@@ -126,7 +126,7 @@ class InvoiceDetailController extends GetxController
             });
           } else {
             DialogHelper.hideLoading();
-            SnackBarHelper.errorSnackbar(message: value.errorMessage);
+            SnackbarHelper.errorSnackbar(message: value.errorMessage);
           }
         });
       } catch (e) {
@@ -172,9 +172,9 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       if (!value.hasError) {
         _refreshInvoiceData();
-        SnackBarHelper.successSnackbar(message: 'Due date changed');
+        SnackbarHelper.successSnackbar(message: 'Due date changed');
       } else {
-        SnackBarHelper.errorSnackbar(message: 'Update Failed');
+        SnackbarHelper.errorSnackbar(message: 'Update Failed');
       }
     });
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// A helper class for showing snackbars.
-class SnackBarHelper {
+class SnackbarHelper {
   /// Shows a snackbar with customizable options.
   ///
   static void showSnackbar({

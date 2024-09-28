@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -13,16 +14,12 @@ import 'package:dolirest/infrastructure/dal/services/storage.dart';
 class HomeController extends GetxController {
   RxString currentUser = ''.obs;
   RxString baseUrl = ''.obs;
-
-  var connected = false.obs;
+  bool connected = Get.find<NetworkController>().connected.value;
 
   @override
   void onInit() async {
     currentUser.value = Storage.settings.get('user');
     baseUrl.value = Storage.settings.get('url');
-    Storage.settings.watch(key: 'connected').listen((event) {
-      connected.value = event.value;
-    });
 
     super.onInit();
   }
@@ -30,13 +27,13 @@ class HomeController extends GetxController {
   @override
   void onReady() {
     var invoices = Storage.invoices.toMap().length;
-    if (connected.value && invoices == 0) {
+    if (Get.find<NetworkController>().connected.value && invoices == 0) {
       _loadInitialData();
     }
-    if (connected.value) {
+    if (Get.find<NetworkController>().connected.value) {
       _dataRefreshSchedule();
     }
-    if (connected.value) {
+    if (Get.find<NetworkController>().connected.value) {
       _loadPaymentData();
     }
 
@@ -66,7 +63,7 @@ class HomeController extends GetxController {
 
   Future _dataRefreshSchedule() async {
     Timer.periodic(const Duration(seconds: 30), (Timer timer) async {
-      if (connected.value) {
+      if (Get.find<NetworkController>().connected.value) {
         await _getModifiedCustomers();
 
         await _getModifiedInvoices();

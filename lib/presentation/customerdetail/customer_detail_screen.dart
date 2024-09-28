@@ -1,8 +1,10 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_info_widget.dart';
@@ -41,12 +43,13 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     return CustomActionButton(
       buttonText: buttonText,
       onTap: () async {
-        bool connected = await controller.checkConnection();
-        if (connected) {
+        if (Get.find<NetworkController>().connected.value) {
           Get.offAndToNamed(route, arguments: {
             'customerId': controller.customerId,
             ...?additionalArgs
           });
+        } else {
+          SnackbarHelper.networkSnackbar();
         }
       },
     );

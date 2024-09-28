@@ -1,5 +1,7 @@
+import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -28,8 +30,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
                       ? null
                       : () {
-                          bool connected = Storage.settings.get('connected');
-                          if (connected) {
+                          if (Get.find<NetworkController>().connected.value) {
                             Get.toNamed(
                               Routes.PAYMENT,
                               arguments: {
@@ -38,15 +39,18 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                                 'fromhome': false
                               },
                             );
+                          } else {
+                            SnackbarHelper.networkSnackbar();
                           }
                         }),
             ),
             CustomActionButton(
                 buttonText: 'Download',
                 onTap: () {
-                  bool connected = Storage.settings.get('connected');
-                  if (connected) {
+                  if (Get.find<NetworkController>().connected.value) {
                     controller.generateDocument();
+                  } else {
+                    SnackbarHelper.networkSnackbar();
                   }
                 } //=> ,
                 ),
@@ -72,8 +76,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         .listenable(keys: [controller.invoiceId]),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
-                          bool connected = Storage.settings.get('connected');
-                          if (connected) {
+                          if (Get.find<NetworkController>().connected.value) {
                             controller.setDueDate();
                           }
                         },

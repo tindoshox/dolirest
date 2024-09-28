@@ -18,7 +18,6 @@ class SettingsController extends GetxController {
 
   /// Validates the form and adds the server if the form is valid.
   Future validate() async {
-
     final FormState form = serverFormKey.currentState!;
     _writeStore();
     if (form.validate()) {
@@ -32,7 +31,7 @@ class SettingsController extends GetxController {
         } else {
           _clearStorage();
 
-          SnackBarHelper.errorSnackbar(message: value.errorMessage);
+          SnackbarHelper.errorSnackbar(message: value.errorMessage);
         }
       });
     }
