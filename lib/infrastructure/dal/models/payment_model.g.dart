@@ -24,13 +24,14 @@ class PaymentModelAdapter extends TypeAdapter<PaymentModel> {
       ref: fields[5] as dynamic,
       refExt: fields[6] as dynamic,
       fkBankLine: fields[7] as dynamic,
+      invoiceId: fields[8] as dynamic,
     );
   }
 
   @override
   void write(BinaryWriter writer, PaymentModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(1)
       ..write(obj.amount)
       ..writeByte(2)
@@ -44,7 +45,9 @@ class PaymentModelAdapter extends TypeAdapter<PaymentModel> {
       ..writeByte(6)
       ..write(obj.refExt)
       ..writeByte(7)
-      ..write(obj.fkBankLine);
+      ..write(obj.fkBankLine)
+      ..writeByte(8)
+      ..write(obj.invoiceId);
   }
 
   @override

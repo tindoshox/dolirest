@@ -26,6 +26,7 @@ class SettingsController extends GetxController {
       await RemoteServices.fetchUserInfo().then((value) async {
         DialogHelper.hideLoading();
         if (!value.hasError) {
+          Storage.settings.put('connected', true);
           Storage.settings.put('user', value.data.login.toString());
           Get.offAndToNamed(Routes.HOME);
         } else {

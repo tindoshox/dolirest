@@ -1,14 +1,13 @@
 import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
-
+import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/utils.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
-import 'package:dolirest/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/home_controller.dart';
@@ -216,41 +215,23 @@ _buildCashflow() {
           var list = box.values.toList();
           var flat = list.expand((i) => i).toList();
 
-          //Month Collection
-          var monthCollections = flat
+          //Day Cashflow
+          var dayCashflow = flat
               .where((f) =>
                   Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
               .toList();
-          List<int> monthAmounts = monthCollections
-              .map((payment) => Utils.intAmounts(payment.amount))
-              .toList();
-          int monthTotal =
-              monthAmounts.isEmpty ? 0 : monthAmounts.reduce((a, b) => a + b);
-          //Day Collections
-          var dayCollections = flat
-              .where((f) =>
-                  Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
-              .toList();
-          List<int> dayAmounts = dayCollections
+          List<int> dayAmounts = dayCashflow
               .map((payment) => Utils.intAmounts(payment.amount))
               .toList();
           int dayTotal =
               dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
-          return Column(
-            children: [
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.money_outlined),
-                  title: Text("Collected this month: R$monthTotal"),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.money_outlined),
-                  title: Text("Collected today: R$dayTotal"),
-                ),
-              ),
-            ],
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.money_outlined),
+              title: Text("Collected today: R$dayTotal"),
+              subtitle: Text("${dayCashflow.length} invoices"),
+              onTap: () => Get.toNamed(Routes.CASHFLOW),
+            ),
           );
         }),
   );

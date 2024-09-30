@@ -1,15 +1,14 @@
 import 'dart:async';
 
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/utils.dart';
-
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
 
 class HomeController extends GetxController {
   RxString currentUser = ''.obs;
@@ -28,13 +27,10 @@ class HomeController extends GetxController {
   void onReady() {
     var invoices = Storage.invoices.toMap().length;
     if (Get.find<NetworkController>().connected.value && invoices == 0) {
-      _loadInitialData();
+      _loadInitialData().then((v) => _loadPaymentData());
     }
     if (Get.find<NetworkController>().connected.value) {
       _dataRefreshSchedule();
-    }
-    if (Get.find<NetworkController>().connected.value) {
-      _loadPaymentData();
     }
 
     super.onReady();
@@ -65,20 +61,14 @@ class HomeController extends GetxController {
     Timer.periodic(const Duration(seconds: 30), (Timer timer) async {
       if (Get.find<NetworkController>().connected.value) {
         await _getModifiedCustomers();
-
         await _getModifiedInvoices();
+        await _loadPaymentData();
       }
     });
   }
 
   Future _refreshCustomers() async {
-    await RemoteServices.fetchThirdPartyList().then((value) async {
-      if (!value.hasError) {
-        for (CustomerModel customer in value.data) {
-          Storage.customers.put(customer.id, customer);
-        }
-      }
-    });
+    await RemoteServices.fetchThirdPartyList();
   }
 
   Future _loadPaymentData() async {

@@ -15,7 +15,7 @@ String paymentModelToJson(List<PaymentModel> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 @HiveType(typeId: 4)
-class PaymentModel {
+class PaymentModel extends HiveObject {
   @HiveField(1)
   dynamic amount;
   @HiveField(2)
@@ -30,6 +30,8 @@ class PaymentModel {
   dynamic refExt;
   @HiveField(7)
   dynamic fkBankLine;
+  @HiveField(8)
+  dynamic invoiceId;
 
   PaymentModel({
     this.amount,
@@ -39,17 +41,18 @@ class PaymentModel {
     this.ref,
     this.refExt,
     this.fkBankLine,
+    this.invoiceId,
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) => PaymentModel(
-        amount: json["amount"],
-        type: json["type"],
-        date: json["date"] == null ? null : DateTime.parse(json["date"]),
-        num: json["num"],
-        ref: json["ref"],
-        refExt: json["ref_ext"],
-        fkBankLine: json["fk_bank_line"],
-      );
+      amount: json["amount"],
+      type: json["type"],
+      date: json["date"] == null ? null : DateTime.parse(json["date"]),
+      num: json["num"],
+      ref: json["ref"],
+      refExt: json["ref_ext"],
+      fkBankLine: json["fk_bank_line"],
+      invoiceId: json["invoiceId"]);
 
   Map<String, dynamic> toJson() => {
         "amount": amount,
@@ -59,5 +62,6 @@ class PaymentModel {
         "ref": ref,
         "ref_ext": refExt,
         "fk_bank_line": fkBankLine,
+        "invoiceId": invoiceId
       };
 }

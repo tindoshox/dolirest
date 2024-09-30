@@ -1,6 +1,5 @@
 //import 'package:flutter/material.dart';
 
-import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/createinvoice_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerdetail_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerlist_controller_binding.dart';
@@ -20,6 +19,10 @@ import 'package:dolirest/presentation/invoicelist/invoicelist_screen.dart';
 import 'package:dolirest/presentation/payment/payment_screen.dart';
 import 'package:dolirest/presentation/reports/reports_screen.dart';
 import 'package:dolirest/presentation/settings/settings.screen.dart';
+import 'package:get/get.dart';
+
+import '../../presentation/cashflow/collections_screen.dart';
+import 'bindings/controllers/cashflow.controller.binding.dart';
 import 'bindings/controllers/reports.controller.binding.dart';
 import 'routes.dart';
 
@@ -97,6 +100,13 @@ class Nav {
       name: Routes.SETTINGS,
       page: () => const SettingsScreen(),
       binding: SettingsControllerBinding(),
+      transition: transition,
+      transitionDuration: transitionDuration,
+    ),
+    GetPage(
+      name: Routes.CASHFLOW,
+      page: () => const CashflowScreen(),
+      binding: CashflowControllerBinding(),
       transition: transition,
       transitionDuration: transitionDuration,
     ),

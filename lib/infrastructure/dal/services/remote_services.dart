@@ -4,14 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
-import 'package:flutter/foundation.dart';
-
-import 'package:http/http.dart' as http;
-import 'package:http/retry.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_response_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
@@ -19,6 +14,10 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
+import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/retry.dart';
 
 class RemoteServices {
   static final RetryClient _client = RetryClient(http.Client());
@@ -149,7 +148,7 @@ class RemoteServices {
     }
   }
 
-  /// Customer Payment List
+  /// Invoice Payment List
   static Future<DataOrException> fetchPaymentsByInvoice(
       String invoiceId) async {
     try {
@@ -161,7 +160,22 @@ class RemoteServices {
           .timeout(_timeout);
       if (response.statusCode == 200) {
         var payments = paymentModelFromJson(response.body);
-        Storage.payments.put(invoiceId, payments);
+        List<PaymentModel> pl = [];
+        for (var payment in payments) {
+          PaymentModel p = PaymentModel(
+            amount: payment.amount,
+            type: payment.type,
+            date: payment.date,
+            num: payment.num,
+            fkBankLine: payment.fkBankLine,
+            ref: payment.ref,
+            invoiceId: invoiceId,
+            refExt: payment.refExt,
+          );
+
+          pl.add(p);
+        }
+        Storage.payments.put(invoiceId, pl);
       }
       return DataOrException();
     } on Exception catch (e) {

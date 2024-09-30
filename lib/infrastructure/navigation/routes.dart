@@ -22,4 +22,5 @@ class Routes {
   static const SUPPLIERINVOICEDETAILS = '/supplierinvoicedetails';
   static const SUPPLIERLIST = '/supplierlist';
   static const SPLASHSCREEN = '/splashscreen';
+  static const CASHFLOW = '/cashflow';
 }
