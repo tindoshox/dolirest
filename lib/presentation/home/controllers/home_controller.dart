@@ -6,7 +6,7 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';
 
@@ -37,7 +37,7 @@ class HomeController extends GetxController {
   }
 
   _loadInitialData() async {
-    DialogHelper.showLoading('Loading data');
+    LoadingOverlay.showLoading('Loading data');
     List<CustomerModel> customers = Storage.customers.values.toList();
 
     List<InvoiceModel> invoices = Storage.invoices.toMap().values.toList();
@@ -54,7 +54,7 @@ class HomeController extends GetxController {
       await _getModifiedInvoices();
     }
 
-    DialogHelper.hideLoading();
+    LoadingOverlay.hideLoading();
   }
 
   Future _dataRefreshSchedule() async {

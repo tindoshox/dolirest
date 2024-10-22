@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -125,10 +125,10 @@ class EditCustomerController extends GetxController {
   }
 
   Future _createCustomer(String body) async {
-    DialogHelper.showLoading('Saving Customer...');
+    LoadingOverlay.showLoading('Saving Customer...');
 
     await RemoteServices.createCustomer(body).then((value) async {
-      DialogHelper.hideLoading();
+      LoadingOverlay.hideLoading();
       if (value.hasError) {
         SnackbarHelper.errorSnackbar(message: value.errorMessage);
       } else {
@@ -157,9 +157,9 @@ class EditCustomerController extends GetxController {
   }
 
   Future _updateCustomer(String body, String id) async {
-    DialogHelper.showLoading('Updating Customer...');
+    LoadingOverlay.showLoading('Updating Customer...');
     await RemoteServices.updateCustomer(body, id).then((value) async {
-      DialogHelper.hideLoading();
+      LoadingOverlay.hideLoading();
 
       if (value.hasError) {
         SnackbarHelper.errorSnackbar(message: value.errorMessage);

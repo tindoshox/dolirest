@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -126,7 +126,7 @@ class PaymentController extends GetxController {
 
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
-      DialogHelper.showLoading('Processing Payment...');
+      LoadingOverlay.showLoading('Processing Payment...');
       String body = jsonEncode({
         "arrayofamounts": {
           "${invoice.value.id}": {
@@ -160,7 +160,7 @@ class PaymentController extends GetxController {
         await refreshInvoice(invoice.value.id);
 
         if (fromHomeScreen) {
-          DialogHelper.hideLoading();
+          LoadingOverlay.hideLoading();
 
           Get.snackbar(
               'Payment', '${amount.value} for ${customer.value.name} received.',
@@ -174,12 +174,12 @@ class PaymentController extends GetxController {
 
           clearInvoice();
         } else {
-          DialogHelper.hideLoading();
+          LoadingOverlay.hideLoading();
           Get.back();
           SnackbarHelper.successSnackbar(message: 'Payment successful');
         }
       } else {
-        DialogHelper.hideLoading();
+        LoadingOverlay.hideLoading();
         SnackbarHelper.errorSnackbar(message: 'Payment not saved');
       }
     });

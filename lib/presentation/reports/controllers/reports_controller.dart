@@ -9,7 +9,7 @@ import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dar
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:open_filex/open_filex.dart';
@@ -133,21 +133,21 @@ class ReportsController extends GetxController {
   Future _generateReport(String body) async {
     permissionReady = await Utils.checkPermission(platform);
     if (permissionReady) {
-      DialogHelper.showLoading(
+      LoadingOverlay.showLoading(
           'Fetching ${selectedReport.value.displayName} report...');
 
       /// Checks permissions
       if (permissionReady) {
         await RemoteServices.buildReport(body).then((value) async {
           if (value.hasError) {
-            DialogHelper.hideLoading();
+            LoadingOverlay.hideLoading();
             SnackbarHelper.errorSnackbar(message: value.errorMessage);
           } else {
             //Creates file in storage
             Utils.createFileFromString(
                     value.data.content, selectedReport.value.reportid)
                 .then((value) {
-              DialogHelper.hideLoading();
+              LoadingOverlay.hideLoading();
 
               /// Opens file in default viewer
               OpenFilex.open(value);
@@ -156,7 +156,7 @@ class ReportsController extends GetxController {
         });
       }
     } else {
-      DialogHelper.hideLoading();
+      LoadingOverlay.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');
     }
   }

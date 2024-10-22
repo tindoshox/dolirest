@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 // ignore: unused_import
 import 'package:path_provider/path_provider.dart';
@@ -21,10 +21,10 @@ class SettingsController extends GetxController {
     final FormState form = serverFormKey.currentState!;
     _writeStore();
     if (form.validate()) {
-      DialogHelper.showLoading('Verifying Server Info...');
+      LoadingOverlay.showLoading('Verifying Server Info...');
 
       await RemoteServices.fetchUserInfo().then((value) async {
-        DialogHelper.hideLoading();
+        LoadingOverlay.hideLoading();
         if (!value.hasError) {
           Storage.settings.put('connected', true);
           Storage.settings.put('user', value.data.login.toString());

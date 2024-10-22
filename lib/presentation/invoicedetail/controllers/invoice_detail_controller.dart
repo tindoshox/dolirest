@@ -10,7 +10,7 @@ import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -110,7 +110,7 @@ class InvoiceDetailController extends GetxController
     InvoiceModel invoice = Storage.invoices.get(invoiceId)!;
     permissionReady = await Utils.checkPermission(platform);
 
-    DialogHelper.showLoading('Downloading document...');
+    LoadingOverlay.showLoading('Downloading document...');
     String body = json.encode(BuildDocumentRequestModel(
       modulepart: 'invoice',
       originalFile: '${invoice.ref}/${invoice.ref}.pdf',
@@ -125,7 +125,7 @@ class InvoiceDetailController extends GetxController
               OpenFilex.open(value);
             });
           } else {
-            DialogHelper.hideLoading();
+            LoadingOverlay.hideLoading();
             SnackbarHelper.errorSnackbar(message: value.errorMessage);
           }
         });
@@ -133,11 +133,11 @@ class InvoiceDetailController extends GetxController
         Get.snackbar('Error', 'an unknown error occurred');
       }
     } else {
-      DialogHelper.hideLoading();
+      LoadingOverlay.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');
     }
 
-    DialogHelper.hideLoading();
+    LoadingOverlay.hideLoading();
   }
 
   setDueDate() async {
@@ -161,7 +161,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _updateDueDate(int selectedDate) async {
-    DialogHelper.showLoading('Updating Due Date...');
+    LoadingOverlay.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
     update.removeWhere((key, value) => value == null);
@@ -169,7 +169,7 @@ class InvoiceDetailController extends GetxController
     String body = jsonEncode(update);
 
     await RemoteServices.updateInvoice(invoiceId, body).then((value) {
-      DialogHelper.hideLoading();
+      LoadingOverlay.hideLoading();
       if (!value.hasError) {
         _refreshInvoiceData();
         SnackbarHelper.successSnackbar(message: 'Due date changed');

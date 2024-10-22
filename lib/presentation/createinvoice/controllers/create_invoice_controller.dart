@@ -10,7 +10,7 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
@@ -124,7 +124,7 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-      DialogHelper.showLoading('Creating Invoice...');
+      LoadingOverlay.showLoading('Creating Invoice...');
       // If stock type is free text.
       if (stockType.value != '0') {
         await _createInvoice();
@@ -133,7 +133,7 @@ class CreateinvoiceController extends GetxController {
         await RemoteServices.checkStock(selectedProduct.value.id!)
             .then((value) async {
           if (value.hasError) {
-            DialogHelper.hideLoading();
+            LoadingOverlay.hideLoading();
             SnackbarHelper.errorSnackbar(message: 'Product has no stock');
           }
           await _createInvoice();
@@ -174,7 +174,7 @@ class CreateinvoiceController extends GetxController {
 
     await RemoteServices.createInvoice(body).then((value) async {
       if (value.hasError) {
-        DialogHelper.hideLoading();
+        LoadingOverlay.hideLoading();
         SnackbarHelper.errorSnackbar(
           message: value.errorMessage,
         );
@@ -197,13 +197,13 @@ class CreateinvoiceController extends GetxController {
       if (value.hasError) {
         debugPrint(value.statusCode.toString());
         await RemoteServices.deleteInvoice(invoiceId).then((v) {
-          DialogHelper.hideLoading();
+          LoadingOverlay.hideLoading();
           Get.offAndToNamed(Routes.CREATEINVOICE);
           SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
         });
       } else {
         await _getNewInvoice(invoiceId).then((value) {
-          DialogHelper.hideLoading();
+          LoadingOverlay.hideLoading();
 
           Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
             'invoiceId': invoiceId,
