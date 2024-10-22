@@ -1,4 +1,3 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
 import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:flutter/material.dart';
@@ -44,13 +43,6 @@ class CustomerDetailController extends GetxController
 
   // Fetch invoice data from server
   Future _refreshInvoiceData() async {
-    await RemoteServices.fetchInvoiceList(customerId: customerId)
-        .then((value) async {
-      if (!value.hasError) {
-        for (InvoiceModel invoice in value.data) {
-          Storage.invoices.put(invoice.id, invoice);
-        }
-      }
-    });
+    await RemoteServices.fetchInvoiceList(customerId: customerId);
   }
 }

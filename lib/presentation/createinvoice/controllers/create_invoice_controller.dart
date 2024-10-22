@@ -216,7 +216,7 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceById(invoiceId);
+    await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
   }
 
   ///

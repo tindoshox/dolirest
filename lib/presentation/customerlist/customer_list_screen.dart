@@ -94,80 +94,78 @@ class _CustomerList extends GetView<CustomerListController> {
     String search = controller.searchString.value;
     return RefreshIndicator(
       onRefresh: () => controller.refreshCusomerList(),
-      child: Scrollbar(
-        child: ValueListenableBuilder(
-          valueListenable: Storage.customers.listenable(),
-          builder: (context, box, child) {
-            List<CustomerModel> sortedValues = box.values.toList()
-              ..sort((a, b) => a.name.compareTo(b.name));
-            List<CustomerModel> customers = search.length > 2
-                ? sortedValues
-                    .where((customer) =>
-                        customer.name.contains(search) ||
-                        customer.address.toString().contains(search) ||
-                        customer.town.toString().contains(search) ||
-                        customer.phone.toString().contains(search) ||
-                        customer.fax.toString().contains(search))
-                    .toList()
-                : sortedValues;
-            return customers.isEmpty
-                ? ListTile(
-                    title: const Text('No customers found',
-                        textAlign: TextAlign.center),
-                    trailing: ElevatedButton(
-                        onPressed: () => controller.refreshCusomerList(),
-                        child: const Text('Refresh')),
-                  )
-                : ListView.builder(
-                    controller: controller.scrollController,
-                    itemCount: customers.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index < customers.length) {
-                        CustomerModel customer = customers[index];
-                        return Card(
-                          child: ListTile(
-                            onTap: () =>
-                                Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-                              'customerId': customer.id.toString(),
-                            }),
-                            leading: const Icon(
-                              Icons.person_2_sharp,
-                              size: 40,
-                            ),
-                            title: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    customers[index].name!,
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    '${customer.address} ${customer.town}',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
+      child: ValueListenableBuilder(
+        valueListenable: Storage.customers.listenable(),
+        builder: (context, box, child) {
+          List<CustomerModel> sortedValues = box.values.toList()
+            ..sort((a, b) => a.name.compareTo(b.name));
+          List<CustomerModel> customers = search.length > 2
+              ? sortedValues
+                  .where((customer) =>
+                      customer.name.contains(search) ||
+                      customer.address.toString().contains(search) ||
+                      customer.town.toString().contains(search) ||
+                      customer.phone.toString().contains(search) ||
+                      customer.fax.toString().contains(search))
+                  .toList()
+              : sortedValues;
+          return customers.isEmpty
+              ? ListTile(
+                  title: const Text('No customers found',
+                      textAlign: TextAlign.center),
+                  trailing: ElevatedButton(
+                      onPressed: () => controller.refreshCusomerList(),
+                      child: const Text('Refresh')),
+                )
+              : ListView.builder(
+                  controller: controller.scrollController,
+                  itemCount: customers.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index < customers.length) {
+                      CustomerModel customer = customers[index];
+                      return Card(
+                        child: ListTile(
+                          onTap: () =>
+                              Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
+                            'customerId': customer.id.toString(),
+                          }),
+                          leading: const Icon(
+                            Icons.person_2_sharp,
+                            size: 40,
                           ),
-                        );
-                      } else {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(child: Text('nothing more to load!')),
-                        );
-                      }
-                    });
-          },
-        ),
+                          title: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  customers[index].name!,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '${customer.address} ${customer.town}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32.0),
+                        child: Center(child: Text('nothing more to load!')),
+                      );
+                    }
+                  });
+        },
       ),
     );
   }

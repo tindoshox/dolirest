@@ -183,22 +183,6 @@ class RemoteServices {
     }
   }
 
-  /// Invoice by ID
-  static Future<DataOrException> fetchInvoiceById(String invoiceId) async {
-    try {
-      var response = await _client
-          .get(
-            Uri.https(_url, '${ApiRoutes.invoices}/$invoiceId'),
-            headers: _headers,
-          )
-          .timeout(_timeout);
-      Storage.invoices.put(invoiceId, invoiceModelFromJson(response.body));
-      return DataOrException();
-    } on Exception catch (e) {
-      return _error(e);
-    }
-  }
-
   /// Update Invoice
   static Future<DataOrException> updateInvoice(
       String invoiceId, String body) async {

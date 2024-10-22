@@ -99,7 +99,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    await RemoteServices.fetchInvoiceById(invoiceId);
+    await RemoteServices.fetchInvoiceList(customerId: customerId);
   }
 
   Future _refreshCustomerData() async {

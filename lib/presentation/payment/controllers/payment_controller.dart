@@ -201,7 +201,7 @@ class PaymentController extends GetxController {
   }
 
   refreshInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceById(invoiceId);
+    await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
   }
 
   fetchInvoices() {
