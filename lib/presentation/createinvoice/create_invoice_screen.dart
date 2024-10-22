@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -279,10 +278,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<ProductModel> products = Storage.products
-              .toMap()
-              .values
-              .toList()
+          List<ProductModel> products = controller.storageController
+              .getProductList()
               .where((product) => product.description!.contains(searchString))
               .toList();
           products.sort((a, b) => a.description!.compareTo(b.description!));

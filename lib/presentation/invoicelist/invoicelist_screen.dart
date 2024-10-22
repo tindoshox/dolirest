@@ -1,12 +1,10 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/invoicelist_controller.dart';
 
@@ -87,7 +85,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
     return RefreshIndicator(
       onRefresh: () => controller.refreshInvoiceList(),
       child: ValueListenableBuilder(
-        valueListenable: Storage.invoices.listenable(),
+        valueListenable: controller.storageController.invoicesListenable(),
         builder: (context, box, child) {
           List<InvoiceModel> list = box.values
               .toList()

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +15,7 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
+  final StorageController storageController = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController fromDateController = TextEditingController();
   TextEditingController toDateController = TextEditingController();
@@ -72,7 +73,7 @@ class ReportsController extends GetxController {
       platform = TargetPlatform.iOS;
     }
 
-    List<GroupModel> list = Storage.groups.toMap().values.toList();
+    List<GroupModel> list = storageController.getGroupList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -86,20 +87,25 @@ class ReportsController extends GetxController {
 
   Future getGroups({String search = ""}) async {
     if (search.isNotEmpty) {
-      groups.value = Storage.groups
-          .toMap()
-          .values
-          .toList()
+      groups.value = storageController
+          .getGroupList()
           .where((group) => group.name.contains(search))
           .toList();
     } else {
-      groups.value = Storage.groups.toMap().values.toList();
+      groups.value = storageController.getGroupList();
     }
     return groups;
   }
 
   Future<List<GroupModel>> refreshGroups() async {
-    await RemoteServices.fetchGroups();
+    await RemoteServices.fetchGroups().then((value) {
+      if (value.data != null) {
+        final List<GroupModel> groups = value.data;
+        for (GroupModel group in groups) {
+          storageController.storeGroup(group.id, group);
+        }
+      }
+    });
 
     return groups;
   }
@@ -133,21 +139,21 @@ class ReportsController extends GetxController {
   Future _generateReport(String body) async {
     permissionReady = await Utils.checkPermission(platform);
     if (permissionReady) {
-      LoadingOverlay.showLoading(
+      DialogHelper.showLoading(
           'Fetching ${selectedReport.value.displayName} report...');
 
       /// Checks permissions
       if (permissionReady) {
         await RemoteServices.buildReport(body).then((value) async {
           if (value.hasError) {
-            LoadingOverlay.hideLoading();
+            DialogHelper.hideLoading();
             SnackbarHelper.errorSnackbar(message: value.errorMessage);
           } else {
             //Creates file in storage
             Utils.createFileFromString(
                     value.data.content, selectedReport.value.reportid)
                 .then((value) {
-              LoadingOverlay.hideLoading();
+              DialogHelper.hideLoading();
 
               /// Opens file in default viewer
               OpenFilex.open(value);
@@ -156,7 +162,7 @@ class ReportsController extends GetxController {
         });
       }
     } else {
-      LoadingOverlay.hideLoading();
+      DialogHelper.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');
     }
   }

@@ -1,14 +1,14 @@
 import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
-import 'package:dolirest/presentation/widgets/status_icon.dart';
+import 'package:dolirest/presentation/widgets/dialog_action_button.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'controllers/home_controller.dart';
 
@@ -37,13 +37,18 @@ class HomeScreen extends GetView<HomeController> {
       ),
       title: const Text("Dashboard"),
       centerTitle: true,
-      actions: [Obx(() => getStatusIcon()), _buildPopupMenu()],
+      actions: [
+        Obx(() => _getStatusIcon(controller.refreshing.value)),
+        _buildPopupMenu()
+      ],
     );
   }
 
   Widget _buildPopupMenu() {
     return PopupMenuButton(
       itemBuilder: (context) => [
+        // _buildPopupMenuItem(
+        //     onTap: () => _logout(), value: '/settings', text: 'Logout'),
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
@@ -206,19 +211,39 @@ class HomeScreen extends GetView<HomeController> {
   }
 }
 
+_logout() async {
+  Get.defaultDialog(
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      title: 'Logout',
+      middleText:
+          'Logging out will clear all locally stored data. You will need to enter your login details again. Would you like to continue?',
+      barrierDismissible: false,
+      confirm: DialogActionButton(
+          onPressed: () {
+            Get.back();
+            Get.find<StorageController>().clearAll();
+            Get.offAllNamed(Routes.SETTINGS);
+          },
+          buttonText: 'Yes'),
+      cancel: DialogActionButton(
+        buttonColor: Colors.red,
+        buttonText: 'No',
+        onPressed: () => Get.back(),
+      ));
+}
+
 _buildCashflow() {
   return Align(
     alignment: Alignment.center,
     child: ValueListenableBuilder(
-        valueListenable: Storage.payments.listenable(),
+        valueListenable: Get.find<StorageController>().paymentsListenable(),
         builder: (context, box, widget) {
           var list = box.values.toList();
-          var flat = list.expand((i) => i).toList();
 
           //Day Cashflow
-          var dayCashflow = flat
-              .where((f) =>
-                  Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
+          var dayCashflow = list
+              .where((p) =>
+                  Utils.datePaid(p.date!) == Utils.datePaid(DateTime.now()))
               .toList();
           List<int> dayAmounts = dayCashflow
               .map((payment) => Utils.intAmounts(payment.amount))
@@ -239,7 +264,7 @@ _buildCashflow() {
 
 _buildInvoices() {
   return ValueListenableBuilder(
-    valueListenable: Storage.invoices.listenable(),
+    valueListenable: Get.find<StorageController>().invoicesListenable(),
     builder: (context, box, widget) {
       int openInvoices = box.values.where((i) => i.remaintopay != 0).length;
       int overDues = box.values
@@ -288,5 +313,32 @@ class _AppIcon extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Widget _makeIcon(String text, IconData icon, Color color) {
+  return Tooltip(
+      message: text,
+      child: SizedBox(
+          width: 40,
+          height: null,
+          child: Icon(
+            icon,
+            size: 24,
+            color: color,
+          )));
+}
+
+Widget _getStatusIcon(bool refreshing) {
+  if (refreshing) {
+    return const SpinKitDualRing(
+      color: Colors.blueAccent,
+      size: 10,
+    );
+  }
+  if (!Get.find<NetworkController>().connected.value) {
+    return _makeIcon('No connection', Icons.cloud_off_outlined, Colors.red);
+  } else {
+    return _makeIcon('Connected', Icons.cloud_done_outlined, Colors.lightGreen);
   }
 }

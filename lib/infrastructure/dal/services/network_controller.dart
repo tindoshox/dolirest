@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
 
 import 'package:get/get.dart';
 
@@ -18,10 +17,6 @@ class NetworkController extends GetxController {
     subscription = _connectivity.onConnectivityChanged
         .listen((List<ConnectivityResult> result) {
       _updateConnectionStatus(result);
-    });
-
-    Storage.settings.watch(key: 'connected').listen((event) {
-      connected.value = event.value;
     });
   }
 
@@ -41,11 +36,7 @@ class NetworkController extends GetxController {
       List<ConnectivityResult> connectivityResult) async {
     if (connectivityResult.contains(ConnectivityResult.wifi) ||
         connectivityResult.contains(ConnectivityResult.mobile)) {
-      var connectivity = await RemoteServices.checkServerReachability();
-
-      Storage.settings.put('connected', connectivity);
-    } else {
-      Storage.settings.put('connected', false);
+      connected.value = await RemoteServices.checkServerReachability();
     }
   }
 
@@ -54,9 +45,7 @@ class NetworkController extends GetxController {
     _serverCheckTimer?.cancel(); // Cancel any existing timer
     _serverCheckTimer =
         Timer.periodic(const Duration(seconds: 60), (timer) async {
-      bool isReachable = await RemoteServices.checkServerReachability();
-
-      Storage.settings.put('connected', isReachable);
+      connected.value = await RemoteServices.checkServerReachability();
     });
   }
 }

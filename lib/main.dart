@@ -6,7 +6,8 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/dependancy_injection.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,7 @@ void main() async {
 
   await Hive.openBox<InvoiceModel>('invoices');
   await Hive.openBox<CustomerModel>('customers');
-  await Hive.openBox<List>('payments');
+  await Hive.openBox<PaymentModel>('payments');
   await Hive.openBox<ProductModel>('products');
   await Hive.openBox<GroupModel>('groups');
   await Hive.openBox('settings');
@@ -45,10 +46,12 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initialRoute =
-        Storage.settings.get('apikey') == null ? Routes.SETTINGS : Routes.HOME;
+    final StorageController storageController = Get.find();
+    final initialRoute = storageController.getSetting(StorageKey.apiKey) == null
+        ? Routes.SETTINGS
+        : Routes.HOME;
     return GetMaterialApp(
-      debugShowCheckedModeBanner: kDebugMode,
+      debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
       theme: ThemeData(
           colorScheme: const ColorScheme.light(),

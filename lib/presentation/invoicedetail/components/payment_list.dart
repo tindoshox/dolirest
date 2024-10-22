@@ -1,7 +1,8 @@
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class PaymentsList extends StatelessWidget {
@@ -17,10 +18,15 @@ class PaymentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: Storage.payments.listenable(),
-      builder: (BuildContext context, Box<List> box, Widget? child) {
-        final List<PaymentModel> payments = box.get(invoiceId,
-            defaultValue: <PaymentModel>[])!.cast<PaymentModel>();
+      valueListenable: Get.find<StorageController>().paymentsListenable(),
+      builder: (BuildContext context, Box<PaymentModel> box, Widget? child) {
+        final List<PaymentModel> payments = box
+            .toMap()
+            .values
+            .toList()
+            .where((p) => p.invoiceId.toString() == invoiceId)
+            .toList();
+        debugPrint(payments.length.toString());
         int price = int.parse(Utils.amounts(totalTtc));
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -50,7 +56,7 @@ class PaymentsList extends StatelessWidget {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    var payment = payments[index];
+                    final payment = payments[index];
                     price -= Utils.intAmounts(payment.amount);
 
                     return payments.isEmpty

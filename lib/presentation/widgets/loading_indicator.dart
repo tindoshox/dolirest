@@ -12,7 +12,7 @@ class LoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SpinKitSpinningLines(
+          SpinKitFadingCircle(
             color: Theme.of(context).colorScheme.onSurface,
           ),
           if (message != null) message!

@@ -1,12 +1,11 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'controllers/customer_list_controller.dart';
 
 class CustomerListScreen extends GetView<CustomerListController> {
@@ -91,11 +90,12 @@ class _CustomerList extends GetView<CustomerListController> {
   }
 
   Widget _buildCustomerListView() {
+    StorageController storageController = Get.find();
     String search = controller.searchString.value;
     return RefreshIndicator(
       onRefresh: () => controller.refreshCusomerList(),
       child: ValueListenableBuilder(
-        valueListenable: Storage.customers.listenable(),
+        valueListenable: storageController.customersListenable(),
         builder: (context, box, child) {
           List<CustomerModel> sortedValues = box.values.toList()
             ..sort((a, b) => a.name.compareTo(b.name));

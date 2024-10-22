@@ -14,16 +14,20 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage_key.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
 
 class RemoteServices {
   static final RetryClient _client = RetryClient(http.Client());
   static const Duration _timeout = Duration(seconds: 60);
-  static final String _url = Storage.settings.get('url');
-  static final String _apikey = Storage.settings.get('apikey');
+  static final String _url =
+      Get.find<StorageController>().getSetting(StorageKey.url);
+  static final String _apikey =
+      Get.find<StorageController>().getSetting(StorageKey.apiKey);
   static final Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -31,21 +35,27 @@ class RemoteServices {
   };
 
   static DataOrException _error(Exception e) {
-    if (e is SocketException) {
-      return DataOrException(
-        hasError: true,
-        errorMessage: "Unable to connect to server",
-      );
-    } else if (e is TimeoutException) {
-      return DataOrException(
-        hasError: true,
-        errorMessage: "Timeout error",
-      );
-    } else {
-      return DataOrException(
-        hasError: true,
-        errorMessage: "Unknown error",
-      );
+    switch (e) {
+      case TimeoutException():
+        return DataOrException(
+          hasError: true,
+          errorMessage: "Timeout error",
+        );
+      case SocketException():
+        return DataOrException(
+          hasError: true,
+          errorMessage: "Unable to connect to server",
+        );
+      case HttpException():
+        return DataOrException(
+          hasError: true,
+          errorMessage: e.message,
+        );
+      default:
+        return DataOrException(
+          hasError: true,
+          errorMessage: 'Uknown Error',
+        );
     }
   }
 
@@ -77,11 +87,8 @@ class RemoteServices {
             .map((jsonItem) =>
                 CustomerModel.fromJson(jsonItem as Map<String, dynamic>))
             .toList();
-        for (CustomerModel customer in customers) {
-          Storage.customers.put(customer.id, customer);
-        }
       }
-      return DataOrException();
+      return DataOrException(statusCode: response.statusCode, data: customers);
     } on Exception catch (e) {
       return _error(e);
     }
@@ -96,10 +103,10 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
+      CustomerModel customerModel = thirdPartyModelFromJson(response.body);
 
-      Storage.customers.put(customerId, thirdPartyModelFromJson(response.body));
-
-      return DataOrException();
+      return DataOrException(
+          statusCode: response.statusCode, data: customerModel);
     } on Exception catch (e) {
       return _error(e);
     }
@@ -128,21 +135,20 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      String jsonString = response.body;
-      List<dynamic> jsonList = json.decode(jsonString);
-
       List<InvoiceModel> invoices = List.empty();
-      if (jsonList.isNotEmpty) {
-        invoices = jsonList
-            .map((jsonItem) =>
-                InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
-            .toList();
-        for (InvoiceModel invoice in invoices) {
-          Storage.invoices.put(invoice.id, invoice);
+      if (response.statusCode == 200) {
+        String jsonString = response.body;
+        List<dynamic> jsonList = json.decode(jsonString);
+
+        if (jsonList.isNotEmpty) {
+          invoices = jsonList
+              .map((jsonItem) =>
+                  InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
+              .toList();
         }
       }
 
-      return DataOrException();
+      return DataOrException(statusCode: response.statusCode, data: invoices);
     } on Exception catch (e) {
       return _error(e);
     }
@@ -158,26 +164,13 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
+      List<PaymentModel> payments = [];
       if (response.statusCode == 200) {
-        var payments = paymentModelFromJson(response.body);
-        List<PaymentModel> pl = [];
-        for (var payment in payments) {
-          PaymentModel p = PaymentModel(
-            amount: payment.amount,
-            type: payment.type,
-            date: payment.date,
-            num: payment.num,
-            fkBankLine: payment.fkBankLine,
-            ref: payment.ref,
-            invoiceId: invoiceId,
-            refExt: payment.refExt,
-          );
-
-          pl.add(p);
-        }
-        Storage.payments.put(invoiceId, pl);
+        payments = paymentModelFromJson(response.body);
+        return DataOrException(statusCode: response.statusCode, data: payments);
+      } else {
+        return DataOrException(statusCode: response.statusCode, hasError: true);
       }
-      return DataOrException();
     } on Exception catch (e) {
       return _error(e);
     }
@@ -259,21 +252,23 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      String jsonString = response.body;
 
-      List<dynamic> jsonList = json.decode(jsonString);
-      List<GroupModel> groups = List.empty();
-      if (jsonList.isNotEmpty) {
-        groups = jsonList
-            .map((jsonItem) =>
-                GroupModel.fromJson(jsonItem as Map<String, dynamic>))
-            .toList();
-        for (GroupModel group in groups) {
-          Storage.groups.put(group.id, group);
+      if (response.statusCode == 200) {
+        String jsonString = response.body;
+        List<dynamic> jsonList = json.decode(jsonString);
+        List<GroupModel> groups = List.empty();
+        if (jsonList.isNotEmpty) {
+          groups = jsonList
+              .map((jsonItem) =>
+                  GroupModel.fromJson(jsonItem as Map<String, dynamic>))
+              .toList();
         }
-      }
 
-      return DataOrException();
+        return DataOrException(data: groups, statusCode: response.statusCode);
+      } else {
+        return DataOrException(
+            errorMessage: response.reasonPhrase, hasError: true);
+      }
     } on Exception catch (e) {
       return _error(e);
     }
@@ -333,22 +328,23 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      String jsonString = response.body;
+      if (response.statusCode == 200) {
+        String jsonString = response.body;
 
-      List<dynamic> jsonList = json.decode(jsonString);
-      List<ProductModel> products = List.empty();
-      if (jsonList.isNotEmpty) {
-        products = jsonList
-            .map((jsonItem) =>
-                ProductModel.fromJson(jsonItem as Map<String, dynamic>))
-            .toList();
-        for (ProductModel product in products) {
-          Storage.products.put(product.id, product);
+        List<dynamic> jsonList = json.decode(jsonString);
+        List<ProductModel> products = List.empty();
+        if (jsonList.isNotEmpty) {
+          products = jsonList
+              .map((jsonItem) =>
+                  ProductModel.fromJson(jsonItem as Map<String, dynamic>))
+              .toList();
         }
+        return DataOrException(statusCode: response.statusCode, data: products);
+      } else {
+        return DataOrException(
+          statusCode: response.statusCode,
+        );
       }
-      return DataOrException(
-        statusCode: response.statusCode,
-      );
     } on Exception catch (e) {
       return _error(e);
     }

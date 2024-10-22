@@ -1,4 +1,5 @@
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -10,6 +11,7 @@ import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SettingsController extends GetxController {
+  final StorageController storageController = Get.find();
   String serverUrl = '';
   String apiKey = '';
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
@@ -21,13 +23,13 @@ class SettingsController extends GetxController {
     final FormState form = serverFormKey.currentState!;
     _writeStore();
     if (form.validate()) {
-      LoadingOverlay.showLoading('Verifying Server Info...');
+      DialogHelper.showLoading('Verifying Server Info...');
 
       await RemoteServices.fetchUserInfo().then((value) async {
-        LoadingOverlay.hideLoading();
+        DialogHelper.hideLoading();
         if (!value.hasError) {
-          Storage.settings.put('connected', true);
-          Storage.settings.put('user', value.data.login.toString());
+          storageController.storeSetting(
+              StorageKey.user, value.data.login.toString());
           Get.offAndToNamed(Routes.HOME);
         } else {
           _clearStorage();
@@ -40,13 +42,14 @@ class SettingsController extends GetxController {
 
   /// Writes the server info to the local storage.
   void _writeStore() async {
-    Storage.settings.put('url', urlController.text.trim());
-    Storage.settings.put('apikey', apiController.text.trim());
+    storageController.storeSetting(StorageKey.url, urlController.text.trim());
+    storageController.storeSetting(
+        StorageKey.apiKey, apiController.text.trim());
   }
 
   void _clearStorage() async {
-    Storage.settings.delete('url');
-    Storage.settings.delete('apikey');
+    storageController.clearSetting(StorageKey.url);
+    storageController.clearSetting(StorageKey.apiKey);
   }
 
   void getClipboardText() async {

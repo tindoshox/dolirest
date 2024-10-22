@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
@@ -17,6 +17,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   @override
   Widget build(BuildContext context) {
+    final StorageController storageController = Get.find();
     return Scaffold(
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
@@ -26,7 +27,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
             controller: controller.tabController,
             tabs: controller.customerTabs),
       ),
-      body: _buildBody(),
+      body: _buildBody(storageController),
     );
   }
 
@@ -55,33 +56,36 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(StorageController storageController) {
     return Obx(() => controller.isLoading.value
         ? const LoadingIndicator(message: Text('Loading...'))
         : TabBarView(
             controller: controller.tabController,
             children: [
-              _customerInfoTab(),
+              _customerInfoTab(storageController),
               _invoicesTab(),
             ],
           ));
   }
 
-  Widget _customerInfoTab() {
+  Widget _customerInfoTab(StorageController storageController) {
     return ValueListenableBuilder<Box>(
       valueListenable:
-          Storage.customers.listenable(keys: [controller.customerId]),
+          storageController.customersListenable(keys: [controller.customerId]),
       builder: (context, box, child) {
         final customer = box.get(controller.customerId);
-        return CustomerInfoWidget(customer: customer);
+        return CustomerInfoWidget(
+          customer: customer,
+        );
       },
     );
   }
 
   Widget _invoicesTab() {
+    final StorageController storageController = Get.find();
     return ValueListenableBuilder<Box>(
       valueListenable:
-          Storage.invoices.listenable(keys: [controller.customerId]),
+          storageController.invoicesListenable(keys: [controller.customerId]),
       builder: (context, box, child) {
         List<InvoiceModel> invoices = box.values
             .where((invoice) => invoice.socid == controller.customerId)

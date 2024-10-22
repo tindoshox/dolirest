@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,6 +20,7 @@ class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
 
+  StorageController storageController = Get.find();
   Rx<CustomerModel> customer = CustomerModel().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
@@ -50,7 +51,7 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    List<ProductModel> list = Storage.products.toMap().values.toList();
+    List<ProductModel> list = storageController.getProductList();
 
     if (list.length < 50) {
       await refreshProducts();
@@ -86,11 +87,18 @@ class CreateinvoiceController extends GetxController {
   }
 
   refreshProducts() async {
-    await RemoteServices.fetchProducts();
+    await RemoteServices.fetchProducts().then((value) {
+      if (value.data != null) {
+        final List<ProductModel> products = value.data;
+        for (ProductModel product in products) {
+          storageController.storeProduct(product.id!, product);
+        }
+      }
+    });
   }
 
   fetchCustomerById(String customerId) {
-    customer.value = Storage.customers.get(customerId)!;
+    customer.value = storageController.getCustomer(customerId)!;
   }
 
   ///
@@ -124,7 +132,7 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-      LoadingOverlay.showLoading('Creating Invoice...');
+      DialogHelper.showLoading('Creating Invoice...');
       // If stock type is free text.
       if (stockType.value != '0') {
         await _createInvoice();
@@ -133,7 +141,7 @@ class CreateinvoiceController extends GetxController {
         await RemoteServices.checkStock(selectedProduct.value.id!)
             .then((value) async {
           if (value.hasError) {
-            LoadingOverlay.hideLoading();
+            DialogHelper.hideLoading();
             SnackbarHelper.errorSnackbar(message: 'Product has no stock');
           }
           await _createInvoice();
@@ -174,7 +182,7 @@ class CreateinvoiceController extends GetxController {
 
     await RemoteServices.createInvoice(body).then((value) async {
       if (value.hasError) {
-        LoadingOverlay.hideLoading();
+        DialogHelper.hideLoading();
         SnackbarHelper.errorSnackbar(
           message: value.errorMessage,
         );
@@ -197,13 +205,13 @@ class CreateinvoiceController extends GetxController {
       if (value.hasError) {
         debugPrint(value.statusCode.toString());
         await RemoteServices.deleteInvoice(invoiceId).then((v) {
-          LoadingOverlay.hideLoading();
+          DialogHelper.hideLoading();
           Get.offAndToNamed(Routes.CREATEINVOICE);
           SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
         });
       } else {
         await _getNewInvoice(invoiceId).then((value) {
-          LoadingOverlay.hideLoading();
+          DialogHelper.hideLoading();
 
           Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
             'invoiceId': invoiceId,
@@ -216,7 +224,15 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
+    await RemoteServices.fetchInvoiceList(customerId: customer.value.id)
+        .then((value) {
+      if (value.data != null) {
+        final List<InvoiceModel> invoices = value.data;
+        for (InvoiceModel invoice in invoices) {
+          storageController.storeInvoice(invoice.id, invoice);
+        }
+      }
+    });
   }
 
   ///
@@ -225,13 +241,11 @@ class CreateinvoiceController extends GetxController {
     List<CustomerModel> customers = [];
 
     if (searchString == "") {
-      customers = Storage.customers.toMap().values.toList();
+      customers = storageController.getCustomerList();
       customers.sort((a, b) => a.name.compareTo(b.name));
     } else {
-      customers = Storage.customers
-          .toMap()
-          .values
-          .toList()
+      customers = storageController
+          .getCustomerList()
           .where((customer) =>
               customer.name.contains(searchString) ||
               customer.address.toString().contains(searchString) ||

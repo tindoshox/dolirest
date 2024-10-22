@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,6 +14,8 @@ import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 
 class PaymentController extends GetxController {
+  final StorageController storageController = Get.find<StorageController>();
+
   TextEditingController payDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
   TextEditingController receiptController = TextEditingController();
@@ -73,19 +75,18 @@ class PaymentController extends GetxController {
   }
 
   _fetchInvoiceById(String invoiceId) {
-    invoice.value = Storage.invoices.get(invoiceId)!;
+    invoice.value = storageController.getInvoice(invoiceId)!;
   }
 
   Future _fetchPayments(invoiceId) async {
-    List<PaymentModel> list =
-        Storage.payments.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+    List<PaymentModel> list = storageController.getPaymentList();
 
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
   }
 
   _fetchCustomerById(String customerId) {
-    customer.value = Storage.customers.get(customerId)!;
+    customer.value = storageController.getCustomer(customerId)!;
   }
 
   void setPayDate() async {
@@ -126,7 +127,7 @@ class PaymentController extends GetxController {
 
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
-      LoadingOverlay.showLoading('Processing Payment...');
+      DialogHelper.showLoading('Processing Payment...');
       String body = jsonEncode({
         "arrayofamounts": {
           "${invoice.value.id}": {
@@ -160,7 +161,7 @@ class PaymentController extends GetxController {
         await refreshInvoice(invoice.value.id);
 
         if (fromHomeScreen) {
-          LoadingOverlay.hideLoading();
+          DialogHelper.hideLoading();
 
           Get.snackbar(
               'Payment', '${amount.value} for ${customer.value.name} received.',
@@ -174,12 +175,12 @@ class PaymentController extends GetxController {
 
           clearInvoice();
         } else {
-          LoadingOverlay.hideLoading();
+          DialogHelper.hideLoading();
           Get.back();
           SnackbarHelper.successSnackbar(message: 'Payment successful');
         }
       } else {
-        LoadingOverlay.hideLoading();
+        DialogHelper.hideLoading();
         SnackbarHelper.errorSnackbar(message: 'Payment not saved');
       }
     });
@@ -197,7 +198,24 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId)).then((value) {
+      final List<PaymentModel> payments = value.data;
+      if (value.data != null) {
+        for (var payment in payments) {
+          PaymentModel p = PaymentModel(
+            amount: payment.amount,
+            type: payment.type,
+            date: payment.date,
+            num: payment.num,
+            fkBankLine: payment.fkBankLine,
+            ref: payment.ref,
+            invoiceId: invoiceId,
+            refExt: payment.refExt,
+          );
+          storageController.storePayment(payment.ref, p);
+        }
+      }
+    });
   }
 
   refreshInvoice(invoiceId) async {
@@ -205,10 +223,8 @@ class PaymentController extends GetxController {
   }
 
   fetchInvoices() {
-    return Storage.invoices
-        .toMap()
-        .values
-        .toList()
+    return storageController
+        .getInvoiceList()
         .where((invoice) => invoice.remaintopay != "0")
         .toList();
   }

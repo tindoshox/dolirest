@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
@@ -18,6 +18,7 @@ import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
+  final StorageController storageController = Get.find<StorageController>();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -68,9 +69,11 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    InvoiceModel invoice = Storage.invoices.get(invoiceId)!;
-    List<PaymentModel> list =
-        Storage.payments.get(invoiceId, defaultValue: [])!.cast<PaymentModel>();
+    InvoiceModel invoice = storageController.getInvoice(invoiceId)!;
+    List<PaymentModel> list = storageController
+        .getPaymentList()
+        .where((p) => p.invoiceId == invoiceId)
+        .toList();
 
     List<int> amounts =
         list.map((payment) => Utils.intAmounts(payment.amount)).toList();
@@ -86,15 +89,32 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+    await (RemoteServices.fetchPaymentsByInvoice(invoiceId)).then((value) {
+      final List<PaymentModel> payments = value.data;
+      if (value.data != null) {
+        for (var payment in payments) {
+          PaymentModel p = PaymentModel(
+            amount: payment.amount,
+            type: payment.type,
+            date: payment.date,
+            num: payment.num,
+            fkBankLine: payment.fkBankLine,
+            ref: payment.ref,
+            invoiceId: invoiceId,
+            refExt: payment.refExt,
+          );
+          storageController.storePayment(payment.ref, p);
+        }
+      }
+    });
   }
 
   _fetchCustomer() {
-    if (Storage.customers.get(customerId) == null) {
-      _refreshCustomerData()
-          .then((value) => customer.value = Storage.customers.get(customerId)!);
+    if (storageController.getCustomer(customerId) == null) {
+      _refreshCustomerData().then((value) =>
+          customer.value = storageController.getCustomer(customerId)!);
     } else {
-      customer.value = Storage.customers.get(customerId)!;
+      customer.value = storageController.getCustomer(customerId)!;
     }
   }
 
@@ -107,10 +127,10 @@ class InvoiceDetailController extends GetxController
   }
 
   Future generateDocument() async {
-    InvoiceModel invoice = Storage.invoices.get(invoiceId)!;
+    InvoiceModel invoice = storageController.getInvoice(invoiceId)!;
     permissionReady = await Utils.checkPermission(platform);
 
-    LoadingOverlay.showLoading('Downloading document...');
+    DialogHelper.showLoading('Downloading document...');
     String body = json.encode(BuildDocumentRequestModel(
       modulepart: 'invoice',
       originalFile: '${invoice.ref}/${invoice.ref}.pdf',
@@ -125,7 +145,7 @@ class InvoiceDetailController extends GetxController
               OpenFilex.open(value);
             });
           } else {
-            LoadingOverlay.hideLoading();
+            DialogHelper.hideLoading();
             SnackbarHelper.errorSnackbar(message: value.errorMessage);
           }
         });
@@ -133,11 +153,11 @@ class InvoiceDetailController extends GetxController
         Get.snackbar('Error', 'an unknown error occurred');
       }
     } else {
-      LoadingOverlay.hideLoading();
+      DialogHelper.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');
     }
 
-    LoadingOverlay.hideLoading();
+    DialogHelper.hideLoading();
   }
 
   setDueDate() async {
@@ -161,7 +181,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _updateDueDate(int selectedDate) async {
-    LoadingOverlay.showLoading('Updating Due Date...');
+    DialogHelper.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
     update.removeWhere((key, value) => value == null);
@@ -169,7 +189,7 @@ class InvoiceDetailController extends GetxController
     String body = jsonEncode(update);
 
     await RemoteServices.updateInvoice(invoiceId, body).then((value) {
-      LoadingOverlay.hideLoading();
+      DialogHelper.hideLoading();
       if (!value.hasError) {
         _refreshInvoiceData();
         SnackbarHelper.successSnackbar(message: 'Due date changed');
