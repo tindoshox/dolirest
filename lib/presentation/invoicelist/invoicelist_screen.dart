@@ -96,7 +96,8 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
               ? list
                   .where(
                     (invoice) =>
-                        invoice.nom.contains(controller.searchString.value) ||
+                        invoice.nom.toString().toUpperCase().contains(
+                            controller.searchString.value.toUpperCase()) ||
                         invoice.ref.contains(controller.searchString.value),
                   )
                   .toList()

@@ -1,7 +1,7 @@
-import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/home/components/home_screen_tile.dart';
 import 'package:dolirest/presentation/widgets/dialog_action_button.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 
+import 'package:flutter_initicon/flutter_initicon.dart';
 import 'controllers/home_controller.dart';
 
 class HomeScreen extends GetView<HomeController> {
@@ -35,7 +36,9 @@ class HomeScreen extends GetView<HomeController> {
           height: 4,
         ),
       ),
-      title: const Text("Dashboard"),
+      title: Obx(() => Text(
+            controller.company.value.name ?? "Dashboard",
+          )),
       centerTitle: true,
       actions: [
         Obx(() => _getStatusIcon(controller.refreshing.value)),
@@ -47,12 +50,71 @@ class HomeScreen extends GetView<HomeController> {
   Widget _buildPopupMenu() {
     return PopupMenuButton(
       itemBuilder: (context) => [
-        // _buildPopupMenuItem(
-        //     onTap: () => _logout(), value: '/settings', text: 'Logout'),
+        _buildPopupMenuItem(
+          onTap: () {},
+          value: '#',
+          child: _setThemeMode(),
+        ),
+        _buildPopupMenuItem(
+          onTap: () => _logout(),
+          value: '/login',
+          child: ListTile(
+            title: Text('Logout'),
+            leading: Icon(Icons.logout),
+          ),
+        ),
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
-          text: "About",
+          child: ListTile(
+            title: Text("About"),
+            leading: Icon(Icons.info),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _setThemeMode() {
+    StorageController storageController = Get.find();
+    return PopupMenuButton(
+      child: ListTile(
+        title: Text('Theme'),
+        leading: Icon(Icons.format_paint),
+      ),
+      itemBuilder: (BuildContext context) => [
+        _buildPopupMenuItem(
+          onTap: () {
+            Get.changeThemeMode(ThemeMode.light);
+            storageController.storeSetting(StorageKey.theme, 'light');
+          },
+          value: '#',
+          child: ListTile(
+            title: Text('Light'),
+            leading: Icon(Icons.light_mode),
+          ),
+        ),
+        _buildPopupMenuItem(
+          onTap: () {
+            Get.changeThemeMode(ThemeMode.dark);
+            storageController.storeSetting(StorageKey.theme, 'dark');
+          },
+          value: '#',
+          child: ListTile(
+            title: Text('Dark'),
+            leading: Icon(Icons.dark_mode),
+          ),
+        ),
+        _buildPopupMenuItem(
+          onTap: () {
+            Get.changeThemeMode(ThemeMode.system);
+            storageController.storeSetting(StorageKey.theme, 'system');
+          },
+          value: '#',
+          child: ListTile(
+            title: Text('Auto'),
+            leading: Icon(Icons.brightness_auto),
+          ),
         ),
       ],
     );
@@ -61,12 +123,12 @@ class HomeScreen extends GetView<HomeController> {
   PopupMenuItem<String> _buildPopupMenuItem({
     required VoidCallback onTap,
     required String value,
-    required String text,
+    required Widget child,
   }) {
     return PopupMenuItem(
       onTap: onTap,
       value: value,
-      child: Text(text),
+      child: child,
     );
   }
 
@@ -74,7 +136,7 @@ class HomeScreen extends GetView<HomeController> {
     Get.dialog(
       barrierDismissible: false,
       const AboutDialog(
-        applicationVersion: '0.1.6-beta',
+        applicationVersion: '0.1.7',
         applicationName: 'DoliREST',
         applicationLegalese: "© Copyright SMBI 2024",
         applicationIcon: _AppIcon(),
@@ -84,131 +146,191 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   Widget _buildBody() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ListView(
       children: [
-        _buildUserInfo(),
-        _buildInvoices(),
-        _buildCashflow(),
-        _buildTiles(),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildUserInfo(),
+            SizedBox(height: 10),
+            _buildMainShortCuts(),
+            SizedBox(height: 10),
+            _buildSecodaryShortCuts(),
+            SizedBox(height: 10),
+            _buildInvoices(),
+            SizedBox(height: 10),
+            _buildCashflow(),
+          ],
+        ),
       ],
     );
   }
 
   Widget _buildUserInfo() {
     return Center(
-      child: Column(
-        children: [
-          _buildDatabaseTile(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTiles() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SizedBox(
-        height: 300,
-        child: GridView.count(
-          childAspectRatio: 2,
-          primary: false,
-          reverse: false,
-          crossAxisCount: 2,
-          children: List.generate(6, (index) => _buildTile(index)),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Column(
+          children: [
+            ListTile(
+              leading: Initicon(text: controller.currentUser.value),
+              title: Text(
+                "Welcome ${controller.currentUser.value}",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Obx _buildDatabaseTile() {
-    return Obx(() => ListTile(
-          title: Text(
-            'DATABASE: ${Utils.subString(controller.baseUrl.value).toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          trailing: Text(
-            'USER: ${controller.currentUser.value.toUpperCase()}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-        ));
-  }
+_buildSecodaryShortCuts() {
+  return SizedBox(
+    height: 150,
+    child: Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _shortcutItem(
+              onTap: () => Get.toNamed(Routes.CUSTOMERLIST),
+              icon: Icon(
+                Icons.people_alt,
+                color: Colors.purple[700],
+              ),
+              line1: 'List of',
+              line2: 'Customers',
+              color: const Color.fromARGB(255, 244, 182, 255)),
+          _shortcutItem(
+              onTap: () => Get.toNamed(Routes.INVOICELIST),
+              icon: Icon(
+                Icons.list_outlined,
+                color: Colors.brown[700],
+              ),
+              line1: 'List of',
+              line2: 'Invoices',
+              color: const Color.fromARGB(255, 241, 205, 192)),
+          _shortcutItem(
+              onTap: () {
+                if (Get.find<NetworkController>().connected.value) {
+                  Get.toNamed(Routes.REPORTS);
+                }
+              },
+              icon: Icon(
+                Icons.receipt_long_outlined,
+                color: Colors.blueGrey,
+              ),
+              line1: 'Generate',
+              line2: 'Reports',
+              color: const Color.fromARGB(255, 212, 212, 212)),
+        ],
+      ),
+    ),
+  );
+}
 
-  Widget _buildTile(int index) {
-    switch (index) {
-      case 0:
-        return HomeScreenTile(
-          onTap: () {
-            Get.toNamed(Routes.CUSTOMERLIST);
-          },
-          title: 'Customers',
-          icon: Icons.people_alt_outlined,
-        );
-      case 1:
-        return HomeScreenTile(
-          onTap: () {
-            Get.toNamed(Routes.INVOICELIST);
-          },
-          title: 'Invoices',
-          icon: Icons.list_alt,
-        );
-      case 2:
-        return HomeScreenTile(
-          onTap: () {
-            if (Get.find<NetworkController>().connected.value) {
-              Get.toNamed(Routes.EDITCUSTOMER, arguments: {'customerId': ''});
-            } else {
-              SnackbarHelper.networkSnackbar();
-            }
-          },
-          title: 'New Customer',
-          icon: Icons.person_add_alt_outlined,
-        );
-      case 3:
-        return HomeScreenTile(
-          onTap: () {
-            if (Get.find<NetworkController>().connected.value) {
-              Get.toNamed(Routes.PAYMENT,
-                  arguments: {'fromhome': true, 'invid': '', 'socid': ''});
-            } else {
-              SnackbarHelper.networkSnackbar();
-            }
-          },
-          title: 'Record Payment',
-          icon: Icons.currency_exchange,
-        );
-      case 4:
-        return HomeScreenTile(
-          onTap: () {
-            if (Get.find<NetworkController>().connected.value) {
-              Get.toNamed(Routes.CREATEINVOICE, arguments: {'fromhome': true});
-            } else {
-              SnackbarHelper.networkSnackbar();
-            }
-          },
-          title: 'New Invoice',
-          icon: Icons.inventory_sharp,
-        );
+Widget _buildMainShortCuts() {
+  return SizedBox(
+    height: 150,
+    child: Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _shortcutItem(
+              onTap: () {
+                if (Get.find<NetworkController>().connected.value) {
+                  Get.toNamed(Routes.EDITCUSTOMER,
+                      arguments: {'customerId': ''});
+                } else {
+                  SnackbarHelper.networkSnackbar();
+                }
+              },
+              icon: Icon(
+                Icons.person_add,
+                color: Colors.green[700],
+              ),
+              line1: 'New',
+              line2: 'Customer',
+              color: const Color.fromARGB(255, 228, 253, 199)),
+          _shortcutItem(
+              onTap: () {
+                if (Get.find<NetworkController>().connected.value) {
+                  Get.toNamed(Routes.CREATEINVOICE,
+                      arguments: {'fromhome': true});
+                } else {
+                  SnackbarHelper.networkSnackbar();
+                }
+              },
+              icon: Icon(
+                Icons.inventory_sharp,
+                color: Colors.blue[700],
+              ),
+              line1: 'New',
+              line2: 'Invoice',
+              color: const Color.fromARGB(255, 127, 197, 255)),
+          _shortcutItem(
+              onTap: () {
+                if (Get.find<NetworkController>().connected.value) {
+                  Get.toNamed(Routes.PAYMENT,
+                      arguments: {'fromhome': true, 'invid': '', 'socid': ''});
+                } else {
+                  SnackbarHelper.networkSnackbar();
+                }
+              },
+              icon: Icon(
+                Icons.payment,
+                color: Colors.orange,
+              ),
+              line1: 'New',
+              line2: 'Payment',
+              color: const Color.fromARGB(255, 255, 221, 192)),
+        ],
+      ),
+    ),
+  );
+}
 
-      case 5:
-        return HomeScreenTile(
-          onTap: () {
-            if (Get.find<NetworkController>().connected.value) {
-              Get.toNamed(Routes.REPORTS);
-            }
-          },
-          title: 'Reports',
-          icon: Icons.receipt_long_outlined,
-        );
-      default:
-        // A default tile for indexes not explicitly handled
-        return HomeScreenTile(
-          onTap: () {},
-          title: 'Placeholder',
-          icon: Icons.help_outline,
-        );
-    }
-  }
+Widget _shortcutItem({
+  void Function()? onTap,
+  Color color = Colors.transparent,
+  required Widget icon,
+  required String line1,
+  String? line2,
+  TextStyle? style = const TextStyle(fontSize: 11),
+}) {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: color,
+                child: icon,
+              ),
+            ),
+            Text(
+              line1,
+              style: style,
+            ),
+            if (line2 != null)
+              Text(
+                line2,
+                style: style,
+              ),
+          ],
+        ),
+      )
+    ],
+  );
 }
 
 _logout() async {
@@ -222,7 +344,7 @@ _logout() async {
           onPressed: () {
             Get.back();
             Get.find<StorageController>().clearAll();
-            Get.offAllNamed(Routes.SETTINGS);
+            Get.offAllNamed(Routes.LOGIN);
           },
           buttonText: 'Yes'),
       cancel: DialogActionButton(
@@ -254,7 +376,7 @@ _buildCashflow() {
             child: ListTile(
               leading: const Icon(Icons.money_outlined),
               title: Text("Collected today: R$dayTotal"),
-              subtitle: Text("${dayCashflow.length} invoices"),
+              subtitle: Text('Tap to View'),
               onTap: () => Get.toNamed(Routes.CASHFLOW),
             ),
           );
@@ -267,27 +389,40 @@ _buildInvoices() {
     valueListenable: Get.find<StorageController>().invoicesListenable(),
     builder: (context, box, widget) {
       int openInvoices = box.values.where((i) => i.remaintopay != 0).length;
-      int overDues = box.values
-          .where((i) =>
-              Utils.intToDateTime(i.dateLimReglement).isBefore(DateTime.now()))
-          .length;
+      var overDues = box.values.where((i) =>
+          Utils.intToDateTime(i.dateLimReglement).isBefore(DateTime.now()));
+      var dueToday = box.values
+          .where((i) => DateUtils.isSameDay(
+              Utils.intToDateTime(i.dateLimReglement), DateTime.now()))
+          .toList();
+
       int sales = box.values
           .where((i) =>
               Utils.dateMonth(Utils.intToDateTime(i.date)) ==
               Utils.dateMonth(DateTime.now()))
           .length;
+
       return Column(
         children: [
           Card(
             child: ListTile(
               leading: const Icon(Icons.inventory_outlined),
-              title: Text("Open Invoices: $openInvoices. (Overdue: $overDues)"),
+              title: Text("Open Invoices: $openInvoices"),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Overdue: ${overDues.length}"),
+                  Text("Items Sold This Month: $sales"),
+                ],
+              ),
             ),
           ),
           Card(
             child: ListTile(
+              onTap: () => Get.toNamed(Routes.DUETODAY),
               leading: const Icon(Icons.inventory_outlined),
-              title: Text("Items Sold This Month: $sales"),
+              title: Text("Invoices Due Today: ${dueToday.length}"),
+              subtitle: Text('Tap to View'),
             ),
           ),
         ],

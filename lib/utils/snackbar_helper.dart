@@ -56,7 +56,7 @@ class SnackbarHelper {
   }) {
     showSnackbar(
       title: title,
-      message: message ?? 'No Internet',
+      message: message ?? 'No connection to server',
       icon: Icons.error,
       backgroundColor: Colors.amber,
     );

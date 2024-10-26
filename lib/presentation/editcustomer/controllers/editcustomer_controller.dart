@@ -1,11 +1,12 @@
 import 'dart:convert';
 
+import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -27,28 +28,29 @@ class EditCustomerController extends GetxController {
   Rx<GroupModel> selectedGroup = GroupModel().obs;
   RxList<GroupModel> groups = List<GroupModel>.empty().obs;
 
-  List<String> addresses = <String>[];
   List<String> towns = <String>[];
+  var addresses = List<AddressModel>.empty().obs;
+
+  var selectedTown = ''.obs;
 
   @override
   void onInit() async {
     if (customerId.isNotEmpty) {
       await _fetchCustomerById(customerId);
     }
-
+    addresses.value = storageController.getAddressList();
     List<GroupModel> list = storageController.getGroupList();
 
     if (list.length < 50) {
       await refreshGroups();
     } else {
+      //return
       groups.value = list;
     }
 
-    await getTownSuggestions();
     super.onInit();
   }
 
-  @override
   @override
   void onClose() {
     nameController.dispose();
@@ -56,32 +58,6 @@ class EditCustomerController extends GetxController {
     townController.dispose();
     phoneController.dispose();
     faxController.dispose();
-  }
-
-  getTownSuggestions() {
-    List<CustomerModel> customers =
-        storageController.getCustomerList();
-
-    towns =
-        customers.map((customer) => customer.town.toString()).toSet().toList();
-    towns.removeWhere((element) => element == "");
-    towns.sort((a, b) => a.compareTo(b));
-    //return towns;
-  }
-
-  getAddressSuggestions({String? town = ""}) {
-    List<CustomerModel> customers =
-        storageController.getCustomerList();
-    if (town != null && town != "") {
-      customers.removeWhere((element) => element.town != town.trim());
-    }
-    addresses = customers
-        .map((customer) => customer.address.toString())
-        .toSet()
-        .toList();
-    addresses.removeWhere((element) => element == "");
-
-    addresses.sort((a, b) => a.compareTo(b));
   }
 
   getGroups({String search = ""}) {
@@ -113,9 +89,9 @@ class EditCustomerController extends GetxController {
       var customer = CustomerModel(
               client: "1",
               codeClient: 'auto',
-              name: nameController.text,
-              address: addressController.text,
-              town: townController.text,
+              name: nameController.text.toUpperCase(),
+              address: addressController.text.toUpperCase(),
+              town: townController.text.toUpperCase(),
               phone: phoneController.text,
               fax: faxController.text,
               stateId: selectedGroup.value.id)

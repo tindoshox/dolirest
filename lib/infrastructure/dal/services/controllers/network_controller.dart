@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 
 import 'package:get/get.dart';
 

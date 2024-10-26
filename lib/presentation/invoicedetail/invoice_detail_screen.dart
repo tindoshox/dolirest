@@ -1,5 +1,5 @@
-import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +23,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ValueListenableBuilder(
-              valueListenable: storageController.invoicesListenable(keys: [controller.invoiceId]),
+              valueListenable: storageController
+                  .invoicesListenable(keys: [controller.invoiceId]),
               builder: (context, invoice, child) => CustomActionButton(
                   buttonText: 'Payment',
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
@@ -83,7 +84,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         invoice: invoices.get(controller.invoiceId)!),
                   ),
                   ValueListenableBuilder(
-                    valueListenable: storageController.invoicesListenable(keys: [controller.customerId]),
+                    valueListenable: storageController
+                        .invoicesListenable(keys: [controller.customerId]),
                     builder: (context, invoices, child) {
                       return invoices.get(controller.invoiceId)!.totalpaid == 0
                           ? const ListTile(

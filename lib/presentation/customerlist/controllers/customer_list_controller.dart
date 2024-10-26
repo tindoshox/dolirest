@@ -1,8 +1,8 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 
 class CustomerListController extends GetxController {
   var isLoading = false.obs;

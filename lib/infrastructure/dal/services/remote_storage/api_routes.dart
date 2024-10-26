@@ -9,4 +9,5 @@ class ApiRoutes {
   static const buildDocument = "${apiStub}documents/builddoc";
   static const buildReport = "${apiStub}reports/builddoc";
   static const status = "${apiStub}status";
+  static const company = "${apiStub}setup/company";
 }

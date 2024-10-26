@@ -1,7 +1,8 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -30,6 +31,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
         ),
         actions: [
           Obx(() => _buildSearchActionButton()),
+          Obx(() => getStatusIcon()),
         ],
       ),
       body: const Padding(
@@ -102,9 +104,18 @@ class _CustomerList extends GetView<CustomerListController> {
           List<CustomerModel> customers = search.length > 2
               ? sortedValues
                   .where((customer) =>
-                      customer.name.contains(search) ||
-                      customer.address.toString().contains(search) ||
-                      customer.town.toString().contains(search) ||
+                      customer.name
+                          .toString()
+                          .toUpperCase()
+                          .contains(search.toUpperCase()) ||
+                      customer.address
+                          .toString()
+                          .toUpperCase()
+                          .contains(search.toUpperCase()) ||
+                      customer.town
+                          .toString()
+                          .toUpperCase()
+                          .contains(search.toUpperCase()) ||
                       customer.phone.toString().contains(search) ||
                       customer.fax.toString().contains(search))
                   .toList()

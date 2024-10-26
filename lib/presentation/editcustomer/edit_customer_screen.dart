@@ -63,71 +63,89 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
   }
 
   Widget _buildCityAutocomplete() {
-    return Autocomplete<String>(
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
-          return controller.towns;
-        }
-        return controller.towns
-            .where((String town) => town.startsWith(textEditingValue.text));
-      },
-      onSelected: (town) {
-        controller.townController.text = town.trim();
-        controller.getAddressSuggestions(town: town.trim());
-      },
-      fieldViewBuilder: (context, townController, focusNode, onFieldSubmitted) {
-        return CustomFormField(
-          prefixIcon: const Icon(Icons.location_city),
-          onFieldSubmitted: (town) {
-            controller.getAddressSuggestions(town: town!.trim());
-          },
-          onChanged: (town) {
-            controller.getAddressSuggestions(town: town!.trim());
-            controller.townController.text = town.trim();
-          },
-          name: 'customer_city',
-          controller: controller.customerId == ''
-              ? townController
-              : controller.townController,
-          focusNode: focusNode,
-          validator: (city) =>
-              GetUtils.isLengthLessThan(city, 3) ? 'City is required' : null,
-          labelText: 'City',
-        );
-      },
-    );
+    return Obx(() {
+      final addresses = controller.addresses.map((a) => a.town.toUpperCase());
+      final towns = addresses.toSet().toList();
+      return Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty) {
+            return towns;
+          }
+          return towns.where((String town) => town
+              .toString()
+              .toUpperCase()
+              .startsWith(textEditingValue.text.toUpperCase()));
+        },
+        onSelected: (town) {
+          controller.selectedTown.value = town;
+          controller.townController.text = town.trim().toUpperCase();
+        },
+        fieldViewBuilder:
+            (context, townController, focusNode, onFieldSubmitted) {
+          return CustomFormField(
+            prefixIcon: const Icon(Icons.location_city),
+            onChanged: (town) {
+              if (town != null && town.isNotEmpty) {
+                controller.selectedTown.value = town;
+                controller.townController.text = town.trim().toUpperCase();
+              }
+            },
+            name: 'customer_city',
+            controller: controller.customerId == ''
+                ? townController
+                : controller.townController,
+            focusNode: focusNode,
+            validator: (city) =>
+                GetUtils.isLengthLessThan(city, 3) ? 'City is required' : null,
+            labelText: 'City',
+          );
+        },
+      );
+    });
   }
 
   Widget _buildAddressAutocomplete() {
-    return Autocomplete<String>(
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
-          return controller.addresses;
-        }
-        return controller.addresses
-            .where((String address) => address.contains(textEditingValue.text));
-      },
-      onSelected: (address) {
-        controller.addressController.text = address.trim();
-      },
-      fieldViewBuilder: (BuildContext context, addressController, focusNode,
-          onFieldSubmitted) {
-        return CustomFormField(
-          prefixIcon: const Icon(Icons.location_pin),
-          onChanged: (address) =>
-              controller.addressController.text = address!.trim(),
-          name: 'customer_address',
-          controller: controller.customerId == ''
-              ? addressController
-              : controller.addressController,
-          focusNode: focusNode,
-          validator: (address) => GetUtils.isLengthLessThan(address, 3)
-              ? 'Address is required'
-              : null,
-          labelText: 'Address',
-        );
-      },
-    );
+    return Obx(() {
+      var list = controller.addresses
+          .where((a) => a.town == controller.selectedTown.value)
+          .toList();
+      var filteredList = list.map((l) => l.address.toUpperCase()).toList();
+      var addresses = filteredList.toSet().toList();
+
+      return Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty) {
+            return addresses;
+          } else {
+            return addresses.where(
+              (String addr) => addr.startsWith(
+                textEditingValue.text.toUpperCase(),
+              ),
+            );
+          }
+        },
+        onSelected: (address) {
+          controller.addressController.text = address.trim().toUpperCase();
+        },
+        fieldViewBuilder: (BuildContext context, addressController, focusNode,
+            onFieldSubmitted) {
+          return CustomFormField(
+            prefixIcon: const Icon(Icons.location_pin),
+            onChanged: (address) => controller.addressController.text =
+                address!.trim().toUpperCase(),
+            name: 'customer_address',
+            controller: controller.customerId == ''
+                ? addressController
+                : controller.addressController,
+            focusNode: focusNode,
+            validator: (address) => GetUtils.isLengthLessThan(address, 3)
+                ? 'Address is required'
+                : null,
+            labelText: 'Address',
+          );
+        },
+      );
+    });
   }
 
   Widget _buildGroupDropdown(BuildContext context) {

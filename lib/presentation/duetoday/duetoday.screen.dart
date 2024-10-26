@@ -1,52 +1,44 @@
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
-import '../../infrastructure/dal/services/local_storage/storage.dart';
-import '../../utils/utils.dart';
-import 'controllers/collections_controller.dart';
+import 'controllers/duetoday.controller.dart';
 
-class CashflowScreen extends GetView<CashflowController> {
-  const CashflowScreen({super.key});
-
+class DuetodayScreen extends GetView<DuetodayController> {
+  const DuetodayScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final StorageController storageController = Get.find();
     return Scaffold(
         appBar: _buildAppBar(),
-        body: _buildCashflow(storageController: controller.storageController));
+        body: _buildDueflow(storageController: storageController));
   }
 }
 
 AppBar _buildAppBar() {
   return AppBar(
-    title: const Text("Today's Collections "),
+    title: const Text("Due today"),
     centerTitle: true,
   );
 }
 
-_buildCashflow({required StorageController storageController}) {
+_buildDueflow({required StorageController storageController}) {
   return Align(
     alignment: Alignment.center,
     child: ValueListenableBuilder(
-        valueListenable: storageController.paymentsListenable(),
+        valueListenable: storageController.invoicesListenable(),
         builder: (context, box, widget) {
-          var list = box.values.toList();
-
+          var dueToday = box.values
+              .where((i) => DateUtils.isSameDay(
+                  Utils.intToDateTime(i.dateLimReglement), DateTime.now()))
+              .toList();
           //Day Cashflow
-          List<PaymentModel> dayCashflow = list
-              .where((f) =>
-                  Utils.datePaid(f.date!) == Utils.datePaid(DateTime.now()))
-              .cast<PaymentModel>()
-              .toList();
-          dayCashflow.sort((a, b) => a.date!.compareTo(b.date!));
-          List<int> dayAmounts = dayCashflow
-              .map((payment) => Utils.intAmounts(payment.amount))
-              .toList();
-          int dayTotal =
-              dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
-          if (dayCashflow.isEmpty) {
+
+          if (dueToday.isEmpty) {
             return const Center(
-              child: Text('No payments', textAlign: TextAlign.center),
+              child: Text('No invoice due today', textAlign: TextAlign.center),
             );
           } else {
             return Padding(
@@ -61,16 +53,20 @@ _buildCashflow({required StorageController storageController}) {
                           direction: Axis.horizontal,
                           children: [
                             _buildCell(
-                                text: 'Invoice',
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                flex: 3),
-                            _buildCell(
-                                flex: 5,
+                                flex: 4,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 text: 'Customer'),
-                            _buildCell(text: 'Receipt #'),
                             _buildCell(
-                                text: 'Amount', textAlign: TextAlign.right)
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              text: 'Due Date',
+                              flex: 1,
+                            ),
+                            _buildCell(
+                                text: 'Area', textAlign: TextAlign.right),
+                            _buildCell(
+                              text: 'Sub',
+                              mainAxisAlignment: MainAxisAlignment.start,
+                            ),
                           ],
                         ),
                       ),
@@ -78,50 +74,39 @@ _buildCashflow({required StorageController storageController}) {
                   ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final payment = dayCashflow[index];
-                      final invoice =
-                          storageController.getInvoice(payment.invoiceId);
+                      final invoice = dueToday[index];
                       final customer =
-                          storageController.getCustomer(invoice?.socid);
+                          storageController.getCustomer(invoice.socid);
 
                       return Column(children: [
                         Flex(
                           direction: Axis.horizontal,
                           children: [
                             _buildCell(
-                              text: invoice!.ref,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              flex: 3,
-                            ),
-                            _buildCell(
                               flex: 5,
                               mainAxisAlignment: MainAxisAlignment.start,
                               text: customer?.name,
                             ),
                             _buildCell(
-                              text: payment.num,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                text: Utils.intToDMY(invoice.dateLimReglement),
+                                flex: 1),
+                            _buildCell(
+                              text: customer?.town ?? '',
+                              textAlign: TextAlign.right,
                             ),
                             _buildCell(
-                              text: Utils.amounts(payment.amount),
-                              textAlign: TextAlign.right,
-                            )
+                              text: customer?.address ?? '',
+                              mainAxisAlignment: MainAxisAlignment.start,
+                            ),
                           ],
                         ),
                         const Divider(
                           thickness: .05,
                         ),
                       ]);
-                    }, childCount: dayCashflow.length),
+                    }, childCount: dueToday.length),
                   ),
-                  SliverFillRemaining(
-                    child: Text(
-                      textAlign: TextAlign.right,
-                      'Total: $dayTotal',
-                      style: const TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                  )
                 ],
               ),
             );

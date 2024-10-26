@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/services/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

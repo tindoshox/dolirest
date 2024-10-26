@@ -1,3 +1,6 @@
+import 'package:dolirest/infrastructure/dal/models/address_model.dart';
+import 'package:dolirest/infrastructure/dal/models/company_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -14,10 +17,28 @@ class StorageController extends GetxController {
   final Box<PaymentModel> _payments = Hive.box('payments');
   final Box<ProductModel> _products = Hive.box('products');
   final Box<GroupModel> _groups = Hive.box('groups');
+  final Box<CompanyModel> _company = Hive.box('company');
+  final Box<AddressModel> _addresses = Hive.box('addresses');
   final Box _settings = Hive.box('settings');
 
+  void storeAdresses(String key, AddressModel value) {
+    _addresses.put(key, value);
+  }
+
+  List<AddressModel> getAddressList() {
+    return _addresses.toMap().values.toList();
+  }
+
+  void storeCompany(CompanyModel company) {
+    _company.put(StorageKey.company, company);
+  }
+
+  CompanyModel? getCompany() {
+    return _company.isOpen ? _company.get(StorageKey.company) : null;
+  }
+
   void storePayment(String key, PaymentModel value) {
-    _payments.put(key, value);
+    if (_payments.isOpen) _payments.put(key, value);
   }
 
   List<PaymentModel> getPaymentList() {
@@ -29,7 +50,7 @@ class StorageController extends GetxController {
   }
 
   void storeInvoice(String key, InvoiceModel value) {
-    _invoices.put(key, value);
+    if (_invoices.isOpen) _invoices.put(key, value);
   }
 
   InvoiceModel? getInvoice(String key) {
@@ -45,15 +66,17 @@ class StorageController extends GetxController {
   }
 
   void storeCustomer(String key, CustomerModel value) {
-    _customers.put(key, value);
+    if (_customers.isOpen) _customers.put(key, value);
   }
 
   CustomerModel? getCustomer(String key) {
-    return _customers.get(key);
+    return _customers.isOpen ? _customers.get(key) : null;
   }
 
   List<CustomerModel> getCustomerList() {
-    return _customers.toMap().values.toList();
+    return _customers.isOpen
+        ? _customers.toMap().values.toList()
+        : <CustomerModel>[];
   }
 
   ValueListenable<Box<CustomerModel>> customersListenable(
@@ -61,24 +84,24 @@ class StorageController extends GetxController {
     return _customers.listenable(keys: keys);
   }
 
-  void storeSetting(String key, String value) {
-    _settings.put(key, value);
+  void storeSetting(String key, dynamic value) {
+    if (_settings.isOpen) _settings.put(key, value);
   }
 
   getSetting(String key) {
-    return _settings.get(key);
+    return _settings.isOpen ? _settings.get(key) : null;
   }
 
   void clearSetting(String key) {
-    _settings.delete(key);
+    if (_settings.isOpen) _settings.delete(key);
   }
 
   void storeGroup(String key, GroupModel value) {
-    _groups.put(key, value);
+    if (_groups.isOpen) _groups.put(key, value);
   }
 
   GroupModel? getGroup(String key) {
-    return _groups.get(key);
+    return _groups.isOpen ? _groups.get(key) : null;
   }
 
   List<GroupModel> getGroupList() {
@@ -86,7 +109,7 @@ class StorageController extends GetxController {
   }
 
   void storeProduct(String key, ProductModel value) {
-    _products.put(key, value);
+    if (_products.isOpen) _products.put(key, value);
   }
 
   List<ProductModel> getProductList() {
@@ -94,15 +117,17 @@ class StorageController extends GetxController {
   }
 
   ProductModel? getProduct(String key) {
-    return _products.get(key);
+    return _products.isOpen ? _products.get(key) : null;
   }
 
   void clearAll() {
-    _customers.deleteFromDisk();
-    _groups.deleteFromDisk();
-    _invoices.deleteFromDisk();
-    _payments.deleteFromDisk();
-    _products.deleteFromDisk();
-    _settings.deleteFromDisk();
+    _customers.clear();
+    _groups.clear();
+    _invoices.clear();
+    _payments.clear();
+    _products.clear();
+    _settings.clear();
+    _company.clear();
+    _addresses.clear();
   }
 }

@@ -2,10 +2,12 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_response_model.dart';
+import 'package:dolirest/infrastructure/dal/models/company_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/data_or_exception.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
@@ -13,9 +15,9 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
-import 'package:dolirest/infrastructure/dal/services/api_routes.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage_key.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/api_routes.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -34,13 +36,13 @@ class RemoteServices {
     'DOLAPIKEY': _apikey
   };
 
-  static DataOrException _error(Exception e) {
+  static DataOrException _error(Exception e, int statusCode) {
     switch (e) {
       case TimeoutException():
         return DataOrException(
-          hasError: true,
-          errorMessage: "Timeout error",
-        );
+            hasError: true,
+            errorMessage: "Timeout error",
+            statusCode: statusCode);
       case SocketException():
         return DataOrException(
           hasError: true,
@@ -78,19 +80,28 @@ class RemoteServices {
           )
           .timeout(_timeout);
 
-      String jsonString = response.body;
+      if (response.statusCode == 200) {
+        String jsonString = response.body;
 
-      List<dynamic> jsonList = json.decode(jsonString);
-      List<CustomerModel> customers = List.empty();
-      if (jsonList.isNotEmpty) {
-        customers = jsonList
-            .map((jsonItem) =>
-                CustomerModel.fromJson(jsonItem as Map<String, dynamic>))
-            .toList();
+        List<dynamic> jsonList = json.decode(jsonString);
+        List<CustomerModel> customers = List.empty();
+        if (jsonList.isNotEmpty) {
+          customers = jsonList
+              .map((jsonItem) =>
+                  CustomerModel.fromJson(jsonItem as Map<String, dynamic>))
+              .toList();
+        }
+        return DataOrException(
+            statusCode: response.statusCode, data: customers);
+      } else {
+        log(response.reasonPhrase!);
+        return DataOrException(
+            statusCode: response.statusCode,
+            hasError: true,
+            errorMessage: response.reasonPhrase);
       }
-      return DataOrException(statusCode: response.statusCode, data: customers);
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -108,7 +119,7 @@ class RemoteServices {
       return DataOrException(
           statusCode: response.statusCode, data: customerModel);
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -150,7 +161,7 @@ class RemoteServices {
 
       return DataOrException(statusCode: response.statusCode, data: invoices);
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -172,7 +183,7 @@ class RemoteServices {
         return DataOrException(statusCode: response.statusCode, hasError: true);
       }
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -193,7 +204,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -213,7 +224,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -234,7 +245,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -270,7 +281,7 @@ class RemoteServices {
             errorMessage: response.reasonPhrase, hasError: true);
       }
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -289,7 +300,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -311,7 +322,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -346,7 +357,7 @@ class RemoteServices {
         );
       }
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -365,7 +376,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -384,7 +395,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -407,7 +418,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -425,7 +436,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -445,7 +456,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -465,7 +476,7 @@ class RemoteServices {
         statusCode: response.statusCode,
       );
     } on Exception catch (e) {
-      return _error(e);
+      return _error(e, 700);
     }
   }
 
@@ -482,6 +493,23 @@ class RemoteServices {
       return response.statusCode == 200 || response.statusCode == 401;
     } catch (e) {
       return false;
+    }
+  }
+
+  static Future<DataOrException> fetchCompany() async {
+    try {
+      final response = await _client
+          .get(Uri.https(_url, ApiRoutes.company), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode == 200) {
+        final CompanyModel company = companyModelFromJson(response.body);
+
+        return DataOrException(statusCode: response.statusCode, data: company);
+      } else {
+        return DataOrException(statusCode: response.statusCode, hasError: true);
+      }
+    } on Exception catch (e) {
+      return _error(e, 700);
     }
   }
 }

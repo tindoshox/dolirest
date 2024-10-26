@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -123,7 +123,12 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshCustomerData() async {
-    await RemoteServices.fetchThirdPartyById(customerId);
+    await RemoteServices.fetchThirdPartyById(customerId).then((value) {
+      if (value.data != null) {
+        final CustomerModel customerModel = value.data;
+        storageController.storeCustomer(customerModel.id, customerModel);
+      }
+    });
   }
 
   Future generateDocument() async {

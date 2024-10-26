@@ -42,3 +42,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 lib/infrastructure/dal/services/fresh_controller.dart
+/android/key.properties
+lib/infrastructure/dal/services/storage
+lib/infrastructure/dal/services/storage/storage_service.dart
+lib/infrastructure/dal/models/company_model.g.dart

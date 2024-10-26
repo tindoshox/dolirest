@@ -11,6 +11,7 @@ class DialogHelper {
     Get.dialog(
       barrierDismissible: false,
       Dialog(
+        backgroundColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

@@ -1,7 +1,7 @@
 name: dolirest
 description: "A Dolibarr Rest API client."
 publish_to: 'none'
-version: 0.1.1
+version: 0.1.7
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -23,11 +23,14 @@ dependencies:
   connectivity_plus: ^6.0.2
   dropdown_search: ^6.0.0
   flutter_spinkit: ^5.2.0
+  flutter_initicon: ^3.0.1
+  google_fonts: ^6.2.1
+  string_scanner: ^1.4.0
 
 
 
 dev_dependencies:
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.8
   json_serializable: ^6.7.1

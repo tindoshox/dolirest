@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -199,8 +199,8 @@ class PaymentController extends GetxController {
 
   refreshPayments(invoiceId) async {
     await (RemoteServices.fetchPaymentsByInvoice(invoiceId)).then((value) {
-      final List<PaymentModel> payments = value.data;
       if (value.data != null) {
+        final List<PaymentModel> payments = value.data;
         for (var payment in payments) {
           PaymentModel p = PaymentModel(
             amount: payment.amount,
