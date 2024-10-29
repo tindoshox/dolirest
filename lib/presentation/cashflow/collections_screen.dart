@@ -2,7 +2,7 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../infrastructure/dal/services/local_storage/storage.dart';
+import '../../infrastructure/dal/services/local_storage/local_storage.dart';
 import '../../utils/utils.dart';
 import 'controllers/collections_controller.dart';
 
@@ -13,7 +13,7 @@ class CashflowScreen extends GetView<CashflowController> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: _buildAppBar(),
-        body: _buildCashflow(storageController: controller.storageController));
+        body: _buildCashflow(storage: controller.storage));
   }
 }
 
@@ -24,11 +24,11 @@ AppBar _buildAppBar() {
   );
 }
 
-_buildCashflow({required StorageController storageController}) {
+_buildCashflow({required StorageController storage}) {
   return Align(
     alignment: Alignment.center,
     child: ValueListenableBuilder(
-        valueListenable: storageController.paymentsListenable(),
+        valueListenable: storage.paymentsListenable(),
         builder: (context, box, widget) {
           var list = box.values.toList();
 
@@ -79,10 +79,8 @@ _buildCashflow({required StorageController storageController}) {
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final payment = dayCashflow[index];
-                      final invoice =
-                          storageController.getInvoice(payment.invoiceId);
-                      final customer =
-                          storageController.getCustomer(invoice?.socid);
+                      final invoice = storage.getInvoice(payment.invoiceId);
+                      final customer = storage.getCustomer(invoice?.socid);
 
                       return Column(children: [
                         Flex(

@@ -278,7 +278,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<ProductModel> products = controller.storageController
+          List<ProductModel> products = controller.storage
               .getProductList()
               .where((product) => product.description!.contains(searchString))
               .toList();

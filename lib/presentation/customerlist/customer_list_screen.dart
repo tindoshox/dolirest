@@ -1,12 +1,14 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
+
 import 'controllers/customer_list_controller.dart';
 
 class CustomerListScreen extends GetView<CustomerListController> {
@@ -92,12 +94,12 @@ class _CustomerList extends GetView<CustomerListController> {
   }
 
   Widget _buildCustomerListView() {
-    StorageController storageController = Get.find();
+    StorageController storage = Get.find();
     String search = controller.searchString.value;
     return RefreshIndicator(
-      onRefresh: () => controller.refreshCusomerList(),
+      onRefresh: () => controller.refreshCustomerList(),
       child: ValueListenableBuilder(
-        valueListenable: storageController.customersListenable(),
+        valueListenable: storage.customersListenable(),
         builder: (context, box, child) {
           List<CustomerModel> sortedValues = box.values.toList()
             ..sort((a, b) => a.name.compareTo(b.name));
@@ -125,7 +127,7 @@ class _CustomerList extends GetView<CustomerListController> {
                   title: const Text('No customers found',
                       textAlign: TextAlign.center),
                   trailing: ElevatedButton(
-                      onPressed: () => controller.refreshCusomerList(),
+                      onPressed: () => controller.refreshCustomerList(),
                       child: const Text('Refresh')),
                 )
               : ListView.builder(
@@ -140,10 +142,7 @@ class _CustomerList extends GetView<CustomerListController> {
                               Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
                             'customerId': customer.id.toString(),
                           }),
-                          leading: const Icon(
-                            Icons.person_2_sharp,
-                            size: 40,
-                          ),
+                          leading: Initicon(text: customer.name),
                           title: Row(
                             children: [
                               Flexible(

@@ -1,24 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
-
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final StorageController storageController = Get.find<StorageController>();
+  final StorageController storage = Get.find<StorageController>();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -69,8 +68,8 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _fetchPayments() async {
-    InvoiceModel invoice = storageController.getInvoice(invoiceId)!;
-    List<PaymentModel> list = storageController
+    InvoiceModel invoice = storage.getInvoice(invoiceId)!;
+    List<PaymentModel> list = storage
         .getPaymentList()
         .where((p) => p.invoiceId == invoiceId)
         .toList();
@@ -89,32 +88,33 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId)).then((value) {
-      final List<PaymentModel> payments = value.data;
-      if (value.data != null) {
-        for (var payment in payments) {
-          PaymentModel p = PaymentModel(
-            amount: payment.amount,
-            type: payment.type,
-            date: payment.date,
-            num: payment.num,
-            fkBankLine: payment.fkBankLine,
-            ref: payment.ref,
-            invoiceId: invoiceId,
-            refExt: payment.refExt,
-          );
-          storageController.storePayment(payment.ref, p);
-        }
+    final result = await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (payments) {
+      for (var payment in payments) {
+        PaymentModel p = PaymentModel(
+          amount: payment.amount,
+          type: payment.type,
+          date: payment.date,
+          num: payment.num,
+          fkBankLine: payment.fkBankLine,
+          ref: payment.ref,
+          invoiceId: invoiceId,
+          refExt: payment.refExt,
+        );
+        storage.storePayment(payment.ref, p);
       }
     });
   }
 
   _fetchCustomer() {
-    if (storageController.getCustomer(customerId) == null) {
-      _refreshCustomerData().then((value) =>
-          customer.value = storageController.getCustomer(customerId)!);
+    if (storage.getCustomer(customerId) == null) {
+      _refreshCustomerData()
+          .then((value) => customer.value = storage.getCustomer(customerId)!);
     } else {
-      customer.value = storageController.getCustomer(customerId)!;
+      customer.value = storage.getCustomer(customerId)!;
     }
   }
 
@@ -123,16 +123,14 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshCustomerData() async {
-    await RemoteServices.fetchThirdPartyById(customerId).then((value) {
-      if (value.data != null) {
-        final CustomerModel customerModel = value.data;
-        storageController.storeCustomer(customerModel.id, customerModel);
-      }
-    });
+    final result = await RemoteServices.fetchThirdPartyById(customerId);
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (c) => storage.storeCustomer(c.id, c));
   }
 
   Future generateDocument() async {
-    InvoiceModel invoice = storageController.getInvoice(invoiceId)!;
+    InvoiceModel invoice = storage.getInvoice(invoiceId)!;
     permissionReady = await Utils.checkPermission(platform);
 
     DialogHelper.showLoading('Downloading document...');
@@ -193,14 +191,12 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(update);
 
-    await RemoteServices.updateInvoice(invoiceId, body).then((value) {
-      DialogHelper.hideLoading();
-      if (!value.hasError) {
-        _refreshInvoiceData();
-        SnackbarHelper.successSnackbar(message: 'Due date changed');
-      } else {
-        SnackbarHelper.errorSnackbar(message: 'Update Failed');
-      }
+    final result = await RemoteServices.updateInvoice(invoiceId, body);
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (invoice) {
+      SnackbarHelper.successSnackbar(message: 'Due date changed');
+      _refreshInvoiceData();
     });
   }
 }

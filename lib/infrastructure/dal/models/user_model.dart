@@ -4,133 +4,371 @@
 
 import 'dart:convert';
 
-DolibarrUserModel userModelFromJson(String str) =>
-    DolibarrUserModel.fromJson(json.decode(str));
+import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-String userModelToJson(DolibarrUserModel data) => json.encode(data.toJson());
+part 'user_model.g.dart';
 
-class DolibarrUserModel {
+UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
+
+String userModelToJson(UserModel data) => json.encode(data.toJson());
+
+@HiveType(typeId: 17)
+@JsonSerializable()
+class UserModel {
+  @HiveField(1)
+  @JsonKey(name: "id")
   String? id;
+  @HiveField(3)
+  @JsonKey(name: "statut")
   String? statut;
+  @HiveField(5)
+  @JsonKey(name: "employee")
   String? employee;
-  dynamic civilityCode;
+  @HiveField(7)
+  @JsonKey(name: "civility_code")
+  String? civilityCode;
+  @HiveField(9)
+  @JsonKey(name: "fullname")
   dynamic fullname;
-  String? gender;
+  @HiveField(11)
+  @JsonKey(name: "gender")
+  dynamic gender;
+  @HiveField(13)
+  @JsonKey(name: "birth")
   String? birth;
+  @HiveField(15)
+  @JsonKey(name: "email")
   String? email;
+  @HiveField(17)
+  @JsonKey(name: "personal_email")
   String? personalEmail;
+  @HiveField(19)
+  @JsonKey(name: "socialnetworks")
   List<dynamic>? socialnetworks;
+  @HiveField(21)
+  @JsonKey(name: "job")
   String? job;
+  @HiveField(23)
+  @JsonKey(name: "signature")
   String? signature;
+  @HiveField(25)
+  @JsonKey(name: "office_phone")
   String? officePhone;
+  @HiveField(27)
+  @JsonKey(name: "office_fax")
   String? officeFax;
+  @HiveField(29)
+  @JsonKey(name: "user_mobile")
   String? userMobile;
+  @HiveField(31)
+  @JsonKey(name: "personal_mobile")
   String? personalMobile;
+  @HiveField(33)
+  @JsonKey(name: "admin")
   String? admin;
+  @HiveField(35)
+  @JsonKey(name: "login")
   String? login;
+  @HiveField(37)
+  @JsonKey(name: "entity")
   String? entity;
+  @HiveField(39)
+  @JsonKey(name: "datec")
   int? datec;
+  @HiveField(41)
+  @JsonKey(name: "datem")
   int? datem;
+  @HiveField(43)
+  @JsonKey(name: "socid")
   dynamic socid;
+  @HiveField(45)
+  @JsonKey(name: "contact_id")
   dynamic contactId;
+  @HiveField(47)
+  @JsonKey(name: "fk_member")
   dynamic fkMember;
+  @HiveField(49)
+  @JsonKey(name: "fk_user")
   dynamic fkUser;
+  @HiveField(51)
+  @JsonKey(name: "fk_user_expense_validator")
   dynamic fkUserExpenseValidator;
+  @HiveField(53)
+  @JsonKey(name: "fk_user_holiday_validator")
   dynamic fkUserHolidayValidator;
+  @HiveField(55)
+  @JsonKey(name: "clicktodial_url")
   dynamic clicktodialUrl;
+  @HiveField(57)
+  @JsonKey(name: "clicktodial_login")
   dynamic clicktodialLogin;
+  @HiveField(59)
+  @JsonKey(name: "clicktodial_poste")
   dynamic clicktodialPoste;
+  @HiveField(61)
+  @JsonKey(name: "datelastlogin")
   int? datelastlogin;
+  @HiveField(63)
+  @JsonKey(name: "datepreviouslogin")
   int? datepreviouslogin;
-  dynamic flagdelsessionsbefore;
+  @HiveField(65)
+  @JsonKey(name: "flagdelsessionsbefore")
+  int? flagdelsessionsbefore;
+  @HiveField(67)
+  @JsonKey(name: "iplastlogin")
   String? iplastlogin;
+  @HiveField(69)
+  @JsonKey(name: "ippreviouslogin")
   String? ippreviouslogin;
+  @HiveField(71)
+  @JsonKey(name: "datestartvalidity")
   String? datestartvalidity;
+  @HiveField(73)
+  @JsonKey(name: "dateendvalidity")
   String? dateendvalidity;
+  @HiveField(75)
+  @JsonKey(name: "photo")
   dynamic photo;
+  @HiveField(77)
+  @JsonKey(name: "lang")
   dynamic lang;
-  Rights? rights;
-  dynamic userGroupList;
-  Conf? conf;
+  @HiveField(79)
+  @JsonKey(name: "user_group_list")
+  List<dynamic>? userGroupList;
+  @HiveField(81)
+  @JsonKey(name: "users")
   List<dynamic>? users;
+  @HiveField(83)
+  @JsonKey(name: "parentof")
   dynamic parentof;
+  @HiveField(85)
+  @JsonKey(name: "accountancy_code")
   String? accountancyCode;
+  @HiveField(87)
+  @JsonKey(name: "thm")
   dynamic thm;
+  @HiveField(89)
+  @JsonKey(name: "tjm")
   dynamic tjm;
+  @HiveField(91)
+  @JsonKey(name: "salary")
   dynamic salary;
+  @HiveField(93)
+  @JsonKey(name: "salaryextra")
   dynamic salaryextra;
+  @HiveField(95)
+  @JsonKey(name: "weeklyhours")
   dynamic weeklyhours;
+  @HiveField(97)
+  @JsonKey(name: "color")
   String? color;
+  @HiveField(99)
+  @JsonKey(name: "dateemployment")
   String? dateemployment;
+  @HiveField(101)
+  @JsonKey(name: "dateemploymentend")
   String? dateemploymentend;
+  @HiveField(103)
+  @JsonKey(name: "default_c_exp_tax_cat")
   dynamic defaultCExpTaxCat;
-  dynamic refEmployee;
-  dynamic nationalRegistrationNumber;
+  @HiveField(105)
+  @JsonKey(name: "ref_employee")
+  String? refEmployee;
+  @HiveField(107)
+  @JsonKey(name: "national_registration_number")
+  String? nationalRegistrationNumber;
+  @HiveField(109)
+  @JsonKey(name: "default_range")
   dynamic defaultRange;
+  @HiveField(111)
+  @JsonKey(name: "fk_warehouse")
   dynamic fkWarehouse;
+  @HiveField(113)
+  @JsonKey(name: "module")
   dynamic module;
+  @HiveField(115)
+  @JsonKey(name: "import_key")
   dynamic importKey;
+  @HiveField(117)
+  @JsonKey(name: "array_options")
   List<dynamic>? arrayOptions;
+  @HiveField(119)
+  @JsonKey(name: "array_languages")
   dynamic arrayLanguages;
+  @HiveField(121)
+  @JsonKey(name: "contacts_ids")
   dynamic contactsIds;
+  @HiveField(123)
+  @JsonKey(name: "linked_objects")
   dynamic linkedObjects;
+  @HiveField(125)
+  @JsonKey(name: "linkedObjectsIds")
   dynamic linkedObjectsIds;
+  @HiveField(127)
+  @JsonKey(name: "oldref")
   dynamic oldref;
+  @HiveField(129)
+  @JsonKey(name: "canvas")
   dynamic canvas;
+  @HiveField(131)
+  @JsonKey(name: "fk_project")
   dynamic fkProject;
+  @HiveField(133)
+  @JsonKey(name: "user")
   dynamic user;
+  @HiveField(135)
+  @JsonKey(name: "origin")
   dynamic origin;
+  @HiveField(137)
+  @JsonKey(name: "origin_id")
   dynamic originId;
+  @HiveField(139)
+  @JsonKey(name: "ref")
   String? ref;
+  @HiveField(141)
+  @JsonKey(name: "ref_ext")
   dynamic refExt;
+  @HiveField(143)
+  @JsonKey(name: "status")
   String? status;
+  @HiveField(145)
+  @JsonKey(name: "country_id")
   dynamic countryId;
+  @HiveField(147)
+  @JsonKey(name: "country_code")
   String? countryCode;
-  dynamic stateId;
+  @HiveField(149)
+  @JsonKey(name: "state_id")
+  String? stateId;
+  @HiveField(151)
+  @JsonKey(name: "region_id")
   dynamic regionId;
+  @HiveField(153)
+  @JsonKey(name: "barcode_type")
   dynamic barcodeType;
+  @HiveField(155)
+  @JsonKey(name: "barcode_type_coder")
   dynamic barcodeTypeCoder;
+  @HiveField(157)
+  @JsonKey(name: "mode_reglement_id")
   dynamic modeReglementId;
+  @HiveField(159)
+  @JsonKey(name: "cond_reglement_id")
   dynamic condReglementId;
+  @HiveField(161)
+  @JsonKey(name: "demand_reason_id")
   dynamic demandReasonId;
+  @HiveField(163)
+  @JsonKey(name: "transport_mode_id")
   dynamic transportModeId;
+  @HiveField(165)
+  @JsonKey(name: "shipping_method")
   dynamic shippingMethod;
+  @HiveField(167)
+  @JsonKey(name: "multicurrency_code")
   dynamic multicurrencyCode;
+  @HiveField(169)
+  @JsonKey(name: "multicurrency_tx")
   dynamic multicurrencyTx;
+  @HiveField(171)
+  @JsonKey(name: "last_main_doc")
   dynamic lastMainDoc;
+  @HiveField(173)
+  @JsonKey(name: "fk_bank")
   dynamic fkBank;
+  @HiveField(175)
+  @JsonKey(name: "fk_account")
   dynamic fkAccount;
+  @HiveField(177)
+  @JsonKey(name: "note_public")
   String? notePublic;
+  @HiveField(179)
+  @JsonKey(name: "note_private")
   String? notePrivate;
+  @HiveField(181)
+  @JsonKey(name: "name")
   dynamic name;
+  @HiveField(183)
+  @JsonKey(name: "lastname")
   String? lastname;
+  @HiveField(185)
+  @JsonKey(name: "firstname")
   String? firstname;
+  @HiveField(187)
+  @JsonKey(name: "civility_id")
   dynamic civilityId;
+  @HiveField(189)
+  @JsonKey(name: "date_creation")
   dynamic dateCreation;
+  @HiveField(191)
+  @JsonKey(name: "date_validation")
   dynamic dateValidation;
+  @HiveField(193)
+  @JsonKey(name: "date_modification")
   dynamic dateModification;
+  @HiveField(195)
+  @JsonKey(name: "date_update")
   dynamic dateUpdate;
+  @HiveField(197)
+  @JsonKey(name: "date_cloture")
   dynamic dateCloture;
+  @HiveField(199)
+  @JsonKey(name: "user_author")
   dynamic userAuthor;
+  @HiveField(201)
+  @JsonKey(name: "user_creation")
   dynamic userCreation;
+  @HiveField(203)
+  @JsonKey(name: "user_creation_id")
   dynamic userCreationId;
+  @HiveField(205)
+  @JsonKey(name: "user_valid")
   dynamic userValid;
+  @HiveField(207)
+  @JsonKey(name: "user_validation")
   dynamic userValidation;
+  @HiveField(209)
+  @JsonKey(name: "user_validation_id")
   dynamic userValidationId;
+  @HiveField(211)
+  @JsonKey(name: "user_closing_id")
   dynamic userClosingId;
+  @HiveField(213)
+  @JsonKey(name: "user_modification")
   dynamic userModification;
+  @HiveField(215)
+  @JsonKey(name: "user_modification_id")
   dynamic userModificationId;
+  @HiveField(217)
+  @JsonKey(name: "specimen")
   int? specimen;
+  @HiveField(219)
+  @JsonKey(name: "labelStatus")
   dynamic labelStatus;
+  @HiveField(221)
+  @JsonKey(name: "showphoto_on_popup")
   dynamic showphotoOnPopup;
+  @HiveField(223)
+  @JsonKey(name: "nb")
   List<dynamic>? nb;
+  @HiveField(225)
+  @JsonKey(name: "output")
   dynamic output;
+  @HiveField(227)
+  @JsonKey(name: "extraparams")
   List<dynamic>? extraparams;
+  @HiveField(229)
+  @JsonKey(name: "address")
   String? address;
+  @HiveField(231)
+  @JsonKey(name: "zip")
   String? zip;
+  @HiveField(233)
+  @JsonKey(name: "town")
   String? town;
 
-  DolibarrUserModel({
+  UserModel({
     this.id,
     this.statut,
     this.employee,
@@ -170,9 +408,7 @@ class DolibarrUserModel {
     this.dateendvalidity,
     this.photo,
     this.lang,
-    this.rights,
     this.userGroupList,
-    this.conf,
     this.users,
     this.parentof,
     this.accountancyCode,
@@ -252,326 +488,8 @@ class DolibarrUserModel {
     this.town,
   });
 
-  factory DolibarrUserModel.fromJson(Map<String, dynamic> json) =>
-      DolibarrUserModel(
-        id: json["id"],
-        statut: json["statut"],
-        employee: json["employee"],
-        civilityCode: json["civility_code"],
-        fullname: json["fullname"],
-        gender: json["gender"],
-        birth: json["birth"],
-        email: json["email"],
-        personalEmail: json["personal_email"],
-        socialnetworks: json["socialnetworks"] == null
-            ? []
-            : List<dynamic>.from(json["socialnetworks"]!.map((x) => x)),
-        job: json["job"],
-        signature: json["signature"],
-        officePhone: json["office_phone"],
-        officeFax: json["office_fax"],
-        userMobile: json["user_mobile"],
-        personalMobile: json["personal_mobile"],
-        admin: json["admin"],
-        login: json["login"],
-        entity: json["entity"],
-        datec: json["datec"],
-        datem: json["datem"],
-        socid: json["socid"],
-        contactId: json["contact_id"],
-        fkMember: json["fk_member"],
-        fkUser: json["fk_user"],
-        fkUserExpenseValidator: json["fk_user_expense_validator"],
-        fkUserHolidayValidator: json["fk_user_holiday_validator"],
-        clicktodialUrl: json["clicktodial_url"],
-        clicktodialLogin: json["clicktodial_login"],
-        clicktodialPoste: json["clicktodial_poste"],
-        datelastlogin: json["datelastlogin"],
-        datepreviouslogin: json["datepreviouslogin"],
-        flagdelsessionsbefore: json["flagdelsessionsbefore"],
-        iplastlogin: json["iplastlogin"],
-        ippreviouslogin: json["ippreviouslogin"],
-        datestartvalidity: json["datestartvalidity"],
-        dateendvalidity: json["dateendvalidity"],
-        photo: json["photo"],
-        lang: json["lang"],
-        rights: json["rights"] == null ? null : Rights.fromJson(json["rights"]),
-        userGroupList: json["user_group_list"],
-        conf: json["conf"] == null ? null : Conf.fromJson(json["conf"]),
-        users: json["users"] == null
-            ? []
-            : List<dynamic>.from(json["users"]!.map((x) => x)),
-        parentof: json["parentof"],
-        accountancyCode: json["accountancy_code"],
-        thm: json["thm"],
-        tjm: json["tjm"],
-        salary: json["salary"],
-        salaryextra: json["salaryextra"],
-        weeklyhours: json["weeklyhours"],
-        color: json["color"],
-        dateemployment: json["dateemployment"],
-        dateemploymentend: json["dateemploymentend"],
-        defaultCExpTaxCat: json["default_c_exp_tax_cat"],
-        refEmployee: json["ref_employee"],
-        nationalRegistrationNumber: json["national_registration_number"],
-        defaultRange: json["default_range"],
-        fkWarehouse: json["fk_warehouse"],
-        module: json["module"],
-        importKey: json["import_key"],
-        arrayOptions: json["array_options"] == null
-            ? []
-            : List<dynamic>.from(json["array_options"]!.map((x) => x)),
-        arrayLanguages: json["array_languages"],
-        contactsIds: json["contacts_ids"],
-        linkedObjects: json["linked_objects"],
-        linkedObjectsIds: json["linkedObjectsIds"],
-        oldref: json["oldref"],
-        canvas: json["canvas"],
-        fkProject: json["fk_project"],
-        user: json["user"],
-        origin: json["origin"],
-        originId: json["origin_id"],
-        ref: json["ref"],
-        refExt: json["ref_ext"],
-        status: json["status"],
-        countryId: json["country_id"],
-        countryCode: json["country_code"],
-        stateId: json["state_id"],
-        regionId: json["region_id"],
-        barcodeType: json["barcode_type"],
-        barcodeTypeCoder: json["barcode_type_coder"],
-        modeReglementId: json["mode_reglement_id"],
-        condReglementId: json["cond_reglement_id"],
-        demandReasonId: json["demand_reason_id"],
-        transportModeId: json["transport_mode_id"],
-        shippingMethod: json["shipping_method"],
-        multicurrencyCode: json["multicurrency_code"],
-        multicurrencyTx: json["multicurrency_tx"],
-        lastMainDoc: json["last_main_doc"],
-        fkBank: json["fk_bank"],
-        fkAccount: json["fk_account"],
-        notePublic: json["note_public"],
-        notePrivate: json["note_private"],
-        name: json["name"],
-        lastname: json["lastname"],
-        firstname: json["firstname"],
-        civilityId: json["civility_id"],
-        dateCreation: json["date_creation"],
-        dateValidation: json["date_validation"],
-        dateModification: json["date_modification"],
-        dateUpdate: json["date_update"],
-        dateCloture: json["date_cloture"],
-        userAuthor: json["user_author"],
-        userCreation: json["user_creation"],
-        userCreationId: json["user_creation_id"],
-        userValid: json["user_valid"],
-        userValidation: json["user_validation"],
-        userValidationId: json["user_validation_id"],
-        userClosingId: json["user_closing_id"],
-        userModification: json["user_modification"],
-        userModificationId: json["user_modification_id"],
-        specimen: json["specimen"],
-        labelStatus: json["labelStatus"],
-        showphotoOnPopup: json["showphoto_on_popup"],
-        nb: json["nb"] == null
-            ? []
-            : List<dynamic>.from(json["nb"]!.map((x) => x)),
-        output: json["output"],
-        extraparams: json["extraparams"] == null
-            ? []
-            : List<dynamic>.from(json["extraparams"]!.map((x) => x)),
-        address: json["address"],
-        zip: json["zip"],
-        town: json["town"],
-      );
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "statut": statut,
-        "employee": employee,
-        "civility_code": civilityCode,
-        "fullname": fullname,
-        "gender": gender,
-        "birth": birth,
-        "email": email,
-        "personal_email": personalEmail,
-        "socialnetworks": socialnetworks == null
-            ? []
-            : List<dynamic>.from(socialnetworks!.map((x) => x)),
-        "job": job,
-        "signature": signature,
-        "office_phone": officePhone,
-        "office_fax": officeFax,
-        "user_mobile": userMobile,
-        "personal_mobile": personalMobile,
-        "admin": admin,
-        "login": login,
-        "entity": entity,
-        "datec": datec,
-        "datem": datem,
-        "socid": socid,
-        "contact_id": contactId,
-        "fk_member": fkMember,
-        "fk_user": fkUser,
-        "fk_user_expense_validator": fkUserExpenseValidator,
-        "fk_user_holiday_validator": fkUserHolidayValidator,
-        "clicktodial_url": clicktodialUrl,
-        "clicktodial_login": clicktodialLogin,
-        "clicktodial_poste": clicktodialPoste,
-        "datelastlogin": datelastlogin,
-        "datepreviouslogin": datepreviouslogin,
-        "flagdelsessionsbefore": flagdelsessionsbefore,
-        "iplastlogin": iplastlogin,
-        "ippreviouslogin": ippreviouslogin,
-        "datestartvalidity": datestartvalidity,
-        "dateendvalidity": dateendvalidity,
-        "photo": photo,
-        "lang": lang,
-        "rights": rights?.toJson(),
-        "user_group_list": userGroupList,
-        "conf": conf?.toJson(),
-        "users": users == null ? [] : List<dynamic>.from(users!.map((x) => x)),
-        "parentof": parentof,
-        "accountancy_code": accountancyCode,
-        "thm": thm,
-        "tjm": tjm,
-        "salary": salary,
-        "salaryextra": salaryextra,
-        "weeklyhours": weeklyhours,
-        "color": color,
-        "dateemployment": dateemployment,
-        "dateemploymentend": dateemploymentend,
-        "default_c_exp_tax_cat": defaultCExpTaxCat,
-        "ref_employee": refEmployee,
-        "national_registration_number": nationalRegistrationNumber,
-        "default_range": defaultRange,
-        "fk_warehouse": fkWarehouse,
-        "module": module,
-        "import_key": importKey,
-        "array_options": arrayOptions == null
-            ? []
-            : List<dynamic>.from(arrayOptions!.map((x) => x)),
-        "array_languages": arrayLanguages,
-        "contacts_ids": contactsIds,
-        "linked_objects": linkedObjects,
-        "linkedObjectsIds": linkedObjectsIds,
-        "oldref": oldref,
-        "canvas": canvas,
-        "fk_project": fkProject,
-        "user": user,
-        "origin": origin,
-        "origin_id": originId,
-        "ref": ref,
-        "ref_ext": refExt,
-        "status": status,
-        "country_id": countryId,
-        "country_code": countryCode,
-        "state_id": stateId,
-        "region_id": regionId,
-        "barcode_type": barcodeType,
-        "barcode_type_coder": barcodeTypeCoder,
-        "mode_reglement_id": modeReglementId,
-        "cond_reglement_id": condReglementId,
-        "demand_reason_id": demandReasonId,
-        "transport_mode_id": transportModeId,
-        "shipping_method": shippingMethod,
-        "multicurrency_code": multicurrencyCode,
-        "multicurrency_tx": multicurrencyTx,
-        "last_main_doc": lastMainDoc,
-        "fk_bank": fkBank,
-        "fk_account": fkAccount,
-        "note_public": notePublic,
-        "note_private": notePrivate,
-        "name": name,
-        "lastname": lastname,
-        "firstname": firstname,
-        "civility_id": civilityId,
-        "date_creation": dateCreation,
-        "date_validation": dateValidation,
-        "date_modification": dateModification,
-        "date_update": dateUpdate,
-        "date_cloture": dateCloture,
-        "user_author": userAuthor,
-        "user_creation": userCreation,
-        "user_creation_id": userCreationId,
-        "user_valid": userValid,
-        "user_validation": userValidation,
-        "user_validation_id": userValidationId,
-        "user_closing_id": userClosingId,
-        "user_modification": userModification,
-        "user_modification_id": userModificationId,
-        "specimen": specimen,
-        "labelStatus": labelStatus,
-        "showphoto_on_popup": showphotoOnPopup,
-        "nb": nb == null ? [] : List<dynamic>.from(nb!.map((x) => x)),
-        "output": output,
-        "extraparams": extraparams == null
-            ? []
-            : List<dynamic>.from(extraparams!.map((x) => x)),
-        "address": address,
-        "zip": zip,
-        "town": town,
-      };
-}
-
-class Conf {
-  Conf();
-
-  factory Conf.fromJson(Map<String, dynamic> json) => Conf();
-
-  Map<String, dynamic> toJson() => {};
-}
-
-class Rights {
-  User? user;
-
-  Rights({
-    this.user,
-  });
-
-  factory Rights.fromJson(Map<String, dynamic> json) => Rights(
-        user: json["user"] == null ? null : User.fromJson(json["user"]),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "user": user?.toJson(),
-      };
-}
-
-class User {
-  Conf? user;
-  Conf? self;
-  Conf? userAdvance;
-  Conf? selfAdvance;
-  Conf? groupAdvance;
-
-  User({
-    this.user,
-    this.self,
-    this.userAdvance,
-    this.selfAdvance,
-    this.groupAdvance,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        user: json["user"] == null ? null : Conf.fromJson(json["user"]),
-        self: json["self"] == null ? null : Conf.fromJson(json["self"]),
-        userAdvance: json["user_advance"] == null
-            ? null
-            : Conf.fromJson(json["user_advance"]),
-        selfAdvance: json["self_advance"] == null
-            ? null
-            : Conf.fromJson(json["self_advance"]),
-        groupAdvance: json["group_advance"] == null
-            ? null
-            : Conf.fromJson(json["group_advance"]),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "user": user?.toJson(),
-        "self": self?.toJson(),
-        "user_advance": userAdvance?.toJson(),
-        "self_advance": selfAdvance?.toJson(),
-        "group_advance": groupAdvance?.toJson(),
-      };
+  Map<String, dynamic> toJson() => _$UserModelToJson(this);
 }

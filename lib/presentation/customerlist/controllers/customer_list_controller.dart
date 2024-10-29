@@ -1,15 +1,18 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+
+import '../../../infrastructure/dal/models/address_model.dart';
+import '../../../utils/snackbar_helper.dart';
 
 class CustomerListController extends GetxController {
   var isLoading = false.obs;
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
-  StorageController storageController = Get.find();
+  StorageController storage = Get.find();
   var searchIconVisible = true.obs;
 
   var searchString = ''.obs;
@@ -25,16 +28,25 @@ class CustomerListController extends GetxController {
     searchString.value = searchText;
   }
 
-  refreshCusomerList() async {
+  refreshCustomerList() async {
     isLoading(true);
-    await RemoteServices.fetchThirdPartyList().then((value) {
-      if (value.statusCode == 200 && value.data != null) {
-        List<CustomerModel> customers = value.data;
-        for (CustomerModel customer in customers) {
-          storageController.storeCustomer(customer.id, customer);
+    final result = await RemoteServices.fetchThirdPartyList();
+
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (customers) {
+      for (CustomerModel customer in customers) {
+        storage.storeCustomer(customer.id, customer);
+        if (customer.address != null && customer.town != null) {
+          storage.storeAddresses(
+            '${customer.town}-${customer.address}',
+            AddressModel(
+              town: customer.town,
+              address: customer.address,
+            ),
+          );
         }
       }
-      isLoading(false);
     });
   }
 }

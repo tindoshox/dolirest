@@ -5,8 +5,8 @@ import '../../../../presentation/duetoday/controllers/duetoday.controller.dart';
 class DuetodayControllerBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<DuetodayController>(
-      () => DuetodayController(),
+    Get.lazyPut<DueTodayController>(
+      () => DueTodayController(),
     );
   }
 }

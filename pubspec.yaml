@@ -17,7 +17,7 @@ dependencies:
   permission_handler: ^11.3.0
   url_launcher: ^6.2.5
   hive: ^2.2.3
-  path_provider: ^2.1.0
+  path_provider: ^2.1.4
   json_annotation: ^4.9.0
   hive_flutter: ^1.1.0
   connectivity_plus: ^6.0.2
@@ -26,7 +26,8 @@ dependencies:
   flutter_initicon: ^3.0.1
   google_fonts: ^6.2.1
   string_scanner: ^1.4.0
-
+  fpdart: ^1.1.0
+  data_table_2: ^2.5.15
 
 
 dev_dependencies:
@@ -42,6 +43,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/smbi.png
-    - assets/images/icon-background.png
+    - assets/images/
 

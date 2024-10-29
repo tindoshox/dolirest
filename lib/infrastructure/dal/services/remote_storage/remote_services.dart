@@ -15,10 +15,11 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/api_routes.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/api_routes.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
@@ -61,8 +62,21 @@ class RemoteServices {
     }
   }
 
+  static Failure _failure(Exception e) {
+    switch (e) {
+      case TimeoutException():
+        return Failure("Timeout error");
+      case SocketException():
+        return Failure("Unable to connect to server");
+      case HttpException():
+        return Failure(e.message);
+      default:
+        return Failure('Uknown Error');
+    }
+  }
+
   /// CustomerList
-  static Future<DataOrException> fetchThirdPartyList(
+  static Future<Either<Failure, List<CustomerModel>>> fetchThirdPartyList(
       {String dateModified = '1970-01-01'}) async {
     final Map<String, String> queryParameters = {
       "sortfield": "t.nom",
@@ -91,22 +105,18 @@ class RemoteServices {
                   CustomerModel.fromJson(jsonItem as Map<String, dynamic>))
               .toList();
         }
-        return DataOrException(
-            statusCode: response.statusCode, data: customers);
+        return right(customers);
       } else {
-        log(response.reasonPhrase!);
-        return DataOrException(
-            statusCode: response.statusCode,
-            hasError: true,
-            errorMessage: response.reasonPhrase);
+        return left(Failure(response.reasonPhrase!));
       }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Customer By Id
-  static Future<DataOrException> fetchThirdPartyById(String customerId) async {
+  static Future<Either<Failure, CustomerModel>> fetchThirdPartyById(
+      String customerId) async {
     try {
       var response = await _client
           .get(
@@ -114,17 +124,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      CustomerModel customerModel = thirdPartyModelFromJson(response.body);
-
-      return DataOrException(
-          statusCode: response.statusCode, data: customerModel);
+      if (response.statusCode == 200) {
+        return right(thirdPartyModelFromJson(response.body));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(Failure(e.toString()));
     }
   }
 
   /// invoiceList
-  static Future<DataOrException> fetchInvoiceList({
+  static Future<Either<Failure, List<InvoiceModel>>> fetchInvoiceList({
     String customerId = "",
     String dateModified = '1970-01-01',
     String status = "",
@@ -157,16 +168,17 @@ class RemoteServices {
                   InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
               .toList();
         }
+        return right(invoices);
+      } else {
+        return left(Failure(response.reasonPhrase!));
       }
-
-      return DataOrException(statusCode: response.statusCode, data: invoices);
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Invoice Payment List
-  static Future<DataOrException> fetchPaymentsByInvoice(
+  static Future<Either<Failure, List<PaymentModel>>> fetchPaymentsByInvoice(
       String invoiceId) async {
     try {
       var response = await _client
@@ -175,20 +187,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      List<PaymentModel> payments = [];
       if (response.statusCode == 200) {
-        payments = paymentModelFromJson(response.body);
-        return DataOrException(statusCode: response.statusCode, data: payments);
+        return right(paymentModelFromJson(response.body));
       } else {
-        return DataOrException(statusCode: response.statusCode, hasError: true);
+        return left(Failure(response.reasonPhrase!));
       }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Update Invoice
-  static Future<DataOrException> updateInvoice(
+  static Future<Either<Failure, InvoiceModel>> updateInvoice(
       String invoiceId, String body) async {
     try {
       var response = await _client
@@ -198,18 +208,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: invoiceModelFromJson(response.body),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(invoiceModelFromJson(response.body));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Create Customer
-  static Future<DataOrException> createCustomer(String body) async {
+  static Future<Either<Failure, String>> createCustomer(String body) async {
     try {
       var response = await _client
           .post(
@@ -218,18 +228,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: response.body.replaceAll('"', ''),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(response.body.replaceAll('"', ''));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Update Customer
-  static Future<DataOrException> updateCustomer(
+  static Future<Either<Failure, CustomerModel>> updateCustomer(
       String body, String customerId) async {
     try {
       var response = await _client
@@ -239,18 +249,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: thirdPartyModelFromJson(response.body),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(thirdPartyModelFromJson(response.body));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Fetch Groups
-  static Future<DataOrException> fetchGroups() async {
+  static Future<Either<Failure, List<GroupModel>>> fetchGroups() async {
     final queryParameters = {
       "sortfield": "nom",
       "sortorder": "ASC",
@@ -275,18 +285,17 @@ class RemoteServices {
               .toList();
         }
 
-        return DataOrException(data: groups, statusCode: response.statusCode);
+        return right(groups);
       } else {
-        return DataOrException(
-            errorMessage: response.reasonPhrase, hasError: true);
+        return left(Failure(response.reasonPhrase!));
       }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Fetch User Info
-  static Future<DataOrException> fetchUserInfo() async {
+  static Future<Either<Failure, UserModel>> login() async {
     try {
       var response = await _client
           .get(
@@ -294,19 +303,22 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: userModelFromJson(response.body),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(
+          userModelFromJson(response.body),
+        );
+      } else {
+        log('Login Status code: ${response.statusCode}');
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Add Customer payment
 
-  static Future<DataOrException> addpayment(String body) async {
+  static Future<Either<Failure, String>> addpayment(String body) async {
     var serverURL = _url;
     try {
       var response = await _client
@@ -316,18 +328,18 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-
-      return DataOrException(
-        data: response.body.replaceAll('"', ''),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(response.body.replaceAll('"', ''));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   /// Fetch Products
-  static Future<DataOrException> fetchProducts() async {
+  static Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     final queryParameters = {
       "sortfield": "label",
       "sortorder": "ASC",
@@ -350,14 +362,12 @@ class RemoteServices {
                   ProductModel.fromJson(jsonItem as Map<String, dynamic>))
               .toList();
         }
-        return DataOrException(statusCode: response.statusCode, data: products);
+        return right(products);
       } else {
-        return DataOrException(
-          statusCode: response.statusCode,
-        );
+        return left(Failure(response.reasonPhrase!));
       }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
@@ -381,7 +391,7 @@ class RemoteServices {
   }
 
   /// Create Invoice
-  static Future<DataOrException> createInvoice(String body) async {
+  static Future<Either<Failure, String>> createInvoice(String body) async {
     try {
       var response = await _client
           .post(
@@ -390,19 +400,20 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      return DataOrException(
-        data: response.body.replaceAll('"', ''),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(response.body.replaceAll('"', ''));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
   //
   //
   /// Validate Invoice
-  static Future<DataOrException> validateInvoice(
+  static Future<Either<Failure, String>> validateInvoice(
       String body, String invoiceId) async {
     try {
       var response = await _client
@@ -412,17 +423,17 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      debugPrint(response.body);
-      return DataOrException(
-        data: response.body.replaceAll('"', ''),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(response.body.replaceAll('"', ''));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
-  static deleteInvoice(invoiceId) async {
+  static Future<Either<Failure, String>> deleteInvoice(invoiceId) async {
     try {
       var response = await _client
           .delete(
@@ -430,13 +441,13 @@ class RemoteServices {
             headers: _headers,
           )
           .timeout(_timeout);
-      debugPrint(response.body);
-      return DataOrException(
-        data: response.body.replaceAll('"', ''),
-        statusCode: response.statusCode,
-      );
+      if (response.statusCode == 200) {
+        return right(response.body.replaceAll('"', ''));
+      } else {
+        return left(Failure(response.reasonPhrase!));
+      }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 
@@ -496,20 +507,18 @@ class RemoteServices {
     }
   }
 
-  static Future<DataOrException> fetchCompany() async {
+  static Future<Either<Failure, CompanyModel>> fetchCompany() async {
     try {
       final response = await _client
           .get(Uri.https(_url, ApiRoutes.company), headers: _headers)
           .timeout(_timeout);
       if (response.statusCode == 200) {
-        final CompanyModel company = companyModelFromJson(response.body);
-
-        return DataOrException(statusCode: response.statusCode, data: company);
+        return right(companyModelFromJson(response.body));
       } else {
-        return DataOrException(statusCode: response.statusCode, hasError: true);
+        return left(Failure(response.reasonPhrase!));
       }
     } on Exception catch (e) {
-      return _error(e, 700);
+      return left(_failure(e));
     }
   }
 }

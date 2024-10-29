@@ -1,12 +1,13 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  StorageController storageController = Get.find();
+  StorageController storage = Get.find();
   final String customerId = Get.arguments['customerId'];
   final List<Tab> customerTabs = [
     const Tab(text: 'Details'),
@@ -36,7 +37,7 @@ class CustomerDetailController extends GetxController
   _fetchInvoices() async {
     isLoading(true);
 
-    if (storageController.getCustomer(customerId) == null) {
+    if (storage.getCustomer(customerId) == null) {
       await _refreshInvoiceData();
     }
 
@@ -45,12 +46,13 @@ class CustomerDetailController extends GetxController
 
   // Fetch invoice data from server
   Future _refreshInvoiceData() async {
-    await RemoteServices.fetchInvoiceList(customerId: customerId).then((value) {
-      if (value.data != null) {
-        final List<InvoiceModel> invoices = value.data;
-        for (InvoiceModel invoice in invoices) {
-          storageController.storeInvoice(invoice.id, invoice);
-        }
+    final result =
+        await RemoteServices.fetchInvoiceList(customerId: customerId);
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (invoices) {
+      for (InvoiceModel invoice in invoices) {
+        storage.storeInvoice(invoice.id, invoice);
       }
     });
   }

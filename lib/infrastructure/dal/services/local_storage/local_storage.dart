@@ -1,15 +1,15 @@
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
-import 'package:flutter/foundation.dart';
-import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/user_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class StorageController extends GetxController {
   final Box<InvoiceModel> _invoices = Hive.box('invoices');
@@ -18,27 +18,36 @@ class StorageController extends GetxController {
   final Box<ProductModel> _products = Hive.box('products');
   final Box<GroupModel> _groups = Hive.box('groups');
   final Box<CompanyModel> _company = Hive.box('company');
+  final Box<UserModel> _user = Hive.box('user');
   final Box<AddressModel> _addresses = Hive.box('addresses');
   final Box _settings = Hive.box('settings');
 
-  void storeAdresses(String key, AddressModel value) {
-    _addresses.put(key, value);
+  void storeUser(UserModel user) async {
+    await _user.put(StorageKey.user, user);
+  }
+
+  UserModel? getUser() {
+    return _user.isOpen ? _user.get(StorageKey.user) : null;
+  }
+
+  void storeAddresses(String key, AddressModel value) async {
+    await _addresses.put(key, value);
   }
 
   List<AddressModel> getAddressList() {
     return _addresses.toMap().values.toList();
   }
 
-  void storeCompany(CompanyModel company) {
-    _company.put(StorageKey.company, company);
+  void storeCompany(CompanyModel company) async {
+    await _company.put(StorageKey.company, company);
   }
 
   CompanyModel? getCompany() {
     return _company.isOpen ? _company.get(StorageKey.company) : null;
   }
 
-  void storePayment(String key, PaymentModel value) {
-    if (_payments.isOpen) _payments.put(key, value);
+  void storePayment(String key, PaymentModel value) async {
+    if (_payments.isOpen) await _payments.put(key, value);
   }
 
   List<PaymentModel> getPaymentList() {
@@ -49,8 +58,8 @@ class StorageController extends GetxController {
     return _payments.listenable();
   }
 
-  void storeInvoice(String key, InvoiceModel value) {
-    if (_invoices.isOpen) _invoices.put(key, value);
+  void storeInvoice(String key, InvoiceModel value) async {
+    if (_invoices.isOpen) await _invoices.put(key, value);
   }
 
   InvoiceModel? getInvoice(String key) {
@@ -65,8 +74,8 @@ class StorageController extends GetxController {
     return _invoices.listenable(keys: keys);
   }
 
-  void storeCustomer(String key, CustomerModel value) {
-    if (_customers.isOpen) _customers.put(key, value);
+  void storeCustomer(String key, CustomerModel value) async {
+    if (_customers.isOpen) await _customers.put(key, value);
   }
 
   CustomerModel? getCustomer(String key) {
@@ -84,8 +93,8 @@ class StorageController extends GetxController {
     return _customers.listenable(keys: keys);
   }
 
-  void storeSetting(String key, dynamic value) {
-    if (_settings.isOpen) _settings.put(key, value);
+  void storeSetting(String key, dynamic value) async {
+    if (_settings.isOpen) await _settings.put(key, value);
   }
 
   getSetting(String key) {
@@ -96,8 +105,8 @@ class StorageController extends GetxController {
     if (_settings.isOpen) _settings.delete(key);
   }
 
-  void storeGroup(String key, GroupModel value) {
-    if (_groups.isOpen) _groups.put(key, value);
+  void storeGroup(String key, GroupModel value) async {
+    if (_groups.isOpen) await _groups.put(key, value);
   }
 
   GroupModel? getGroup(String key) {
@@ -108,8 +117,8 @@ class StorageController extends GetxController {
     return _groups.toMap().values.toList();
   }
 
-  void storeProduct(String key, ProductModel value) {
-    if (_products.isOpen) _products.put(key, value);
+  void storeProduct(String key, ProductModel value) async {
+    if (_products.isOpen) await _products.put(key, value);
   }
 
   List<ProductModel> getProductList() {

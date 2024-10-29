@@ -85,7 +85,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
     return RefreshIndicator(
       onRefresh: () => controller.refreshInvoiceList(),
       child: ValueListenableBuilder(
-        valueListenable: controller.storageController.invoicesListenable(),
+        valueListenable: controller.storage.invoicesListenable(),
         builder: (context, box, child) {
           List<InvoiceModel> list = box.values
               .toList()

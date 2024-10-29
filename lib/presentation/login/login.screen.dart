@@ -1,9 +1,8 @@
 import 'package:dolirest/presentation/widgets/app_image.dart';
-import 'package:flutter/material.dart';
-
-import 'package:get/get.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'controllers/login.controller.dart';
 
@@ -22,7 +21,7 @@ class LoginScreen extends GetView<LoginController> {
             children: [
               SizedBox(height: 50),
               Image.asset(
-                AppImageUrl.logo,
+                AppImageUrl.logoFull,
                 height: 50,
                 width: 50,
               ),
@@ -53,7 +52,7 @@ class LoginScreen extends GetView<LoginController> {
                 const SizedBox(height: 5),
                 _buildKeyField(),
                 const SizedBox(height: 10),
-                _bulidLoginButton(),
+                _buildLoginButton(),
               ],
             ),
           ),
@@ -113,7 +112,7 @@ class LoginScreen extends GetView<LoginController> {
     );
   }
 
-  Padding _bulidLoginButton() {
+  Padding _buildLoginButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(

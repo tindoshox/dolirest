@@ -1,10 +1,7 @@
-import 'package:dolirest/infrastructure/navigation/bindings/controllers/duetoday.controller.binding.dart';
-import 'package:dolirest/presentation/duetoday/duetoday.screen.dart';
-import 'package:get/get.dart';
-
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/createinvoice_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerdetail_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerlist_controller_binding.dart';
+import 'package:dolirest/infrastructure/navigation/bindings/controllers/duetoday.controller.binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/editcustomer_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/home_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/invoicedetail_controller_binding.dart';
@@ -14,6 +11,7 @@ import 'package:dolirest/infrastructure/navigation/bindings/controllers/payment_
 import 'package:dolirest/presentation/createinvoice/create_invoice_screen.dart';
 import 'package:dolirest/presentation/customerdetail/customer_detail_screen.dart';
 import 'package:dolirest/presentation/customerlist/customer_list_screen.dart';
+import 'package:dolirest/presentation/duetoday/duetoday.screen.dart';
 import 'package:dolirest/presentation/editcustomer/edit_customer_screen.dart';
 import 'package:dolirest/presentation/home/home_screen.dart';
 import 'package:dolirest/presentation/invoicedetail/invoice_detail_screen.dart';
@@ -21,6 +19,7 @@ import 'package:dolirest/presentation/invoicelist/invoicelist_screen.dart';
 import 'package:dolirest/presentation/login/login.screen.dart';
 import 'package:dolirest/presentation/payment/payment_screen.dart';
 import 'package:dolirest/presentation/reports/reports_screen.dart';
+import 'package:get/get.dart';
 
 import '../../presentation/cashflow/collections_screen.dart';
 import 'bindings/controllers/cashflow.controller.binding.dart';
@@ -115,7 +114,7 @@ class Nav {
     ),
     GetPage(
       name: Routes.DUETODAY,
-      page: () => const DuetodayScreen(),
+      page: () => const DueTodayScreen(),
       binding: DuetodayControllerBinding(),
     ),
   ];

@@ -1,20 +1,20 @@
 import 'dart:convert';
 
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class PaymentController extends GetxController {
-  final StorageController storageController = Get.find<StorageController>();
+  final StorageController storage = Get.find<StorageController>();
 
   TextEditingController payDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
@@ -75,18 +75,18 @@ class PaymentController extends GetxController {
   }
 
   _fetchInvoiceById(String invoiceId) {
-    invoice.value = storageController.getInvoice(invoiceId)!;
+    invoice.value = storage.getInvoice(invoiceId)!;
   }
 
   Future _fetchPayments(invoiceId) async {
-    List<PaymentModel> list = storageController.getPaymentList();
+    List<PaymentModel> list = storage.getPaymentList();
 
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
   }
 
   _fetchCustomerById(String customerId) {
-    customer.value = storageController.getCustomer(customerId)!;
+    customer.value = storage.getCustomer(customerId)!;
   }
 
   void setPayDate() async {
@@ -154,34 +154,34 @@ class PaymentController extends GetxController {
 
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
-    await RemoteServices.addpayment(body).then((value) async {
-      if (!value.hasError) {
-        await _updateDueDate(invoice.value.id);
-        await refreshPayments(invoice.value.id);
-        await refreshInvoice(invoice.value.id);
+    final result = await RemoteServices.addpayment(body);
 
-        if (fromHomeScreen) {
-          DialogHelper.hideLoading();
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackbarHelper.errorSnackbar(message: 'Payment not saved');
+    }, (p) async {
+      await _updateDueDate(invoice.value.id);
+      await refreshPayments(invoice.value.id);
+      await refreshInvoice(invoice.value.id);
 
-          Get.snackbar(
-              'Payment', '${amount.value} for ${customer.value.name} received.',
-              icon: const Icon(Icons.money_sharp),
-              shouldIconPulse: true,
-              backgroundColor: const Color.fromARGB(255, 186, 255, 97),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP);
-          paymentFormKey.currentState?.reset();
-          dropdownKey.currentState?.clear();
+      if (fromHomeScreen) {
+        DialogHelper.hideLoading();
 
-          clearInvoice();
-        } else {
-          DialogHelper.hideLoading();
-          Get.back();
-          SnackbarHelper.successSnackbar(message: 'Payment successful');
-        }
+        Get.snackbar(
+            'Payment', '${amount.value} for ${customer.value.name} received.',
+            icon: const Icon(Icons.money_sharp),
+            shouldIconPulse: true,
+            backgroundColor: const Color.fromARGB(255, 186, 255, 97),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP);
+        paymentFormKey.currentState?.reset();
+        dropdownKey.currentState?.clear();
+
+        clearInvoice();
       } else {
         DialogHelper.hideLoading();
-        SnackbarHelper.errorSnackbar(message: 'Payment not saved');
+        Get.back();
+        SnackbarHelper.successSnackbar(message: 'Payment successful');
       }
     });
   }
@@ -198,22 +198,22 @@ class PaymentController extends GetxController {
   }
 
   refreshPayments(invoiceId) async {
-    await (RemoteServices.fetchPaymentsByInvoice(invoiceId)).then((value) {
-      if (value.data != null) {
-        final List<PaymentModel> payments = value.data;
-        for (var payment in payments) {
-          PaymentModel p = PaymentModel(
-            amount: payment.amount,
-            type: payment.type,
-            date: payment.date,
-            num: payment.num,
-            fkBankLine: payment.fkBankLine,
-            ref: payment.ref,
-            invoiceId: invoiceId,
-            refExt: payment.refExt,
-          );
-          storageController.storePayment(payment.ref, p);
-        }
+    final result = await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (payments) {
+      for (var payment in payments) {
+        PaymentModel p = PaymentModel(
+          amount: payment.amount,
+          type: payment.type,
+          date: payment.date,
+          num: payment.num,
+          fkBankLine: payment.fkBankLine,
+          ref: payment.ref,
+          invoiceId: invoiceId,
+          refExt: payment.refExt,
+        );
+        storage.storePayment(payment.ref, p);
       }
     });
   }
@@ -223,7 +223,7 @@ class PaymentController extends GetxController {
   }
 
   fetchInvoices() {
-    return storageController
+    return storage
         .getInvoiceList()
         .where((invoice) => invoice.remaintopay != "0")
         .toList();

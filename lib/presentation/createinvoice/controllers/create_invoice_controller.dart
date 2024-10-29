@@ -2,25 +2,24 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
-
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
 
-  StorageController storageController = Get.find();
+  StorageController storage = Get.find();
   Rx<CustomerModel> customer = CustomerModel().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
@@ -51,11 +50,10 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    List<ProductModel> list = storageController.getProductList();
-
-    if (list.length < 50) {
-      await refreshProducts();
+    if (storage.getProductList().isEmpty) {
+      await _refreshProducts();
     }
+
     _fetchData();
     super.onReady();
   }
@@ -86,19 +84,19 @@ class CreateinvoiceController extends GetxController {
     customer(CustomerModel());
   }
 
-  refreshProducts() async {
-    await RemoteServices.fetchProducts().then((value) {
-      if (value.data != null) {
-        final List<ProductModel> products = value.data;
-        for (ProductModel product in products) {
-          storageController.storeProduct(product.id!, product);
-        }
+  _refreshProducts() async {
+    final result = await RemoteServices.fetchProducts();
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (products) {
+      for (ProductModel product in products) {
+        storage.storeProduct(product.id!, product);
       }
     });
   }
 
   fetchCustomerById(String customerId) {
-    customer.value = storageController.getCustomer(customerId)!;
+    customer.value = storage.getCustomer(customerId)!;
   }
 
   ///
@@ -180,16 +178,13 @@ class CreateinvoiceController extends GetxController {
 
     /// Submit for draft creation
 
-    await RemoteServices.createInvoice(body).then((value) async {
-      if (value.hasError) {
-        DialogHelper.hideLoading();
-        SnackbarHelper.errorSnackbar(
-          message: value.errorMessage,
-        );
-      } else {
-        await _validateInvoice(value.data);
-      }
-    });
+    final result = await RemoteServices.createInvoice(body);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackbarHelper.errorSnackbar(
+        message: failure.message,
+      );
+    }, (id) async => await _validateInvoice(id));
   }
 
   ///
@@ -201,36 +196,40 @@ class CreateinvoiceController extends GetxController {
       "notrigger": 0
       }''';
 
-    await RemoteServices.validateInvoice(body, invoiceId).then((value) async {
-      if (value.hasError) {
-        debugPrint(value.statusCode.toString());
-        await RemoteServices.deleteInvoice(invoiceId).then((v) {
-          DialogHelper.hideLoading();
-          Get.offAndToNamed(Routes.CREATEINVOICE);
-          SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
-        });
-      } else {
-        await _getNewInvoice(invoiceId).then((value) {
-          DialogHelper.hideLoading();
+    final result = await RemoteServices.validateInvoice(body, invoiceId);
+    result.fold((failure) {
+      _deleteInvoice(invoiceId);
+    }, (v) async {
+      await _getNewInvoice(invoiceId).then((value) {
+        DialogHelper.hideLoading();
 
-          Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
-            'invoiceId': invoiceId,
-            'customerId': customer.value.id,
-          });
+        Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
+          'invoiceId': invoiceId,
+          'customerId': customer.value.id,
         });
-      }
+      });
+    });
+  }
+
+  void _deleteInvoice(String invoiceId) async {
+    final result = await RemoteServices.deleteInvoice(invoiceId);
+    result.fold((failure) {}, (deleted) {
+      DialogHelper.hideLoading();
+      Get.offAndToNamed(Routes.CREATEINVOICE);
+      SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
     });
   }
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceList(customerId: customer.value.id)
-        .then((value) {
-      if (value.data != null) {
-        final List<InvoiceModel> invoices = value.data;
-        for (InvoiceModel invoice in invoices) {
-          storageController.storeInvoice(invoice.id, invoice);
-        }
+    final result =
+        await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
+
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (invoices) {
+      for (InvoiceModel invoice in invoices) {
+        storage.storeInvoice(invoice.id, invoice);
       }
     });
   }
@@ -241,10 +240,10 @@ class CreateinvoiceController extends GetxController {
     List<CustomerModel> customers = [];
 
     if (searchString == "") {
-      customers = storageController.getCustomerList();
+      customers = storage.getCustomerList();
       customers.sort((a, b) => a.name.compareTo(b.name));
     } else {
-      customers = storageController
+      customers = storage
           .getCustomerList()
           .where((customer) =>
               customer.name.contains(searchString) ||

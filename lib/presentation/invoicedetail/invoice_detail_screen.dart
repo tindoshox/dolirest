@@ -1,14 +1,13 @@
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:dolirest/presentation/widgets/loading_indicator.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
-import 'package:flutter/material.dart';
-
-import 'package:get/get.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicedetail/components/invoice_detail_widget.dart';
 import 'package:dolirest/presentation/invoicedetail/components/payment_list.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
+import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'controllers/invoice_detail_controller.dart';
 
@@ -16,15 +15,15 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
   const InvoiceDetailScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final StorageController storageController = Get.find();
+    final StorageController storage = Get.find();
     return Scaffold(
       persistentFooterButtons: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ValueListenableBuilder(
-              valueListenable: storageController
-                  .invoicesListenable(keys: [controller.invoiceId]),
+              valueListenable:
+                  storage.invoicesListenable(keys: [controller.invoiceId]),
               builder: (context, invoice, child) => CustomActionButton(
                   buttonText: 'Payment',
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
@@ -72,7 +71,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                 controller: controller.tabController,
                 children: [
                   ValueListenableBuilder(
-                    valueListenable: storageController
+                    valueListenable: storage
                         .invoicesListenable(keys: [controller.invoiceId]),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
@@ -84,7 +83,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         invoice: invoices.get(controller.invoiceId)!),
                   ),
                   ValueListenableBuilder(
-                    valueListenable: storageController
+                    valueListenable: storage
                         .invoicesListenable(keys: [controller.customerId]),
                     builder: (context, invoices, child) {
                       return invoices.get(controller.invoiceId)!.totalpaid == 0

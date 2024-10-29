@@ -7,11 +7,11 @@ import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/dependancy_injection.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -33,6 +33,7 @@ void main() async {
   Hive.registerAdapter<ProductModel>(ProductModelAdapter());
   Hive.registerAdapter<CompanyModel>(CompanyModelAdapter());
   Hive.registerAdapter<AddressModel>(AddressModelAdapter());
+  Hive.registerAdapter<UserModel>(UserModelAdapter());
 
   await Hive.openBox<InvoiceModel>('invoices');
   await Hive.openBox<CustomerModel>('customers');
@@ -41,6 +42,7 @@ void main() async {
   await Hive.openBox<GroupModel>('groups');
   await Hive.openBox<CompanyModel>('company');
   await Hive.openBox<AddressModel>('addresses');
+  await Hive.openBox<UserModel>('user');
   await Hive.openBox('settings');
 
   runApp(Main());
@@ -54,12 +56,10 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final StorageController storageController = Get.find();
-    final initialRoute =
-        storageController.getSetting(StorageKey.apiKey) == null ||
-                storageController.getSetting(StorageKey.user) == null
-            ? Routes.LOGIN
-            : Routes.HOME;
+    final StorageController storage = Get.find();
+    final initialRoute = storage.getSetting(StorageKey.apiKey) == null
+        ? Routes.LOGIN
+        : Routes.HOME;
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

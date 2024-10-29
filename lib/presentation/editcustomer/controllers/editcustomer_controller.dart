@@ -1,18 +1,19 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
-  StorageController storageController = Get.find();
+  StorageController storage = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
@@ -38,14 +39,12 @@ class EditCustomerController extends GetxController {
     if (customerId.isNotEmpty) {
       await _fetchCustomerById(customerId);
     }
-    addresses.value = storageController.getAddressList();
-    List<GroupModel> list = storageController.getGroupList();
+    addresses.value = storage.getAddressList();
 
-    if (list.length < 50) {
-      await refreshGroups();
+    if (storage.getGroupList().isEmpty) {
+      _refreshGroups();
     } else {
-      //return
-      groups.value = list;
+      groups.value = storage.getGroupList();
     }
 
     super.onInit();
@@ -62,23 +61,23 @@ class EditCustomerController extends GetxController {
 
   getGroups({String search = ""}) {
     if (search.isNotEmpty) {
-      groups.value = storageController
+      groups.value = storage
           .getGroupList()
           .where((group) => group.name.contains(search))
           .toList();
     } else {
-      groups.value = storageController.getGroupList();
+      groups.value = storage.getGroupList();
     }
     return groups;
   }
 
-  refreshGroups() async {
-    await RemoteServices.fetchGroups().then((value) {
-      if (value.data != null) {
-        final List<GroupModel> groups = value.data;
-        for (GroupModel group in groups) {
-          storageController.storeGroup(group.id, group);
-        }
+  _refreshGroups() async {
+    final result = await RemoteServices.fetchGroups();
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (groups) {
+      for (GroupModel group in groups) {
+        storage.storeGroup(group.id, group);
       }
     });
   }
@@ -109,29 +108,28 @@ class EditCustomerController extends GetxController {
   Future _createCustomer(String body) async {
     DialogHelper.showLoading('Saving Customer...');
 
-    await RemoteServices.createCustomer(body).then((value) async {
+    final result = await RemoteServices.createCustomer(body);
+    result.fold((failure) {
       DialogHelper.hideLoading();
-      if (value.hasError) {
-        SnackbarHelper.errorSnackbar(message: value.errorMessage);
-      } else {
-        await _fetchNewCustomer(value.data);
-        Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-            arguments: {'customerId': value.data});
-      }
+      SnackbarHelper.errorSnackbar(message: failure.message);
+    }, (id) {
+      DialogHelper.hideLoading();
+      _fetchNewCustomer(id);
+      Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {'customerId': id});
     });
   }
 
-  _fetchNewCustomer(data) async {
-    await RemoteServices.fetchThirdPartyById(data).then((value) {
-      if (value.statusCode == 200 && value.data != null) {
-        final CustomerModel customer = value.data;
-        storageController.storeCustomer(customer.id, customer);
-      }
-    });
+  _fetchNewCustomer(id) async {
+    final result = await RemoteServices.fetchThirdPartyById(id);
+
+    result.fold((failure) {
+      SnackbarHelper.errorSnackbar(message: failure.message);
+      log('Fetch new customer: ${failure.message}');
+    }, (customer) => storage.storeCustomer(customer.id, customer));
   }
 
   Future _fetchCustomerById(String id) async {
-    customerToEdit.value = storageController.getCustomer(id)!;
+    customerToEdit.value = storage.getCustomer(id)!;
     nameController.text = customerToEdit.value.name!;
     addressController.text = customerToEdit.value.address ?? '';
     townController.text = customerToEdit.value.town ?? '';
@@ -141,19 +139,14 @@ class EditCustomerController extends GetxController {
 
   Future _updateCustomer(String body, String id) async {
     DialogHelper.showLoading('Updating Customer...');
-    await RemoteServices.updateCustomer(body, id).then((value) async {
+    final result = await RemoteServices.updateCustomer(body, id);
+
+    result.fold((failure) {
       DialogHelper.hideLoading();
-
-      if (value.hasError) {
-        SnackbarHelper.errorSnackbar(message: value.errorMessage);
-      }
-
-      SnackbarHelper.successSnackbar(
-        message: 'Customer updated',
-      );
-
-      storageController.storeCustomer(customerId, value.data);
-
+      SnackbarHelper.errorSnackbar(message: failure.message);
+    }, (customer) {
+      storage.storeCustomer(customer.id, customer);
+      DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {
         'customerId': customerId,
       });

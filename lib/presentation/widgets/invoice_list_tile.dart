@@ -1,4 +1,6 @@
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +16,11 @@ class InvoiceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final storage = Get.find<StorageController>();
+    final CustomerModel? customer = storage.getCustomer(invoice.socid);
     return Card(
       child: ListTile(
+        isThreeLine: true,
         onTap: () => _onInvoiceTap(),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -38,7 +43,8 @@ class InvoiceListTile extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    invoice.nom ?? 'Unknown', // Handle potential null
+                    customer?.name ??
+                        'Please refresh customer list', // Handle potential null
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -49,14 +55,21 @@ class InvoiceListTile extends StatelessWidget {
                 ),
               ],
             ),
+            Text(
+              '${customer?.town} ${customer?.address}'.trim(),
+              style: const TextStyle(fontSize: 10),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(invoice.lines?.isNotEmpty ?? false
-                    ? invoice.lines![0].productLabel ??
-                        invoice.lines![0].description ??
-                        'N/A'
-                    : 'N/A'),
+                Text(
+                  invoice.lines?.isNotEmpty ?? false
+                      ? invoice.lines![0].productLabel ??
+                          invoice.lines![0].description ??
+                          'N/A'
+                      : 'N/A',
+                  style: const TextStyle(fontSize: 10),
+                ),
                 Text(
                   invoice.remaintopay == "0"
                       ? "FULLY PAID"

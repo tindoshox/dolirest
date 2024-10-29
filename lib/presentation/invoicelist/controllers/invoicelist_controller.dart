@@ -1,10 +1,10 @@
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 
 class InvoicelistController extends GetxController {
-  final StorageController storageController = Get.find<StorageController>();
+  final StorageController storage = Get.find<StorageController>();
   var isLoading = false.obs;
 
   bool isLastPage = false;

@@ -1,21 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
-  final StorageController storageController = Get.find();
+  final StorageController storage = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController fromDateController = TextEditingController();
   TextEditingController toDateController = TextEditingController();
@@ -73,7 +73,7 @@ class ReportsController extends GetxController {
       platform = TargetPlatform.iOS;
     }
 
-    List<GroupModel> list = storageController.getGroupList();
+    List<GroupModel> list = storage.getGroupList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -87,23 +87,23 @@ class ReportsController extends GetxController {
 
   Future getGroups({String search = ""}) async {
     if (search.isNotEmpty) {
-      groups.value = storageController
+      groups.value = storage
           .getGroupList()
           .where((group) => group.name.contains(search))
           .toList();
     } else {
-      groups.value = storageController.getGroupList();
+      groups.value = storage.getGroupList();
     }
     return groups;
   }
 
   Future<List<GroupModel>> refreshGroups() async {
-    await RemoteServices.fetchGroups().then((value) {
-      if (value.data != null) {
-        final List<GroupModel> groups = value.data;
-        for (GroupModel group in groups) {
-          storageController.storeGroup(group.id, group);
-        }
+    final result = await RemoteServices.fetchGroups();
+    result.fold(
+        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (groups) {
+      for (GroupModel group in groups) {
+        storage.storeGroup(group.id, group);
       }
     });
 
