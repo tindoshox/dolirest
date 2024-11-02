@@ -1,3 +1,4 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -20,127 +21,49 @@ class PaymentsList extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: Get.find<StorageController>().paymentsListenable(),
       builder: (BuildContext context, Box<PaymentModel> box, Widget? child) {
-        final List<PaymentModel> payments = box
-            .toMap()
-            .values
-            .toList()
-            .where((p) => p.invoiceId.toString() == invoiceId)
-            .toList();
-        debugPrint(payments.length.toString());
-        int price = int.parse(Utils.amounts(totalTtc));
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: CustomScrollView(
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyHeaderDelegate(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Flex(
-                      direction: Axis.horizontal,
-                      children: [
-                        _buildCell(
-                            text: 'Date',
-                            mainAxisAlignment: MainAxisAlignment.start),
-                        _buildCell(text: 'Receipt'),
-                        _buildCell(text: 'Amt'),
-                        _buildCell(
-                            text: 'Balance',
-                            mainAxisAlignment: MainAxisAlignment.end),
-                      ],
-                    ),
+            padding: const EdgeInsets.symmetric(horizontal: 3.0),
+            child: DataTable2(
+                columnSpacing: 4,
+                columns: [
+                  DataColumn2(label: Text('Date')),
+                  DataColumn2(label: Text('Receipt #'), numeric: true),
+                  DataColumn2(label: Text('Amount'), numeric: true),
+                  DataColumn2(
+                    numeric: true,
+                    label: Text('Balance'),
                   ),
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    final payment = payments[index];
-                    price -= Utils.intAmounts(payment.amount);
-
-                    return payments.isEmpty
-                        ? const ListTile(
-                            title: Text('No Payments'),
-                            titleAlignment: ListTileTitleAlignment.center,
-                          )
-                        : Column(
-                            children: [
-                              Flex(
-                                direction: Axis.horizontal,
-                                children: [
-                                  _buildCell(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      text: Utils.datePaid(payment.date!),
-                                      style: null),
-                                  _buildCell(
-                                      text: payment.num ??
-                                          payment.type.toString().toLowerCase(),
-                                      style: null),
-                                  _buildCell(
-                                      text: Utils.amounts(payment.amount),
-                                      style: null),
-                                  _buildCell(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      text: price.toString(),
-                                      style: null)
-                                ],
-                              ),
-                              const Divider(
-                                thickness: 0.5,
-                              )
-                            ],
-                          );
-                  },
-                  childCount: payments.length,
-                ),
-              ),
-            ],
-          ),
-        );
+                ],
+                rows: _buildDataRow(box)));
       },
     );
   }
 
-  Flexible _buildCell(
-      {String text = 'Heading',
-      MainAxisAlignment mainAxisAlignment = MainAxisAlignment.center,
-      TextStyle? style = const TextStyle(fontSize: 20)}) {
-    return Flexible(
-      flex: 2,
-      child: Row(
-        mainAxisAlignment: mainAxisAlignment,
-        children: [
-          Text(
-            text,
-            style: style,
-          ),
-        ],
-      ),
-    );
-  }
-}
+  List<DataRow2> _buildDataRow(Box<PaymentModel> box) {
+    List<DataRow2> rows = [];
+    final List<PaymentModel> payments = box
+        .toMap()
+        .values
+        .toList()
+        .where((p) => p.invoiceId.toString() == invoiceId)
+        .toList();
+    int price = int.parse(Utils.amounts(totalTtc));
+    for (var payment in payments) {
+      price -= Utils.intAmounts(payment.amount);
+      rows.add(DataRow2(cells: [
+        DataCell(Text(Utils.datePaid(payment.date!))),
+        DataCell(Text(
+          payment.num,
+        )),
+        DataCell(Text(
+          Utils.amounts(payment.amount),
+        )),
+        DataCell(Text(
+          price.toString(),
+        ))
+      ]));
+    }
 
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _StickyHeaderDelegate({required this.child});
-
-  @override
-  double get minExtent => 0;
-
-  @override
-  double get maxExtent => 40; // Adjust this value according to your needs
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) {
-    return child != oldDelegate.child;
+    return rows;
   }
 }

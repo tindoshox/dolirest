@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
@@ -9,7 +11,6 @@ import '../../../utils/snackbar_helper.dart';
 
 class CustomerListController extends GetxController {
   var isLoading = false.obs;
-
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
   StorageController storage = Get.find();
@@ -32,9 +33,11 @@ class CustomerListController extends GetxController {
     isLoading(true);
     final result = await RemoteServices.fetchThirdPartyList();
 
-    result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
-        (customers) {
+    result.fold((failure) {
+      SnackbarHelper.errorSnackbar(message: failure.message);
+      isLoading(false);
+    }, (customers) {
+      log(customers.length.toString());
       for (CustomerModel customer in customers) {
         storage.storeCustomer(customer.id, customer);
         if (customer.address != null && customer.town != null) {
@@ -47,6 +50,7 @@ class CustomerListController extends GetxController {
           );
         }
       }
+      isLoading(false);
     });
   }
 }

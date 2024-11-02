@@ -40,17 +40,17 @@ class DueTodayScreen extends GetView<DueTodayController> {
     );
   }
 
-  DataColumn _buildHeading(
+  DataColumn2 _buildHeading(
           {required String label, void Function(int, bool)? onSort}) =>
-      DataColumn(
+      DataColumn2(
         onSort: onSort,
         label: Text(label),
       );
 
-  List<DataRow> _buildDataRow() {
-    List<DataRow> rows = <DataRow>[];
+  List<DataRow2> _buildDataRow() {
+    List<DataRow2> rows = <DataRow2>[];
     for (DueTodayModel invoice in controller.dueList) {
-      rows.add(DataRow(
+      rows.add(DataRow2(
         onSelectChanged: (value) => Get.toNamed(Routes.INVOICEDETAIL,
             arguments: {
               'invoiceId': invoice.invoiceId,

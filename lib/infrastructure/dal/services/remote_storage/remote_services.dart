@@ -26,7 +26,7 @@ import 'package:http/retry.dart';
 
 class RemoteServices {
   static final RetryClient _client = RetryClient(http.Client());
-  static const Duration _timeout = Duration(seconds: 60);
+  static const Duration _timeout = Duration(seconds: 10);
   static final String _url =
       Get.find<StorageController>().getSetting(StorageKey.url);
   static final String _apikey =
@@ -125,7 +125,7 @@ class RemoteServices {
           )
           .timeout(_timeout);
       if (response.statusCode == 200) {
-        return right(thirdPartyModelFromJson(response.body));
+        return right(customerModelFromJson(response.body));
       } else {
         return left(Failure(response.reasonPhrase!));
       }
@@ -250,7 +250,7 @@ class RemoteServices {
           )
           .timeout(_timeout);
       if (response.statusCode == 200) {
-        return right(thirdPartyModelFromJson(response.body));
+        return right(customerModelFromJson(response.body));
       } else {
         return left(Failure(response.reasonPhrase!));
       }

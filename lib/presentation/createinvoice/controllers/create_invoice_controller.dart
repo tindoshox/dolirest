@@ -86,9 +86,7 @@ class CreateinvoiceController extends GetxController {
 
   _refreshProducts() async {
     final result = await RemoteServices.fetchProducts();
-    result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
-        (products) {
+    result.fold((failure) => null, (products) {
       for (ProductModel product in products) {
         storage.storeProduct(product.id!, product);
       }

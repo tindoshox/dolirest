@@ -2,6 +2,7 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 
 class CustomerInfoWidget extends StatelessWidget {
@@ -14,7 +15,9 @@ class CustomerInfoWidget extends StatelessWidget {
     List<Widget> children = [
       _buildCustomerInfoRow(
         title: customer.name,
-        leading: const Icon(Icons.person_outline),
+        leading: Initicon(
+          text: customer.name,
+        ),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         subtitle: Text(customer.codeClient),
       ),

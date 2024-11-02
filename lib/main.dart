@@ -67,7 +67,7 @@ class Main extends StatelessWidget {
       theme: ThemeData.light(
         useMaterial3: true,
       ),
-      darkTheme: ThemeData.dark(),
+      darkTheme: ThemeData.dark(useMaterial3: true),
       initialRoute: initialRoute,
       getPages: Nav.routes,
     );
