@@ -10,7 +10,7 @@ class SnackbarHelper {
     String? message,
     IconData icon = Icons.info,
     Color backgroundColor = Colors.black,
-    Duration duration = const Duration(seconds: 2),
+    Duration duration = const Duration(seconds: 5),
   }) {
     Get.rawSnackbar(
       padding: const EdgeInsets.only(left: 40),
@@ -57,7 +57,7 @@ class SnackbarHelper {
     showSnackbar(
       title: title,
       message: message ?? 'No connection to server',
-      icon: Icons.error,
+      icon: Icons.network_locked,
       backgroundColor: Colors.amber,
     );
   }

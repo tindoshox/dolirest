@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
   StorageController storage = Get.find();
+  CustomerRepository customerRepository = Get.find();
+  final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
@@ -72,7 +76,7 @@ class EditCustomerController extends GetxController {
   }
 
   _refreshGroups() async {
-    final result = await RemoteServices.fetchGroups();
+    final result = await groupRepository.fetchGroups();
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (groups) {
@@ -108,7 +112,7 @@ class EditCustomerController extends GetxController {
   Future _createCustomer(String body) async {
     DialogHelper.showLoading('Saving Customer...');
 
-    final result = await RemoteServices.createCustomer(body);
+    final result = await customerRepository.createCustomer(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackbarHelper.errorSnackbar(message: failure.message);
@@ -120,7 +124,7 @@ class EditCustomerController extends GetxController {
   }
 
   _fetchNewCustomer(id) async {
-    final result = await RemoteServices.fetchThirdPartyById(id);
+    final result = await customerRepository.fetchCustomerById(id);
 
     result.fold((failure) {
       SnackbarHelper.errorSnackbar(message: failure.message);
@@ -139,7 +143,7 @@ class EditCustomerController extends GetxController {
 
   Future _updateCustomer(String body, String id) async {
     DialogHelper.showLoading('Updating Customer...');
-    final result = await RemoteServices.updateCustomer(body, id);
+    final result = await customerRepository.updateCustomer(body, id);
 
     result.fold((failure) {
       DialogHelper.hideLoading();

@@ -5,7 +5,8 @@ import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dar
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -16,10 +17,12 @@ import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
   final StorageController storage = Get.find();
+  final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController fromDateController = TextEditingController();
   TextEditingController toDateController = TextEditingController();
   RxList<GroupModel> groups = List<GroupModel>.empty().obs;
+  final DocumentRepository repository = Get.find();
 
   late bool permissionReady;
   late TargetPlatform? platform;
@@ -98,7 +101,7 @@ class ReportsController extends GetxController {
   }
 
   Future<List<GroupModel>> refreshGroups() async {
-    final result = await RemoteServices.fetchGroups();
+    final result = await groupRepository.fetchGroups();
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (groups) {
@@ -142,25 +145,21 @@ class ReportsController extends GetxController {
       DialogHelper.showLoading(
           'Fetching ${selectedReport.value.displayName} report...');
 
-      /// Checks permissions
-      if (permissionReady) {
-        await RemoteServices.buildReport(body).then((value) async {
-          if (value.hasError) {
-            DialogHelper.hideLoading();
-            SnackbarHelper.errorSnackbar(message: value.errorMessage);
-          } else {
-            //Creates file in storage
-            Utils.createFileFromString(
-                    value.data.content, selectedReport.value.reportid)
-                .then((value) {
-              DialogHelper.hideLoading();
+      final result = await repository.buildReport(body);
+      result.fold((failure) {
+        DialogHelper.hideLoading();
+        SnackbarHelper.errorSnackbar(message: failure.message);
+      }, (report) {
+        //Creates file in storage
+        Utils.createFileFromString(
+                report.content, selectedReport.value.reportid)
+            .then((value) {
+          DialogHelper.hideLoading();
 
-              /// Opens file in default viewer
-              OpenFilex.open(value);
-            });
-          }
+          /// Opens file in default viewer
+          OpenFilex.open(value);
         });
-      }
+      });
     } else {
       DialogHelper.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');

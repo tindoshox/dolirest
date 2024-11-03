@@ -1,13 +1,14 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  StorageController storage = Get.find();
+  final StorageController storage = Get.find();
+  final InvoiceRepository repository = Get.find();
   final String customerId = Get.arguments['customerId'];
   final List<Tab> customerTabs = [
     const Tab(text: 'Details'),
@@ -46,8 +47,7 @@ class CustomerDetailController extends GetxController
 
   // Fetch invoice data from server
   Future _refreshInvoiceData() async {
-    final result =
-        await RemoteServices.fetchInvoiceList(customerId: customerId);
+    final result = await repository.fetchInvoiceList(customerId: customerId);
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (invoices) {

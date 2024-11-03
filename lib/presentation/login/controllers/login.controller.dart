@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 
 class LoginController extends GetxController {
   final StorageController storage = Get.find();
+  final UserRepository userRepositoty = Get.find();
   String serverUrl = '';
   String apiKey = '';
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
@@ -23,7 +24,7 @@ class LoginController extends GetxController {
     if (form.validate()) {
       DialogHelper.showLoading('Verifying Server Info...');
 
-      final result = await RemoteServices.login();
+      final result = await userRepositoty.login();
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackbarHelper.errorSnackbar(message: failure.message);

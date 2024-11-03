@@ -1,10 +1,11 @@
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class InvoicelistController extends GetxController {
-  final StorageController storage = Get.find<StorageController>();
+  final StorageController storage = Get.find();
+  final InvoiceRepository repository = Get.find();
   var isLoading = false.obs;
 
   bool isLastPage = false;
@@ -29,7 +30,7 @@ class InvoicelistController extends GetxController {
   refreshInvoiceList() async {
     isLoading(true);
 
-    await RemoteServices.fetchInvoiceList(status: "unpaid").then((value) async {
+    await repository.fetchInvoiceList(status: "unpaid").then((value) async {
       isLoading(false);
     });
   }

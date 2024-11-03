@@ -5,7 +5,8 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -19,7 +20,9 @@ class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
 
-  StorageController storage = Get.find();
+  final StorageController storage = Get.find();
+  final InvoiceRepository repository = Get.find();
+  final ProductRepository products = Get.find();
   Rx<CustomerModel> customer = CustomerModel().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
@@ -85,7 +88,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   _refreshProducts() async {
-    final result = await RemoteServices.fetchProducts();
+    final result = await products.fetchProducts();
     result.fold((failure) => null, (products) {
       for (ProductModel product in products) {
         storage.storeProduct(product.id!, product);
@@ -134,13 +137,13 @@ class CreateinvoiceController extends GetxController {
         await _createInvoice();
       } else {
         /// if not free text: Check if product has stock above zero
-        await RemoteServices.checkStock(selectedProduct.value.id!)
-            .then((value) async {
-          if (value.hasError) {
-            DialogHelper.hideLoading();
-            SnackbarHelper.errorSnackbar(message: 'Product has no stock');
-          }
-          await _createInvoice();
+        final result = await products.checkStock(selectedProduct.value.id!);
+
+        result.fold((failure) {
+          DialogHelper.hideLoading();
+          SnackbarHelper.errorSnackbar(message: 'Product has no stock');
+        }, (stock) {
+          _createInvoice();
         });
       }
     }
@@ -176,7 +179,7 @@ class CreateinvoiceController extends GetxController {
 
     /// Submit for draft creation
 
-    final result = await RemoteServices.createInvoice(body);
+    final result = await repository.createInvoice(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackbarHelper.errorSnackbar(
@@ -194,7 +197,7 @@ class CreateinvoiceController extends GetxController {
       "notrigger": 0
       }''';
 
-    final result = await RemoteServices.validateInvoice(body, invoiceId);
+    final result = await repository.validateInvoice(body, invoiceId);
     result.fold((failure) {
       _deleteInvoice(invoiceId);
     }, (v) async {
@@ -210,7 +213,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _deleteInvoice(String invoiceId) async {
-    final result = await RemoteServices.deleteInvoice(invoiceId);
+    final result = await repository.deleteInvoice(invoiceId);
     result.fold((failure) {}, (deleted) {
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CREATEINVOICE);
@@ -221,7 +224,7 @@ class CreateinvoiceController extends GetxController {
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
     final result =
-        await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
+        await repository.fetchInvoiceList(customerId: customer.value.id);
 
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),

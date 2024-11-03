@@ -4,7 +4,7 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -14,7 +14,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class PaymentController extends GetxController {
-  final StorageController storage = Get.find<StorageController>();
+  final StorageController storage = Get.find();
+  final InvoiceRepository repository = Get.find();
 
   TextEditingController payDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
@@ -154,7 +155,7 @@ class PaymentController extends GetxController {
 
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
-    final result = await RemoteServices.addpayment(body);
+    final result = await repository.addpayment(body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -194,11 +195,11 @@ class PaymentController extends GetxController {
 
     String body = jsonEncode(update);
 
-    await RemoteServices.updateInvoice(invoiceId, body);
+    await repository.updateInvoice(invoiceId, body);
   }
 
   refreshPayments(invoiceId) async {
-    final result = await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+    final result = await (repository.fetchPaymentsByInvoice(invoiceId));
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (payments) {
@@ -219,7 +220,7 @@ class PaymentController extends GetxController {
   }
 
   refreshInvoice(invoiceId) async {
-    await RemoteServices.fetchInvoiceList(customerId: customer.value.id);
+    await repository.fetchInvoiceList(customerId: customer.value.id);
   }
 
   fetchInvoices() {

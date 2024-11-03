@@ -8,7 +8,10 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -17,6 +20,10 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   final NetworkController networkController = Get.find();
   final StorageController storage = Get.find();
+  final CustomerRepository customerRepository = Get.find();
+  final InvoiceRepository invoiceRepository = Get.find();
+  final CompanyRepository companyRepository = Get.find();
+  final UserRepository userRepository = Get.find();
   var user = UserModel().obs;
   var company = CompanyModel().obs;
   var refreshing = false.obs;
@@ -77,7 +84,7 @@ class HomeController extends GetxController {
   }
 
   Future _refreshCustomers() async {
-    final result = await RemoteServices.fetchThirdPartyList();
+    final result = await customerRepository.fetchCustomerList();
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -106,7 +113,8 @@ class HomeController extends GetxController {
           list.map((payment) => Utils.intAmounts(payment.amount)).toList();
       int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
       if (Utils.intAmounts(invoice.sumpayed) != total) {
-        final result = await RemoteServices.fetchPaymentsByInvoice(invoice.id);
+        final result =
+            await invoiceRepository.fetchPaymentsByInvoice(invoice.id);
         result.fold((failure) => null, (payments) {
           for (var payment in payments) {
             PaymentModel p = PaymentModel(
@@ -132,7 +140,7 @@ class HomeController extends GetxController {
     if (list.isNotEmpty) {
       int dateModified = list[list.length - 1].dateModification;
 
-      final result = await RemoteServices.fetchThirdPartyList(
+      final result = await customerRepository.fetchCustomerList(
           dateModified: Utils.intToYMD(dateModified));
 
       result.fold((failure) => null, (customers) {
@@ -153,7 +161,7 @@ class HomeController extends GetxController {
   }
 
   Future _getUnpaidInvoices() async {
-    final result = await RemoteServices.fetchInvoiceList(status: 'unpaid');
+    final result = await invoiceRepository.fetchInvoiceList(status: 'unpaid');
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (invoices) {
@@ -169,7 +177,7 @@ class HomeController extends GetxController {
     invoices.sort((a, b) => a.dateModification.compareTo(b.dateModification));
     if (invoices.isNotEmpty) {
       int dateModified = invoices[invoices.length - 1].dateModification;
-      final result = await RemoteServices.fetchInvoiceList(
+      final result = await invoiceRepository.fetchInvoiceList(
           dateModified: Utils.intToYMD(dateModified));
 
       result.fold(
@@ -191,7 +199,7 @@ class HomeController extends GetxController {
   }
 
   Future _refreshCompanyData() async {
-    final result = await RemoteServices.fetchCompany();
+    final result = await companyRepository.fetchCompany();
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (c) {
@@ -209,7 +217,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> _refreshUserData() async {
-    final result = await RemoteServices.login();
+    final result = await userRepository.login();
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (u) {

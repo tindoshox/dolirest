@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,6 +14,7 @@ class CustomerListController extends GetxController {
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
   StorageController storage = Get.find();
+  CustomerRepository repository = Get.find();
   var searchIconVisible = true.obs;
 
   var searchString = ''.obs;
@@ -31,7 +32,7 @@ class CustomerListController extends GetxController {
 
   refreshCustomerList() async {
     isLoading(true);
-    final result = await RemoteServices.fetchThirdPartyList();
+    final result = await repository.fetchCustomerList();
 
     result.fold((failure) {
       SnackbarHelper.errorSnackbar(message: failure.message);

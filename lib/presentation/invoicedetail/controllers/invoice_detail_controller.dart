@@ -7,7 +7,9 @@ import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -18,6 +20,9 @@ import 'package:open_filex/open_filex.dart';
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final StorageController storage = Get.find<StorageController>();
+  final InvoiceRepository invoiceRepository = Get.find();
+  final CustomerRepository customerRepository = Get.find();
+  final DocumentRepository documentRepository = Get.find();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -88,7 +93,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    final result = await (RemoteServices.fetchPaymentsByInvoice(invoiceId));
+    final result = await (invoiceRepository.fetchPaymentsByInvoice(invoiceId));
 
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
@@ -119,11 +124,11 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    await RemoteServices.fetchInvoiceList(customerId: customerId);
+    await invoiceRepository.fetchInvoiceList(customerId: customerId);
   }
 
   Future _refreshCustomerData() async {
-    final result = await RemoteServices.fetchThirdPartyById(customerId);
+    final result = await customerRepository.fetchCustomerById(customerId);
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (c) => storage.storeCustomer(c.id, c));
@@ -140,21 +145,17 @@ class InvoiceDetailController extends GetxController
     ));
 
     if (permissionReady) {
-      try {
-        await RemoteServices.buildDocument(body).then((value) async {
-          if (!value.hasError) {
-            Utils.createFileFromString(value.data.content, '${invoice.ref}.pdf')
-                .then((value) {
-              OpenFilex.open(value);
-            });
-          } else {
-            DialogHelper.hideLoading();
-            SnackbarHelper.errorSnackbar(message: value.errorMessage);
-          }
+      final result = await documentRepository.buildDocument(body);
+      result.fold((failure) {
+        DialogHelper.hideLoading();
+        SnackbarHelper.errorSnackbar(message: failure.message);
+      }, (document) {
+        Utils.createFileFromString(document.content, '${invoice.ref}.pdf')
+            .then((value) {
+          DialogHelper.hideLoading();
+          OpenFilex.open(value);
         });
-      } catch (e) {
-        Get.snackbar('Error', 'an unknown error occurred');
-      }
+      });
     } else {
       DialogHelper.hideLoading();
       Get.snackbar('Permission Error', 'Download Failed');
@@ -191,7 +192,7 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(update);
 
-    final result = await RemoteServices.updateInvoice(invoiceId, body);
+    final result = await invoiceRepository.updateInvoice(invoiceId, body);
     result.fold(
         (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
         (invoice) {

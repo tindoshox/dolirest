@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/remote_services.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/server_rechablility.dart';
 
 import 'package:get/get.dart';
 
 class NetworkController extends GetxController {
+  final ServerRechablility rechablility = Get.put(ServerRechablility());
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> subscription;
   Timer? _serverCheckTimer;
@@ -36,7 +37,7 @@ class NetworkController extends GetxController {
       List<ConnectivityResult> connectivityResult) async {
     if (connectivityResult.contains(ConnectivityResult.wifi) ||
         connectivityResult.contains(ConnectivityResult.mobile)) {
-      connected.value = await RemoteServices.checkServerReachability();
+      connected.value = await rechablility.checkServerReachability();
     }
   }
 
@@ -45,7 +46,7 @@ class NetworkController extends GetxController {
     _serverCheckTimer?.cancel(); // Cancel any existing timer
     _serverCheckTimer =
         Timer.periodic(const Duration(seconds: 60), (timer) async {
-      connected.value = await RemoteServices.checkServerReachability();
+      connected.value = await rechablility.checkServerReachability();
     });
   }
 }

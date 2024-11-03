@@ -460,9 +460,12 @@ class HomeScreen extends GetView<HomeController> {
 
   Widget _getStatusIcon(bool refreshing) {
     if (refreshing) {
-      return const SpinKitDualRing(
-        color: Colors.blueAccent,
-        size: 10,
+      return Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: const SpinKitThreeInOut(
+          color: Colors.blueAccent,
+          size: 10,
+        ),
       );
     }
     if (!Get.find<NetworkController>().connected.value) {
