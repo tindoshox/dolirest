@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
@@ -15,20 +13,16 @@ class ProductRepository extends ApiService {
       "sortorder": "ASC",
     };
     try {
-      var response =
-          await httpClient.get(ApiPath.products, query: queryParameters);
+      var response = await httpClient.get(
+        ApiPath.products,
+        query: queryParameters,
+        decoder: (data) {
+          List<dynamic> l = data;
+          return l.map((p) => ProductModel.fromJson(p)).toList();
+        },
+      );
       if (response.statusCode == 200) {
-        String jsonString = response.bodyString!;
-
-        List<dynamic> jsonList = json.decode(jsonString);
-        List<ProductModel> products = List.empty();
-        if (jsonList.isNotEmpty) {
-          products = jsonList
-              .map((jsonItem) =>
-                  ProductModel.fromJson(jsonItem as Map<String, dynamic>))
-              .toList();
-        }
-        return right(products);
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }

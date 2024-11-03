@@ -11,10 +11,11 @@ class UserRepository extends ApiService {
     try {
       var response = await httpClient.get(
         ApiPath.users,
+        decoder: (data) => userModelFromJson(data),
       );
       if (response.statusCode == 200) {
         return right(
-          userModelFromJson(response.bodyString!),
+          (response.body!),
         );
       } else {
         return left(Failure(response.statusText!));

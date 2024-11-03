@@ -8,9 +8,12 @@ import 'package:fpdart/fpdart.dart';
 class CompanyRepository extends ApiService {
   Future<Either<Failure, CompanyModel>> fetchCompany() async {
     try {
-      final response = await httpClient.get(ApiPath.company);
+      final response = await httpClient.get(
+        ApiPath.company,
+        decoder: (data) => companyModelFromJson(data),
+      );
       if (response.statusCode == 200) {
-        return right(companyModelFromJson(response.bodyString!));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }

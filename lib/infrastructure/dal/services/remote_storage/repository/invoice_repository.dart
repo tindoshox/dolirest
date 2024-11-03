@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
@@ -26,20 +24,17 @@ class InvoiceRepository extends ApiService {
     };
 
     try {
-      var response =
-          await httpClient.get(ApiPath.invoices, query: queryParameters);
-      List<InvoiceModel> invoices = List.empty();
-      if (response.statusCode == 200) {
-        String jsonString = response.bodyString!;
-        List<dynamic> jsonList = json.decode(jsonString);
+      var response = await httpClient.get(
+        ApiPath.invoices,
+        query: queryParameters,
+        decoder: (data) {
+          List<dynamic> l = data;
+          return l.map((i) => InvoiceModel.fromJson(i)).toList();
+        },
+      );
 
-        if (jsonList.isNotEmpty) {
-          invoices = jsonList
-              .map((jsonItem) =>
-                  InvoiceModel.fromJson(jsonItem as Map<String, dynamic>))
-              .toList();
-        }
-        return right(invoices);
+      if (response.statusCode == 200) {
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -52,10 +47,13 @@ class InvoiceRepository extends ApiService {
   Future<Either<Failure, List<PaymentModel>>> fetchPaymentsByInvoice(
       String invoiceId) async {
     try {
-      var response =
-          await httpClient.get('${ApiPath.invoices}/$invoiceId/payments');
+      var response = await httpClient
+          .get('${ApiPath.invoices}/$invoiceId/payments', decoder: (data) {
+        List<dynamic> l = data;
+        return l.map((p) => PaymentModel.fromJson(p)).toList();
+      });
       if (response.statusCode == 200) {
-        return right(paymentModelFromJson(response.bodyString!));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -71,9 +69,10 @@ class InvoiceRepository extends ApiService {
       var response = await httpClient.put(
         '${ApiPath.invoices}/$invoiceId',
         body: body,
+        decoder: (data) => invoiceModelFromJson(data),
       );
       if (response.statusCode == 200) {
-        return right(invoiceModelFromJson(response.bodyString!));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -88,9 +87,10 @@ class InvoiceRepository extends ApiService {
       var response = await httpClient.post(
         ApiPath.invoices,
         body: body,
+        decoder: (data) => data.toString().replaceAll('"', ''),
       );
       if (response.statusCode == 200) {
-        return right(response.bodyString!.replaceAll('"', ''));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -108,9 +108,10 @@ class InvoiceRepository extends ApiService {
       var response = await httpClient.post(
         '${ApiPath.invoices}/$invoiceId/validate',
         body: body,
+        decoder: (data) => data.toString().replaceAll('"', ''),
       );
       if (response.statusCode == 200) {
-        return right(response.bodyString!.replaceAll('"', ''));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -123,9 +124,10 @@ class InvoiceRepository extends ApiService {
     try {
       var response = await httpClient.delete(
         '${ApiPath.invoices}/$invoiceId',
+        decoder: (data) => data.toString().replaceAll('"', ''),
       );
       if (response.statusCode == 200) {
-        return right(response.bodyString!.replaceAll('"', ''));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
@@ -141,9 +143,10 @@ class InvoiceRepository extends ApiService {
       var response = await httpClient.post(
         '${ApiPath.invoices}/paymentsdistributed',
         body: body,
+        decoder: (data) => data.toString().replaceAll('"', ''),
       );
       if (response.statusCode == 200) {
-        return right(response.bodyString!.replaceAll('"', ''));
+        return right(response.body!);
       } else {
         return left(Failure(response.statusText!));
       }
