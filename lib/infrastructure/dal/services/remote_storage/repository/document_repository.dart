@@ -14,7 +14,7 @@ class DocumentRepository extends ApiService {
       var response = await httpClient.put(
         ApiPath.buildDocument,
         body: body,
-        decoder: (data) => buildDucumentResponseModelFromJson(data),
+        decoder: (data) => BuildDucumentResponseModel.fromJson(data),
       );
       if (response.statusCode == 200) {
         return right(response.body!);
@@ -33,7 +33,7 @@ class DocumentRepository extends ApiService {
       var response = await httpClient.put(
         ApiPath.buildReport,
         body: body,
-        decoder: (data) => buildReportResponseModelFromJson(data),
+        decoder: (data) => BuildReportResponseModel.fromJson(data),
       );
       if (response.statusCode == 200) {
         return right(response.body!);

@@ -11,7 +11,7 @@ class UserRepository extends ApiService {
     try {
       var response = await httpClient.get(
         ApiPath.users,
-        decoder: (data) => userModelFromJson(data),
+        decoder: (data) => UserModel.fromJson(data),
       );
       if (response.statusCode == 200) {
         return right(

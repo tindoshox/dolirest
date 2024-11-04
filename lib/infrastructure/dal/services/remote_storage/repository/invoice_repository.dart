@@ -28,7 +28,8 @@ class InvoiceRepository extends ApiService {
         ApiPath.invoices,
         query: queryParameters,
         decoder: (data) {
-          List<dynamic> l = data;
+          List<dynamic> l = data is List<dynamic> ? data : [];
+
           return l.map((i) => InvoiceModel.fromJson(i)).toList();
         },
       );
@@ -49,7 +50,7 @@ class InvoiceRepository extends ApiService {
     try {
       var response = await httpClient
           .get('${ApiPath.invoices}/$invoiceId/payments', decoder: (data) {
-        List<dynamic> l = data;
+        List<dynamic> l = data is List<dynamic> ? data : [];
         return l.map((p) => PaymentModel.fromJson(p)).toList();
       });
       if (response.statusCode == 200) {
@@ -69,7 +70,7 @@ class InvoiceRepository extends ApiService {
       var response = await httpClient.put(
         '${ApiPath.invoices}/$invoiceId',
         body: body,
-        decoder: (data) => invoiceModelFromJson(data),
+        decoder: (data) => InvoiceModel.fromJson(data),
       );
       if (response.statusCode == 200) {
         return right(response.body!);

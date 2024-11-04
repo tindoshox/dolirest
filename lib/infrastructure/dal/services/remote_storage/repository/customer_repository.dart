@@ -20,7 +20,7 @@ class CustomerRepository extends ApiService {
     try {
       var response = await httpClient
           .get(ApiPath.customers, query: queryParameters, decoder: (data) {
-        List<dynamic> l = data;
+        List<dynamic> l = data is List<dynamic> ? data : [];
         return l.map((c) => CustomerModel.fromJson(c)).toList();
       }).timeout(Duration(seconds: 60));
 
@@ -40,7 +40,7 @@ class CustomerRepository extends ApiService {
       String customerId) async {
     try {
       var response = await httpClient.get('${ApiPath.customers}/$customerId',
-          decoder: (data) => customerModelFromJson(data));
+          decoder: (data) => CustomerModel.fromJson(data));
 
       return right(response.body!);
     } on Exception catch (e) {
@@ -73,7 +73,7 @@ class CustomerRepository extends ApiService {
       var response = await httpClient.put(
         '/$customerId',
         body: body,
-        decoder: (data) => customerModelFromJson(data),
+        decoder: (data) => CustomerModel.fromJson(data),
       );
 
       if (response.statusCode == 200) {

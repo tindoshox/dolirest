@@ -1,7 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -48,9 +47,7 @@ class CustomerDetailController extends GetxController
   // Fetch invoice data from server
   Future _refreshInvoiceData() async {
     final result = await repository.fetchInvoiceList(customerId: customerId);
-    result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
-        (invoices) {
+    result.fold((failure) => null, (invoices) {
       for (InvoiceModel invoice in invoices) {
         storage.storeInvoice(invoice.id, invoice);
       }

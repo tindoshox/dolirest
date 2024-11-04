@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:get/get.dart';
@@ -22,9 +20,7 @@ class ApiService extends GetConnect {
     httpClient.defaultContentType = 'application/json';
     httpClient.errorSafety = true;
     httpClient.timeout = Duration(seconds: 30);
-    httpClient.removeResponseModifier((request, response) {
-      log(request.url.host + request.url.path);
-    });
+    httpClient.removeResponseModifier((request, response) {});
     super.onInit();
   }
 }

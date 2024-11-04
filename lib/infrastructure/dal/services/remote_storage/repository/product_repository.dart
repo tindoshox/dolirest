@@ -17,7 +17,7 @@ class ProductRepository extends ApiService {
         ApiPath.products,
         query: queryParameters,
         decoder: (data) {
-          List<dynamic> l = data;
+          List<dynamic> l = data is List<dynamic> ? data : [];
           return l.map((p) => ProductModel.fromJson(p)).toList();
         },
       );

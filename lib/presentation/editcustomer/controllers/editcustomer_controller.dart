@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -128,7 +127,6 @@ class EditCustomerController extends GetxController {
 
     result.fold((failure) {
       SnackbarHelper.errorSnackbar(message: failure.message);
-      log('Fetch new customer: ${failure.message}');
     }, (customer) => storage.storeCustomer(customer.id, customer));
   }
 

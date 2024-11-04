@@ -10,7 +10,7 @@ class CompanyRepository extends ApiService {
     try {
       final response = await httpClient.get(
         ApiPath.company,
-        decoder: (data) => companyModelFromJson(data),
+        decoder: (data) => CompanyModel.fromJson(data),
       );
       if (response.statusCode == 200) {
         return right(response.body!);

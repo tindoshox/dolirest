@@ -15,23 +15,13 @@ class GroupRepository extends ApiService {
     try {
       var response = await httpClient
           .get(ApiPath.groups, query: queryParameters, decoder: (data) {
-        List<dynamic> l = data;
+        List<dynamic> l = data is List<dynamic> ? data : [];
         return l
             .map((g) => GroupModel.fromJson(g as Map<String, dynamic>))
             .toList();
       });
 
       if (response.statusCode == 200) {
-        // String jsonString = response.bodyString!;
-        // List<dynamic> jsonList = json.decode(jsonString);
-        // List<GroupModel> groups = List.empty();
-        // if (jsonList.isNotEmpty) {
-        //   groups = jsonList
-        //       .map((jsonItem) =>
-        //           GroupModel.fromJson(jsonItem as Map<String, dynamic>))
-        //       .toList();
-        // }
-
         return right(response.body!);
       } else {
         return left(Failure(response.statusText!));

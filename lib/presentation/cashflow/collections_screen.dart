@@ -116,7 +116,8 @@ _buildCashflow({required StorageController storage}) {
                       textAlign: TextAlign.right,
                       'Total: $dayTotal',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   )
