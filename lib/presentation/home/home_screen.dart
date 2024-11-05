@@ -38,7 +38,7 @@ class HomeScreen extends GetView<HomeController> {
         ),
       ),
       title: Obx(() => Text(
-            controller.company.value.name ?? "Dashboard",
+            controller.company.value.name?.capitalize ?? "Dashboard",
           )),
       centerTitle: true,
       actions: [
@@ -348,7 +348,7 @@ class HomeScreen extends GetView<HomeController> {
         confirm: DialogActionButton(
             onPressed: () {
               Get.back();
-              Get.find<StorageController>().clearAll();
+              Get.find<StorageService>().clearAll();
               Get.offAllNamed(Routes.LOGIN);
             },
             buttonText: 'Yes'),
@@ -362,7 +362,7 @@ class HomeScreen extends GetView<HomeController> {
     return Align(
       alignment: Alignment.center,
       child: ValueListenableBuilder(
-          valueListenable: Get.find<StorageController>().paymentsListenable(),
+          valueListenable: Get.find<StorageService>().paymentsListenable(),
           builder: (context, box, widget) {
             var list = box.values.toList();
 

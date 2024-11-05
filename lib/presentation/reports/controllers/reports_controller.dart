@@ -16,7 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController fromDateController = TextEditingController();

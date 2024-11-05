@@ -52,7 +52,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
     return CustomFormField(
       name: 'customer_name',
       textCapitalization: TextCapitalization.characters,
-      prefixIcon: const Icon(Icons.person_add),
+      prefixIcon: const Icon(
+        Icons.person_add,
+        color: Colors.blueAccent,
+      ),
       controller: controller.nameController,
       validator: (name) => GetUtils.isLengthEqualTo(name, 0)
           ? 'Customer Name is required'
@@ -83,7 +86,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
         fieldViewBuilder:
             (context, townController, focusNode, onFieldSubmitted) {
           return CustomFormField(
-            prefixIcon: const Icon(Icons.location_city),
+            prefixIcon: const Icon(
+              Icons.location_city,
+              color: Colors.greenAccent,
+            ),
             onChanged: (town) {
               if (town != null && town.isNotEmpty) {
                 controller.selectedTown.value = town;
@@ -130,7 +136,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
         fieldViewBuilder: (BuildContext context, addressController, focusNode,
             onFieldSubmitted) {
           return CustomFormField(
-            prefixIcon: const Icon(Icons.location_pin),
+            prefixIcon: const Icon(
+              Icons.location_pin,
+              color: Colors.orangeAccent,
+            ),
             onChanged: (address) => controller.addressController.text =
                 address!.trim().toUpperCase(),
             name: 'customer_address',
@@ -164,10 +173,13 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
             labelText: 'Group',
-            icon: Icon(Icons.group_outlined),
-            border: UnderlineInputBorder(),
+            prefixIcon: Icon(
+              Icons.group_outlined,
+              color: Colors.brown,
+            ),
+            border: OutlineInputBorder(),
             errorBorder:
-                UnderlineInputBorder(borderSide: BorderSide(color: Colors.red)),
+                OutlineInputBorder(borderSide: BorderSide(color: Colors.red)),
           ),
         ),
         itemAsString: (GroupModel group) => group.name,
@@ -175,7 +187,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
           modalBottomSheetProps: ModalBottomSheetProps(
-            shape: const RoundedRectangleBorder(),
+            shape: const OutlineInputBorder(),
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           ),
           title: const Text('Search Group',
@@ -202,7 +214,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
   Widget _buildPhoneField() {
     return CustomFormField(
       name: 'customer_phone',
-      prefixIcon: const Icon(Icons.phone_callback),
+      prefixIcon: const Icon(
+        Icons.phone_callback,
+        color: Colors.redAccent,
+      ),
       controller: controller.phoneController,
       keyboardType: TextInputType.number,
       labelText: 'Phone 1',
@@ -220,7 +235,10 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
     return CustomFormField(
       textInputAction: TextInputAction.done,
       name: 'customer_fax',
-      prefixIcon: const Icon(Icons.phone_enabled),
+      prefixIcon: const Icon(
+        Icons.phone_enabled,
+        color: Colors.redAccent,
+      ),
       controller: controller.faxController,
       keyboardType: TextInputType.number,
       labelText: 'Phone 2',

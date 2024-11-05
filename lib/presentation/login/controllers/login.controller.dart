@@ -1,5 +1,6 @@
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
@@ -9,8 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final UserRepository userRepositoty = Get.find();
+  final DioService dioService = Get.find();
   String serverUrl = '';
   String apiKey = '';
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
@@ -20,18 +22,23 @@ class LoginController extends GetxController {
   /// Validates the form and adds the server if the form is valid.
   Future validate() async {
     final FormState form = serverFormKey.currentState!;
-    _writeStore();
+
     if (form.validate()) {
+      _writeStore();
       DialogHelper.showLoading('Verifying Server Info...');
 
-      final result = await userRepositoty.login();
+      final result = await userRepositoty.login(
+          url: 'https://${urlController.text.trim()}',
+          apiKey: apiController.text.trim());
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackbarHelper.errorSnackbar(message: failure.message);
         _clearStorage();
       }, (user) async {
         storage.storeUser(user);
-
+        dioService.configureDio(
+            url: 'https://${urlController.text.trim()}',
+            apiKey: apiController.text.trim());
         DialogHelper.hideLoading();
         Get.offAndToNamed(Routes.HOME);
       });
@@ -39,12 +46,13 @@ class LoginController extends GetxController {
   }
 
   /// Writes the server info to the local storage.
-  void _writeStore() async {
-    storage.storeSetting(StorageKey.url, urlController.text.trim());
+  void _writeStore() {
+    storage.storeSetting(
+        StorageKey.url, 'https://${urlController.text.trim()}');
     storage.storeSetting(StorageKey.apiKey, apiController.text.trim());
   }
 
-  void _clearStorage() async {
+  void _clearStorage() {
     storage.clearAll();
   }
 

@@ -1,11 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:fpdart/fpdart.dart';
 
-class GroupRepository extends ApiService {
+class GroupRepository extends DioService {
   Future<Either<Failure, List<GroupModel>>> fetchGroups() async {
     final queryParameters = {
       "sortfield": "nom",
@@ -13,20 +14,18 @@ class GroupRepository extends ApiService {
       "sqlfilters": "(t.active:=:1)",
     };
     try {
-      var response = await httpClient
-          .get(ApiPath.groups, query: queryParameters, decoder: (data) {
-        List<dynamic> l = data is List<dynamic> ? data : [];
-        return l
-            .map((g) => GroupModel.fromJson(g as Map<String, dynamic>))
-            .toList();
-      });
+      var response =
+          await dio.get(ApiPath.groups, queryParameters: queryParameters);
 
       if (response.statusCode == 200) {
-        return right(response.body!);
+        List<dynamic> l = response.data;
+        return right(l
+            .map((g) => GroupModel.fromJson(g as Map<String, dynamic>))
+            .toList());
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }

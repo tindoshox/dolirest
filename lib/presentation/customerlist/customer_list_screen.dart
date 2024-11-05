@@ -94,7 +94,7 @@ class _CustomerList extends GetView<CustomerListController> {
   }
 
   Widget _buildCustomerListView() {
-    StorageController storage = Get.find();
+    StorageService storage = Get.find();
     String search = controller.searchString.value;
     return RefreshIndicator(
       onRefresh: () => controller.refreshCustomerList(),
@@ -142,14 +142,17 @@ class _CustomerList extends GetView<CustomerListController> {
                               Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
                             'customerId': customer.id.toString(),
                           }),
-                          leading: Initicon(text: customer.name),
+                          leading: Initicon(
+                            text: customer.name,
+                            size: 30,
+                          ),
                           title: Row(
                             children: [
                               Flexible(
                                 child: Text(
                                   customers[index].name!,
                                   style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -160,8 +163,9 @@ class _CustomerList extends GetView<CustomerListController> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  '${customer.address} ${customer.town}',
+                                  '${customer.address ?? ''} ${customer.town ?? ''}',
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 12),
                                 ),
                               ),
                             ],

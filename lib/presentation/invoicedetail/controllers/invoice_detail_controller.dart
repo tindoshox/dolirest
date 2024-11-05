@@ -19,7 +19,7 @@ import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final StorageController storage = Get.find<StorageController>();
+  final StorageService storage = Get.find<StorageService>();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();

@@ -56,8 +56,9 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final StorageController storage = Get.find();
-    final initialRoute = storage.getSetting(StorageKey.apiKey) == null
+    final StorageService storage = Get.find();
+    final initialRoute = storage.getSetting(StorageKey.apiKey) == null ||
+            storage.getSetting(StorageKey.url) == null
         ? Routes.LOGIN
         : Routes.HOME;
 
@@ -75,7 +76,7 @@ class Main extends StatelessWidget {
 }
 
 _getThmeMode() {
-  String? mode = Get.find<StorageController>().getSetting(StorageKey.theme);
+  String? mode = Get.find<StorageService>().getSetting(StorageKey.theme);
   switch (mode) {
     case 'light':
       return ThemeMode.light;

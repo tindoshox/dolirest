@@ -105,7 +105,10 @@ class PaymentScreen extends GetView<PaymentController> {
     return CustomFormField(
       name: 'amount',
       onChanged: (value) => controller.amount.value = value!,
-      prefixIcon: const Icon(Icons.currency_exchange),
+      prefixIcon: const Icon(
+        Icons.currency_exchange,
+        color: Colors.greenAccent,
+      ),
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,
       validator: (amount) {
@@ -127,7 +130,10 @@ class PaymentScreen extends GetView<PaymentController> {
     return CustomFormField(
       name: 'receipt',
       onChanged: (value) => controller.receipt.value = value!,
-      prefixIcon: const Icon(Icons.numbers),
+      prefixIcon: const Icon(
+        Icons.numbers,
+        color: Colors.purpleAccent,
+      ),
       keyboardType: TextInputType.number,
       validator: (receipt) {
         if (receipt!.isEmpty) {
@@ -151,7 +157,10 @@ class PaymentScreen extends GetView<PaymentController> {
     return Obx(() => CustomFormField(
           name: 'due_date',
           hintText: Utils.dateTimeToString(controller.payDate.value),
-          prefixIcon: const Icon(Icons.date_range),
+          prefixIcon: const Icon(
+            Icons.date_range,
+            color: Colors.redAccent,
+          ),
           validator: (dueDate) => controller.dueDate.value.isBefore(
                   controller.payDate.value.add(const Duration(days: 7)))
               ? 'Invalid Due Date'
@@ -159,7 +168,10 @@ class PaymentScreen extends GetView<PaymentController> {
           controller: controller.dueDateController,
           labelText: 'Next Pay Date',
           suffix: IconButton(
-              icon: const Icon(Icons.calendar_today),
+              icon: const Icon(
+                Icons.calendar_today,
+                color: Colors.redAccent,
+              ),
               onPressed: () => controller.setDueDate()),
         ));
   }
@@ -168,7 +180,10 @@ class PaymentScreen extends GetView<PaymentController> {
     return Obx(() => CustomFormField(
           name: 'pay_date',
           hintText: Utils.dateTimeToString(controller.payDate.value),
-          prefixIcon: const Icon(Icons.date_range),
+          prefixIcon: const Icon(
+            Icons.date_range,
+            color: Colors.orangeAccent,
+          ),
           validator: (payDate) =>
               controller.payDate.value.isAfter(DateTime.now())
                   ? 'Date cannot be in the future'
@@ -176,7 +191,10 @@ class PaymentScreen extends GetView<PaymentController> {
           controller: controller.payDateController,
           labelText: 'Pay Date', //'Payment Date',
           suffix: IconButton(
-              icon: const Icon(Icons.calendar_today),
+              icon: const Icon(
+                Icons.calendar_today,
+                color: Colors.orangeAccent,
+              ),
               onPressed: () => controller.setPayDate()),
         ));
   }
@@ -199,9 +217,12 @@ class PaymentScreen extends GetView<PaymentController> {
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
             labelText: 'Invoice',
-            icon: Icon(Icons.person_outline),
-            border: UnderlineInputBorder(),
-            errorBorder: UnderlineInputBorder(
+            prefixIcon: Icon(
+              Icons.person_outline,
+              color: Colors.blueAccent,
+            ),
+            border: OutlineInputBorder(),
+            errorBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red),
             ),
           ),
@@ -228,12 +249,12 @@ class PaymentScreen extends GetView<PaymentController> {
                     Text(
                       invoice.ref,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'BALANCE: ${invoice.remaintopay}',
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -246,10 +267,10 @@ class PaymentScreen extends GetView<PaymentController> {
                         Flexible(
                           child: Text(invoice.nom!),
                         ),
-                        Text(
-                          Utils.intToDMY(invoice.dateLimReglement!),
-                          style: Utils.overDueStyle(invoice.dateLimReglement!),
-                        ),
+                        Text(Utils.intToDMY(invoice.dateLimReglement!),
+                            style: TextStyle(
+                                color: Utils.overDueStyle(
+                                    invoice.dateLimReglement!))),
                       ],
                     ),
                     Text(invoice.lines![0].productLabel ??

@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 
 class CashflowController extends GetxController {
   var connected = Get.find<NetworkController>().connected.value;
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
 
   refreshPayments() async {

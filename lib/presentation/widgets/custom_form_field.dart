@@ -41,7 +41,7 @@ class CustomFormField extends StatelessWidget {
       this.maxLines,
       this.minLines,
       this.onFieldSubmitted,
-      this.border = const UnderlineInputBorder()});
+      this.border = const OutlineInputBorder()});
 
   final FocusNode? focusNode;
   final String? hintText;

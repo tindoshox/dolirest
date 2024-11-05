@@ -89,9 +89,12 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
             labelText: 'Customer',
-            icon: Icon(Icons.person_outline),
-            border: UnderlineInputBorder(),
-            errorBorder: UnderlineInputBorder(
+            prefixIcon: Icon(
+              Icons.person_outline,
+              color: Colors.blueAccent,
+            ),
+            border: OutlineInputBorder(),
+            errorBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red),
             ),
           ),
@@ -112,7 +115,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           itemBuilder: (context, customer, isSelected, l) {
             return ListTile(
               title: Text(
-                customer.name,
+                customer.name ?? 'Name not set',
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -140,7 +143,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _invoiceDateField() {
     return CustomFormField(
       name: 'invoice_date',
-      prefixIcon: const Icon(Icons.date_range),
+      prefixIcon: const Icon(
+        Icons.date_range,
+        color: Colors.orangeAccent,
+      ),
       validator: (invoiceDate) =>
           controller.invoiceDate.value.isAfter(DateTime.now())
               ? 'Date cannot be in the future'
@@ -148,7 +154,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
       controller: controller.invoiceDateController,
       labelText: 'Payment Date',
       suffix: IconButton(
-          icon: const Icon(Icons.calendar_today),
+          icon: const Icon(
+            Icons.calendar_today,
+            color: Colors.orangeAccent,
+          ),
           onPressed: () => controller.setInvoiceDate()),
     );
   }
@@ -156,7 +165,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _dueDateField() {
     return CustomFormField(
       name: 'due_date',
-      prefixIcon: const Icon(Icons.date_range),
+      prefixIcon: const Icon(
+        Icons.date_range,
+        color: Colors.redAccent,
+      ),
       validator: (dueDate) => controller.dueDate.value.isBefore(DateTime(
               DateTime.now().year,
               DateTime.now().month,
@@ -166,7 +178,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
       controller: controller.dueDateController,
       labelText: 'Next Pay Date',
       suffix: IconButton(
-          icon: const Icon(Icons.calendar_today),
+          icon: const Icon(
+            Icons.calendar_today,
+            color: Colors.redAccent,
+          ),
           onPressed: () => controller.setDueDate()),
     );
   }
@@ -174,7 +189,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _deliveryNoteField() {
     return CustomFormField(
       name: 'receipt_number',
-      prefixIcon: const Icon(Icons.numbers),
+      prefixIcon: const Icon(
+        Icons.numbers,
+        color: Colors.pinkAccent,
+      ),
       keyboardType: TextInputType.number,
       validator: (deliveryNote) => GetUtils.isLengthLessThan(deliveryNote, 4)
           ? 'Invalid delivery note'
@@ -227,7 +245,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _freeTextField() {
     return CustomFormField(
       name: 'free_text',
-      prefixIcon: const Icon(Icons.inventory_sharp),
+      prefixIcon: const Icon(
+        Icons.inventory_sharp,
+        color: Colors.brown,
+      ),
       keyboardType: TextInputType.text,
       textCapitalization: TextCapitalization.characters,
       validator: (freeText) => GetUtils.isLengthLessThan(freeText, 3)
@@ -252,6 +273,19 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           }
         },
         validator: (value) => value == null ? 'Product is required' : null,
+        decoratorProps: const DropDownDecoratorProps(
+          decoration: InputDecoration(
+            labelText: 'Product',
+            prefixIcon: Icon(
+              Icons.inventory_sharp,
+              color: Colors.brown,
+            ),
+            border: OutlineInputBorder(),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red),
+            ),
+          ),
+        ),
         itemAsString: (ProductModel product) => '${product.label}',
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
@@ -292,7 +326,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _productPriceField() {
     return CustomFormField(
       name: 'product_price',
-      prefixIcon: const Icon(Icons.currency_exchange),
+      prefixIcon: const Icon(
+        Icons.currency_exchange,
+        color: Colors.greenAccent,
+      ),
       keyboardType: TextInputType.number,
       validator: (amount) {
         if (amount!.isEmpty) {

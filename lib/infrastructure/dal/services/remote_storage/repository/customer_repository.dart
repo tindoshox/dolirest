@@ -1,11 +1,12 @@
-import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
+import 'package:dio/dio.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:fpdart/fpdart.dart';
 
-class CustomerRepository extends ApiService {
+class CustomerRepository extends DioService {
   /// CustomerList
   Future<Either<Failure, List<CustomerModel>>> fetchCustomerList(
       {String dateModified = '1970-01-01'}) async {
@@ -18,19 +19,19 @@ class CustomerRepository extends ApiService {
       "sqlfilters": "(t.tms:>:'$dateModified')",
     };
     try {
-      var response = await httpClient
-          .get(ApiPath.customers, query: queryParameters, decoder: (data) {
-        List<dynamic> l = data is List<dynamic> ? data : [];
-        return l.map((c) => CustomerModel.fromJson(c)).toList();
-      }).timeout(Duration(seconds: 60));
+      var response = await dio.get(
+        ApiPath.customers,
+        queryParameters: queryParameters,
+      );
 
       if (response.statusCode == 200) {
-        return right(response.body!);
+        List<dynamic> l = response.data;
+        return right(l.map((c) => CustomerModel.fromJson(c)).toList());
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
-      return left(Failure(e.toString()));
+    } on DioException catch (e) {
+      return left(failure(e));
     }
   }
 
@@ -39,11 +40,12 @@ class CustomerRepository extends ApiService {
   Future<Either<Failure, CustomerModel>> fetchCustomerById(
       String customerId) async {
     try {
-      var response = await httpClient.get('${ApiPath.customers}/$customerId',
-          decoder: (data) => CustomerModel.fromJson(data));
+      var response = await dio.get(
+        '${ApiPath.customers}/$customerId',
+      );
 
-      return right(response.body!);
-    } on Exception catch (e) {
+      return right(CustomerModel.fromJson(response.data));
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -51,17 +53,18 @@ class CustomerRepository extends ApiService {
   /// Create Customer
   Future<Either<Failure, String>> createCustomer(String body) async {
     try {
-      var response = await httpClient.post(
+      var response = await dio.post(
         ApiPath.customers,
-        body: body,
-        decoder: (data) => data.toString().replaceAll('"', ''),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(
+          response.data.toString().replaceAll('"', ''),
+        );
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -70,18 +73,17 @@ class CustomerRepository extends ApiService {
   Future<Either<Failure, CustomerModel>> updateCustomer(
       String body, String customerId) async {
     try {
-      var response = await httpClient.put(
+      var response = await dio.put(
         '/$customerId',
-        body: body,
-        decoder: (data) => CustomerModel.fromJson(data),
+        data: body,
       );
 
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(customerModelFromJson(response.data));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }

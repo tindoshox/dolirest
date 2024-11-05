@@ -17,7 +17,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   @override
   Widget build(BuildContext context) {
-    final StorageController storage = Get.find();
+    final StorageService storage = Get.find();
     return Scaffold(
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
@@ -56,7 +56,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     );
   }
 
-  Widget _buildBody(StorageController storage) {
+  Widget _buildBody(StorageService storage) {
     return Obx(() => controller.isLoading.value
         ? const LoadingIndicator(message: Text('Loading...'))
         : TabBarView(
@@ -68,7 +68,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
           ));
   }
 
-  Widget _customerInfoTab(StorageController storage) {
+  Widget _customerInfoTab(StorageService storage) {
     return ValueListenableBuilder<Box>(
       valueListenable:
           storage.customersListenable(keys: [controller.customerId]),
@@ -82,7 +82,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   }
 
   Widget _invoicesTab() {
-    final StorageController storage = Get.find();
+    final StorageService storage = Get.find();
     return ValueListenableBuilder<Box>(
       valueListenable:
           storage.invoicesListenable(keys: [controller.customerId]),

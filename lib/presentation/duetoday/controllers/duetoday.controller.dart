@@ -4,7 +4,7 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';
 
 class DueTodayController extends GetxController {
-  final storage = Get.find<StorageController>();
+  final storage = Get.find<StorageService>();
   final dueToday = Get.arguments['dueToday'];
   var dueList = <DueTodayModel>[].obs;
 
@@ -22,7 +22,7 @@ class DueTodayController extends GetxController {
         DueTodayModel(
           invoiceId: invoice.id,
           customerId: invoice.socid,
-          name: customer?.name,
+          name: customer?.name ?? 'Name not set',
           dueDate: Utils.intToDMY(invoice.dateLimReglement),
           town: customer?.town,
           address: customer?.address,

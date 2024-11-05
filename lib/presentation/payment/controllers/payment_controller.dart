@@ -14,7 +14,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class PaymentController extends GetxController {
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
 
   TextEditingController payDateController = TextEditingController();

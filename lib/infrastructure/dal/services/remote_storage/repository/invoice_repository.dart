@@ -1,12 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:fpdart/fpdart.dart';
 
-class InvoiceRepository extends ApiService {
+class InvoiceRepository extends DioService {
   /// invoiceList
   Future<Either<Failure, List<InvoiceModel>>> fetchInvoiceList({
     String customerId = "",
@@ -24,22 +25,19 @@ class InvoiceRepository extends ApiService {
     };
 
     try {
-      var response = await httpClient.get(
+      var response = await dio.get(
         ApiPath.invoices,
-        query: queryParameters,
-        decoder: (data) {
-          List<dynamic> l = data is List<dynamic> ? data : [];
-
-          return l.map((i) => InvoiceModel.fromJson(i)).toList();
-        },
+        queryParameters: queryParameters,
       );
 
       if (response.statusCode == 200) {
-        return right(response.body!);
+        List<dynamic> l = response.data;
+
+        return right(l.map((i) => InvoiceModel.fromJson(i)).toList());
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -48,17 +46,16 @@ class InvoiceRepository extends ApiService {
   Future<Either<Failure, List<PaymentModel>>> fetchPaymentsByInvoice(
       String invoiceId) async {
     try {
-      var response = await httpClient
-          .get('${ApiPath.invoices}/$invoiceId/payments', decoder: (data) {
-        List<dynamic> l = data is List<dynamic> ? data : [];
-        return l.map((p) => PaymentModel.fromJson(p)).toList();
-      });
+      var response = await dio.get(
+        '${ApiPath.invoices}/$invoiceId/payments',
+      );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        List<dynamic> l = response.data;
+        return right(l.map((p) => PaymentModel.fromJson(p)).toList());
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -67,17 +64,16 @@ class InvoiceRepository extends ApiService {
   Future<Either<Failure, InvoiceModel>> updateInvoice(
       String invoiceId, String body) async {
     try {
-      var response = await httpClient.put(
+      var response = await dio.put(
         '${ApiPath.invoices}/$invoiceId',
-        body: body,
-        decoder: (data) => InvoiceModel.fromJson(data),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(InvoiceModel.fromJson(response.data));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -85,17 +81,16 @@ class InvoiceRepository extends ApiService {
   /// Create Invoice
   Future<Either<Failure, String>> createInvoice(String body) async {
     try {
-      var response = await httpClient.post(
+      var response = await dio.post(
         ApiPath.invoices,
-        body: body,
-        decoder: (data) => data.toString().replaceAll('"', ''),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(response.data.toString().replaceAll('"', ''));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -106,33 +101,31 @@ class InvoiceRepository extends ApiService {
   Future<Either<Failure, String>> validateInvoice(
       String body, String invoiceId) async {
     try {
-      var response = await httpClient.post(
+      var response = await dio.post(
         '${ApiPath.invoices}/$invoiceId/validate',
-        body: body,
-        decoder: (data) => data.toString().replaceAll('"', ''),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(response.data.toString().replaceAll('"', ''));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
 
   Future<Either<Failure, String>> deleteInvoice(invoiceId) async {
     try {
-      var response = await httpClient.delete(
+      var response = await dio.delete(
         '${ApiPath.invoices}/$invoiceId',
-        decoder: (data) => data.toString().replaceAll('"', ''),
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(response.data.toString().replaceAll('"', ''));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -141,17 +134,16 @@ class InvoiceRepository extends ApiService {
 
   Future<Either<Failure, String>> addpayment(String body) async {
     try {
-      var response = await httpClient.post(
+      var response = await dio.post(
         '${ApiPath.invoices}/paymentsdistributed',
-        body: body,
-        decoder: (data) => data.toString().replaceAll('"', ''),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(response.data.toString().replaceAll('"', ''));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }

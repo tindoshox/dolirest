@@ -11,33 +11,43 @@ class CustomerInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final StorageController storage = Get.find();
+    final StorageService storage = Get.find();
     List<Widget> children = [
       _buildCustomerInfoRow(
         title: customer.name,
         leading: Initicon(
           text: customer.name,
+          size: 30,
         ),
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         subtitle: Text(customer.codeClient),
       ),
       _buildCustomerInfoRow(
         title: '${customer.town} ${customer.address}',
-        leading: const Icon(Icons.location_city_outlined),
+        leading: const Icon(
+          Icons.location_city_outlined,
+          color: Colors.greenAccent,
+        ),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
       ),
       if (customer.phone?.trim().isNotEmpty ?? false)
         _buildCustomerInfoRow(
           onTap: () => Utils.makePhoneCall(customer.phone!.trim()),
           title: customer.phone!,
-          leading: const Icon(Icons.phone_android),
+          leading: const Icon(
+            Icons.phone_android,
+            color: Colors.blueAccent,
+          ),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
       if (customer.fax?.trim().isNotEmpty ?? false)
         _buildCustomerInfoRow(
           onTap: () => Utils.makePhoneCall(customer.fax!.trim()),
           title: customer.fax!,
-          leading: const Icon(Icons.phone_android_outlined),
+          leading: const Icon(
+            Icons.phone_android_outlined,
+            color: Colors.blueGrey,
+          ),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
     ];

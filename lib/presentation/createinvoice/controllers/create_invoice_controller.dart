@@ -20,7 +20,7 @@ class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
 
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   final ProductRepository products = Get.find();
   Rx<CustomerModel> customer = CustomerModel().obs;
@@ -242,18 +242,18 @@ class CreateinvoiceController extends GetxController {
 
     if (searchString == "") {
       customers = storage.getCustomerList();
-      customers.sort((a, b) => a.name.compareTo(b.name));
+      customers.sort((a, b) => a.name!.compareTo(b.name!));
     } else {
       customers = storage
           .getCustomerList()
           .where((customer) =>
-              customer.name.contains(searchString) ||
+              customer.name!.contains(searchString) ||
               customer.address.toString().contains(searchString) ||
               customer.town.toString().contains(searchString) ||
               customer.phone.toString().contains(searchString) ||
               customer.fax.toString().contains(searchString))
           .toList();
-      customers.sort((a, b) => a.name.compareTo(b.name));
+      customers.sort((a, b) => a.name!.compareTo(b.name!));
     }
 
     return customers;

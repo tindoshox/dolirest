@@ -11,7 +11,7 @@ class CustomerListController extends GetxController {
   var isLoading = false.obs;
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
-  StorageController storage = Get.find();
+  StorageService storage = Get.find();
   CustomerRepository repository = Get.find();
   var searchIconVisible = true.obs;
 

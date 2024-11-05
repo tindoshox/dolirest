@@ -15,7 +15,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
   const InvoiceDetailScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final StorageController storage = Get.find();
+    final StorageService storage = Get.find();
     return Scaffold(
       persistentFooterButtons: [
         Row(

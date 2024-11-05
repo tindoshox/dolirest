@@ -45,9 +45,12 @@ class ReportsScreen extends GetView<ReportsController> {
                     decoratorProps: const DropDownDecoratorProps(
                       decoration: InputDecoration(
                         labelText: 'Report',
-                        icon: Icon(Icons.picture_as_pdf_outlined),
-                        border: UnderlineInputBorder(),
-                        errorBorder: UnderlineInputBorder(
+                        prefixIcon: Icon(
+                          Icons.picture_as_pdf_outlined,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(),
+                        errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red),
                         ),
                       ),

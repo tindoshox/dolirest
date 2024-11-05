@@ -4,6 +4,7 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 
 class InvoiceListTile extends StatelessWidget {
@@ -16,10 +17,14 @@ class InvoiceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final storage = Get.find<StorageController>();
+    final storage = Get.find<StorageService>();
     final CustomerModel? customer = storage.getCustomer(invoice.socid);
     return Card(
       child: ListTile(
+        leading: Initicon(
+          text: customer!.name,
+          size: 30,
+        ),
         isThreeLine: true,
         onTap: () => _onInvoiceTap(),
         title: Row(
@@ -27,11 +32,11 @@ class InvoiceListTile extends StatelessWidget {
           children: [
             Text(
               invoice.ref ?? 'N/A', // Handle potential null
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
             Text(
               'BALANCE: ${invoice.remaintopay}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -43,20 +48,23 @@ class InvoiceListTile extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    customer?.name ??
+                    customer.name ??
                         'Please refresh customer list', // Handle potential null
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Text(
-                  Utils.intToDMY(
-                      invoice.dateLimReglement ?? ''), // Handle potential null
-                  style: Utils.overDueStyle(invoice.dateLimReglement ?? ''),
-                ),
+                    Utils.intToDMY(invoice.dateLimReglement ??
+                        ''), // Handle potential null
+                    style: TextStyle(
+                        color: Utils.overDueStyle(invoice.dateLimReglement),
+                        fontSize: 10)),
               ],
             ),
             Text(
-              '${customer?.town} ${customer?.address}'.trim(),
+              '${customer.town} ${customer.address}'.trim(),
               style: const TextStyle(fontSize: 10),
             ),
             Row(

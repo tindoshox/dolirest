@@ -19,7 +19,7 @@ class PaymentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: Get.find<StorageController>().paymentsListenable(),
+      valueListenable: Get.find<StorageService>().paymentsListenable(),
       builder: (BuildContext context, Box<PaymentModel> box, Widget? child) {
         return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3.0),

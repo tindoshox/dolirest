@@ -84,11 +84,9 @@ class Utils {
 
   /// Returns a [TextStyle] object with a red color if the due date is in the past, or null if the due date is in the future or present.
   static overDueStyle(int dueDate) {
-    if (intToDateTime(dueDate).isBefore(DateUtils.dateOnly(DateTime.now()))) {
-      return const TextStyle(color: Colors.red);
-    } else {
-      null;
-    }
+    return intToDateTime(dueDate).isBefore(DateUtils.dateOnly(DateTime.now()))
+        ? Colors.red
+        : null;
   }
 
   /// Creates a file from a base64-encoded string and returns the file path.

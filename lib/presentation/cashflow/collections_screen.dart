@@ -24,7 +24,7 @@ AppBar _buildAppBar() {
   );
 }
 
-_buildCashflow({required StorageController storage}) {
+_buildCashflow({required StorageService storage}) {
   return Align(
     alignment: Alignment.center,
     child: ValueListenableBuilder(
@@ -94,7 +94,7 @@ _buildCashflow({required StorageController storage}) {
                             _buildCell(
                               flex: 5,
                               mainAxisAlignment: MainAxisAlignment.start,
-                              text: customer?.name,
+                              text: customer?.name ?? 'Name not set',
                             ),
                             _buildCell(
                               text: payment.num,

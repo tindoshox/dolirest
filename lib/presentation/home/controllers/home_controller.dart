@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
@@ -19,7 +20,7 @@ import 'package:get/get.dart';
 
 class HomeController extends GetxController {
   final NetworkController networkController = Get.find();
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CompanyRepository companyRepository = Get.find();
@@ -30,15 +31,14 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
-    _fetchUser();
-
-    _fetchCompany();
+    await _fetchUser();
 
     super.onInit();
   }
 
   @override
-  void onReady() {
+  void onReady() async {
+    await _fetchCompany();
     var invoices = storage.getInvoiceList().length;
     if (invoices == 0) {
       _loadInitialData();
@@ -200,17 +200,18 @@ class HomeController extends GetxController {
 
   Future _refreshCompanyData() async {
     final result = await companyRepository.fetchCompany();
-    result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
-        (c) {
+    result.fold((failure) {
+      log('Company:  ${failure.message}');
+    }, (c) {
+      log('Company: ${c.name}');
       storage.storeCompany(c);
       company.value = c;
     });
   }
 
-  void _fetchUser() {
+  _fetchUser() async {
     if (storage.getUser() == null) {
-      _refreshUserData();
+      await _refreshUserData();
     } else {
       user.value = storage.getUser()!;
     }

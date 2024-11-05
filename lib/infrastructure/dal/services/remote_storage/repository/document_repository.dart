@@ -1,27 +1,27 @@
+import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/models/build_document_response_model.dart';
 import 'package:dolirest/infrastructure/dal/models/build_report_response_model.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/api_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:fpdart/fpdart.dart';
 
-class DocumentRepository extends ApiService {
+class DocumentRepository extends DioService {
 //Build Document
   Future<Either<Failure, BuildDucumentResponseModel>> buildDocument(
       String body) async {
     try {
-      var response = await httpClient.put(
+      var response = await dio.put(
         ApiPath.buildDocument,
-        body: body,
-        decoder: (data) => BuildDucumentResponseModel.fromJson(data),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(BuildDucumentResponseModel.fromJson(response.data));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }
@@ -30,17 +30,16 @@ class DocumentRepository extends ApiService {
   Future<Either<Failure, BuildReportResponseModel>> buildReport(
       String body) async {
     try {
-      var response = await httpClient.put(
+      var response = await dio.put(
         ApiPath.buildReport,
-        body: body,
-        decoder: (data) => BuildReportResponseModel.fromJson(data),
+        data: body,
       );
       if (response.statusCode == 200) {
-        return right(response.body!);
+        return right(BuildReportResponseModel.fromJson(response.data));
       } else {
-        return left(Failure(response.statusText!));
+        return left(Failure(response.statusMessage!));
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
       return left(failure(e));
     }
   }

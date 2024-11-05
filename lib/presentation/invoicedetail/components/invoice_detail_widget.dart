@@ -58,7 +58,7 @@ class InvoiceDetailWidget extends StatelessWidget {
         invoice.remaintopay == '0'
             ? ''
             : 'Due Date: ${Utils.intToDMY(invoice.dateLimReglement)}',
-        style: Utils.overDueStyle(invoice.dateLimReglement),
+        style: TextStyle(color: Utils.overDueStyle(invoice.dateLimReglement)),
       ),
       subtitle: Text('Invoice Date ${Utils.intToDMY(invoice.date)}'),
       trailing: invoice.remaintopay == '0'

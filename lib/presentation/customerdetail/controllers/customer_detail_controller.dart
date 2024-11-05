@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final StorageController storage = Get.find();
+  final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   final String customerId = Get.arguments['customerId'];
   final List<Tab> customerTabs = [

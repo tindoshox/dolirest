@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class StorageController extends GetxController {
+class StorageService extends GetxService {
   final Box<InvoiceModel> _invoices = Hive.box('invoices');
   final Box<CustomerModel> _customers = Hive.box('customers');
   final Box<PaymentModel> _payments = Hive.box('payments');
@@ -97,8 +97,12 @@ class StorageController extends GetxController {
     if (_settings.isOpen) await _settings.put(key, value);
   }
 
-  getSetting(String key) {
+  String? getSetting(String key) {
     return _settings.isOpen ? _settings.get(key) : null;
+  }
+
+  watchSetting(String key) {
+    return _settings.watch(key: key);
   }
 
   void clearSetting(String key) {
@@ -138,5 +142,6 @@ class StorageController extends GetxController {
     _settings.clear();
     _company.clear();
     _addresses.clear();
+    _user.clear();
   }
 }

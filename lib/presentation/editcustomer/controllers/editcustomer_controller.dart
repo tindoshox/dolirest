@@ -14,7 +14,7 @@ import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 
 class EditCustomerController extends GetxController {
-  StorageController storage = Get.find();
+  StorageService storage = Get.find();
   CustomerRepository customerRepository = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
