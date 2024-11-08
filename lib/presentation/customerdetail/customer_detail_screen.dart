@@ -23,7 +23,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(
-        title: const Text('Customer Details'),
+        title: Text('Customer Details'),
         actions: [getStatusIcon()],
         bottom: TabBar(
             controller: controller.tabController,

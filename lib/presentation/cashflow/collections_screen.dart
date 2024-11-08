@@ -1,3 +1,6 @@
+import 'package:data_table_2/data_table_2.dart';
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,154 +28,92 @@ AppBar _buildAppBar() {
 }
 
 _buildCashflow({required StorageService storage}) {
-  return Align(
-    alignment: Alignment.center,
-    child: ValueListenableBuilder(
-        valueListenable: storage.paymentsListenable(),
-        builder: (context, box, widget) {
-          var list = box.values.toList();
+  return ValueListenableBuilder(
+      valueListenable: storage.paymentsListenable(),
+      builder: (context, box, widget) {
+        var list = box.values.toList();
 
-          //Day Cashflow
-          List<PaymentModel> dayCashflow = list
-              .where((f) =>
-                  Utils.datePaid(f.date!) == Utils.datePaid(DateTime.now()))
-              .cast<PaymentModel>()
-              .toList();
-          dayCashflow.sort((a, b) => a.date!.compareTo(b.date!));
-          List<int> dayAmounts = dayCashflow
-              .map((payment) => Utils.intAmounts(payment.amount))
-              .toList();
-          int dayTotal =
-              dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
-          if (dayCashflow.isEmpty) {
-            return const Center(
-              child: Text('No payments', textAlign: TextAlign.center),
+        //Day Cashflow
+        List<PaymentModel> dayCashflow = list
+            .where((f) =>
+                Utils.datePaid(f.date!) == Utils.datePaid(DateTime.now()))
+            .cast<PaymentModel>()
+            .toList();
+        dayCashflow.sort((a, b) => a.date!.compareTo(b.date!));
+        List<int> dayAmounts = dayCashflow
+            .map((payment) => Utils.intAmounts(payment.amount))
+            .toList();
+        int dayTotal =
+            dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
+
+        DataColumn2 buildHeading(
+                {required String label,
+                void Function(int, bool)? onSort,
+                bool numeric = false,
+                ColumnSize size = ColumnSize.M}) =>
+            DataColumn2(
+              numeric: numeric,
+              size: size,
+              onSort: onSort,
+              label: Text(label),
             );
-          } else {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CustomScrollView(
-                slivers: [
-                  SliverPersistentHeader(
-                    delegate: _StickyHeaderDelegate(
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: Flex(
-                          direction: Axis.horizontal,
-                          children: [
-                            _buildCell(
-                                text: 'Invoice',
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                flex: 3),
-                            _buildCell(
-                                flex: 5,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                text: 'Customer'),
-                            _buildCell(text: 'Receipt #'),
-                            _buildCell(
-                                text: 'Amount', textAlign: TextAlign.right)
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final payment = dayCashflow[index];
-                      final invoice = storage.getInvoice(payment.invoiceId);
-                      final customer = storage.getCustomer(invoice?.socid);
 
-                      return Column(children: [
-                        Flex(
-                          direction: Axis.horizontal,
-                          children: [
-                            _buildCell(
-                              text: invoice!.ref,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              flex: 3,
-                            ),
-                            _buildCell(
-                              flex: 5,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              text: customer?.name ?? 'Name not set',
-                            ),
-                            _buildCell(
-                              text: payment.num,
-                            ),
-                            _buildCell(
-                              text: Utils.amounts(payment.amount),
-                              textAlign: TextAlign.right,
-                            )
-                          ],
-                        ),
-                        const Divider(
-                          thickness: .05,
-                        ),
-                      ]);
-                    }, childCount: dayCashflow.length),
-                  ),
-                  SliverFillRemaining(
-                    child: Text(
-                      textAlign: TextAlign.right,
-                      'Total: $dayTotal',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                ],
+        DataCell buildCell(String data,
+                {TextAlign? textAlign = TextAlign.start}) =>
+            DataCell(
+              Text(
+                textAlign: textAlign,
+                data,
+                maxLines: 2,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
               ),
             );
+
+        List<DataRow2> buildDataRow() {
+          List<DataRow2> rows = <DataRow2>[];
+          for (PaymentModel payment in dayCashflow) {
+            final InvoiceModel invoice = storage.getInvoice(payment.invoiceId)!;
+            final CustomerModel customer = storage.getCustomer(invoice.socid)!;
+            rows.add(DataRow2(
+              // onSelectChanged: (value) => Get.toNamed(Routes.INVOICEDETAIL,
+              //     arguments: {
+              //       'invoiceId': invoice.invoiceId,
+              //       'customerId': invoice.customerId
+              //     }),
+              cells: [
+                buildCell(invoice.ref),
+                buildCell(customer.name),
+                buildCell(payment.num, textAlign: TextAlign.center),
+                buildCell(Utils.amounts(payment.amount),
+                    textAlign: TextAlign.end),
+              ],
+            ));
           }
-        }),
-  );
-}
+          rows.add(DataRow2(cells: [
+            buildCell('Total'),
+            buildCell(''),
+            buildCell(''),
+            buildCell(dayTotal.toString()),
+          ]));
+          return rows;
+        }
 
-Flexible _buildCell({
-  int flex = 2,
-  String text = 'Heading',
-  TextAlign? textAlign,
-  MainAxisAlignment mainAxisAlignment = MainAxisAlignment.center,
-  TextStyle? style = const TextStyle(fontSize: 12),
-}) {
-  return Flexible(
-    flex: flex,
-    child: Row(
-      mainAxisAlignment: mainAxisAlignment,
-      children: [
-        Expanded(
-          child: Text(
-            text,
-            style: style,
-            overflow: TextOverflow.ellipsis,
-            textAlign: textAlign,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _StickyHeaderDelegate({required this.child});
-
-  @override
-  double get minExtent => 0;
-
-  @override
-  double get maxExtent => 40; // Adjust this value according to your needs
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) {
-    return child != oldDelegate.child;
-  }
+        return DataTable2(
+            headingTextStyle: Theme.of(context).textTheme.titleSmall,
+            dataTextStyle: Theme.of(context).textTheme.bodySmall,
+            showCheckboxColumn: false,
+            sortColumnIndex: 2,
+            columnSpacing: 4,
+            empty: Center(
+              child: Text('No invoices due today'),
+            ),
+            columns: [
+              buildHeading(label: 'Invoice'),
+              buildHeading(label: 'Customer', size: ColumnSize.L),
+              buildHeading(label: 'Receipt', size: ColumnSize.S),
+              buildHeading(label: 'Amount', size: ColumnSize.S, numeric: true),
+            ],
+            rows: buildDataRow());
+      });
 }

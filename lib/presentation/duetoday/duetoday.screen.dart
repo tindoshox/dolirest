@@ -18,8 +18,11 @@ class DueTodayScreen extends GetView<DueTodayController> {
     }
 
     DataColumn2 buildHeading(
-            {required String label, void Function(int, bool)? onSort}) =>
+            {required String label,
+            void Function(int, bool)? onSort,
+            ColumnSize size = ColumnSize.M}) =>
         DataColumn2(
+          size: size,
           onSort: onSort,
           label: Text(label),
         );
@@ -54,22 +57,22 @@ class DueTodayScreen extends GetView<DueTodayController> {
     }
 
     buildDueToday() {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: DataTable2(
-            headingTextStyle: Theme.of(context).textTheme.titleSmall,
-            dataTextStyle: Theme.of(context).textTheme.bodySmall,
-            showCheckboxColumn: false,
-            sortColumnIndex: 2,
-            columnSpacing: 0,
-            columns: [
-              buildHeading(label: 'Customer'),
-              buildHeading(label: 'Due Date'),
-              buildHeading(label: 'Town'),
-              buildHeading(label: 'Address'),
-            ],
-            rows: buildDataRow()),
-      );
+      return DataTable2(
+          headingTextStyle: Theme.of(context).textTheme.titleSmall,
+          dataTextStyle: Theme.of(context).textTheme.bodySmall,
+          showCheckboxColumn: false,
+          sortColumnIndex: 2,
+          columnSpacing: 4,
+          empty: Center(
+            child: Text('No invoices due today'),
+          ),
+          columns: [
+            buildHeading(label: 'Customer', size: ColumnSize.L),
+            buildHeading(label: 'Due Date', size: ColumnSize.S),
+            buildHeading(label: 'Town', size: ColumnSize.S),
+            buildHeading(label: 'Address', size: ColumnSize.S),
+          ],
+          rows: buildDataRow());
     }
 
     return Scaffold(

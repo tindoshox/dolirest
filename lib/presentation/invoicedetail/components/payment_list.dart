@@ -24,7 +24,12 @@ class PaymentsList extends StatelessWidget {
         return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3.0),
             child: DataTable2(
+                headingTextStyle: Theme.of(context).textTheme.titleSmall,
+                dataTextStyle: Theme.of(context).textTheme.bodySmall,
                 columnSpacing: 4,
+                empty: Center(
+                  child: Text('No payments'),
+                ),
                 columns: [
                   DataColumn2(label: Text('Date')),
                   DataColumn2(label: Text('Receipt #'), numeric: true),
