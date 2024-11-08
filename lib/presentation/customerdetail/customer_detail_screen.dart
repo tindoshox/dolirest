@@ -7,6 +7,7 @@ import 'package:dolirest/presentation/customerdetail/components/customer_invoice
 import 'package:dolirest/presentation/customerdetail/controllers/customer_detail_controller.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,6 +24,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(
         title: const Text('Customer Details'),
+        actions: [getStatusIcon()],
         bottom: TabBar(
             controller: controller.tabController,
             tabs: controller.customerTabs),
@@ -50,7 +52,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
             ...?additionalArgs
           });
         } else {
-          SnackbarHelper.networkSnackbar();
+          SnackBarHelper.networkSnackbar();
         }
       },
     );
@@ -94,7 +96,10 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
         return invoices.isEmpty
             ? const ListTile(
                 title: Text('No invoices.', textAlign: TextAlign.center))
-            : InvoiceListWidget(invoices: invoices);
+            : InvoiceListWidget(
+                invoices: invoices,
+                controller: controller,
+              );
       },
     );
   }

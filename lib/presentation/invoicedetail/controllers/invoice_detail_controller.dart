@@ -96,7 +96,7 @@ class InvoiceDetailController extends GetxController
     final result = await (invoiceRepository.fetchPaymentsByInvoice(invoiceId));
 
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
       for (var payment in payments) {
         PaymentModel p = PaymentModel(
@@ -130,7 +130,7 @@ class InvoiceDetailController extends GetxController
   Future _refreshCustomerData() async {
     final result = await customerRepository.fetchCustomerById(customerId);
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (c) => storage.storeCustomer(c.id, c));
   }
 
@@ -148,7 +148,7 @@ class InvoiceDetailController extends GetxController
       final result = await documentRepository.buildDocument(body);
       result.fold((failure) {
         DialogHelper.hideLoading();
-        SnackbarHelper.errorSnackbar(message: failure.message);
+        SnackBarHelper.errorSnackbar(message: failure.message);
       }, (document) {
         Utils.createFileFromString(document.content, '${invoice.ref}.pdf')
             .then((value) {
@@ -194,9 +194,9 @@ class InvoiceDetailController extends GetxController
 
     final result = await invoiceRepository.updateInvoice(invoiceId, body);
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
-      SnackbarHelper.successSnackbar(message: 'Due date changed');
+      SnackBarHelper.successSnackbar(message: 'Due date changed');
       _refreshInvoiceData();
     });
   }

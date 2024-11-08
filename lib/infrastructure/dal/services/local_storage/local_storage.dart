@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class StorageService extends GetxService {
+class StorageService extends GetxController {
   final Box<InvoiceModel> _invoices = Hive.box('invoices');
   final Box<CustomerModel> _customers = Hive.box('customers');
   final Box<PaymentModel> _payments = Hive.box('payments');
@@ -50,8 +50,12 @@ class StorageService extends GetxService {
     if (_payments.isOpen) await _payments.put(key, value);
   }
 
-  List<PaymentModel> getPaymentList() {
-    return _payments.toMap().values.toList();
+  List<PaymentModel> getPaymentList({String? invoiceId}) {
+    if (invoiceId == null) {
+      return _payments.toMap().values.toList();
+    } else {
+      return _payments.values.where((i) => i.invoiceId == invoiceId).toList();
+    }
   }
 
   ValueListenable<Box<PaymentModel>> paymentsListenable() {
@@ -66,8 +70,12 @@ class StorageService extends GetxService {
     return _invoices.get(key);
   }
 
-  List<InvoiceModel> getInvoiceList() {
-    return _invoices.toMap().values.toList();
+  List<InvoiceModel> getInvoiceList({String? customerId}) {
+    if (customerId == null) {
+      return _invoices.toMap().values.toList();
+    } else {
+      return _invoices.values.where((i) => i.socid == customerId).toList();
+    }
   }
 
   ValueListenable<Box<InvoiceModel>> invoicesListenable({List<dynamic>? keys}) {

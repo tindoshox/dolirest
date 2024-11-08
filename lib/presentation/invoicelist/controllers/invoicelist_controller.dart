@@ -1,5 +1,7 @@
+import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -30,8 +32,15 @@ class InvoicelistController extends GetxController {
   refreshInvoiceList() async {
     isLoading(true);
 
-    await repository.fetchInvoiceList(status: "unpaid").then((value) async {
+    final result = await repository.fetchInvoiceList(status: "unpaid");
+    result.fold((failure) {
       isLoading(false);
+      SnackBarHelper.errorSnackbar(message: failure.message);
+    }, (invoices) {
+      isLoading(false);
+      for (InvoiceModel invoice in invoices) {
+        storage.storeInvoice(invoice.id, invoice);
+      }
     });
   }
 

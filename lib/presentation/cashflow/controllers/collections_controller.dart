@@ -14,9 +14,9 @@ class CashflowController extends GetxController {
   refreshPayments() async {
     var invoices = storage.getInvoiceList();
     for (InvoiceModel invoice in invoices) {
-      final result = await repository.fetchPaymentsByInvoice(invoice.id);
+      final result = await repository.fetchPaymentsByInvoice(invoice.id!);
       result.fold(
-          (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+          (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
           (payments) {
         for (var payment in payments) {
           PaymentModel p = PaymentModel(

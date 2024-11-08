@@ -10,7 +10,7 @@ import 'package:fpdart/fpdart.dart';
 class InvoiceRepository extends DioService {
   /// invoiceList
   Future<Either<Failure, List<InvoiceModel>>> fetchInvoiceList({
-    String customerId = "",
+    String? customerId,
     String dateModified = '1970-01-01',
     String status = "",
   }) async {
@@ -20,7 +20,7 @@ class InvoiceRepository extends DioService {
       "page": "1",
       "limit": "0",
       "status": status,
-      "thirdparty_ids": customerId,
+      "thirdparty_ids": customerId ?? '',
       "sqlfilters": "(t.type:=:0) and (t.tms:>:'$dateModified')"
     };
 

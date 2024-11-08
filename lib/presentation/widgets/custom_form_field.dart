@@ -13,35 +13,37 @@ class CustomFormField extends StatelessWidget {
   /// The [name] argument is used to identify the field in the form. The
   /// [controller] argument is used to control the text input. The other
   /// arguments provide additional styling and functionality for the field.
-  const CustomFormField(
-      {super.key,
-      required this.name,
-      this.initialValue,
-      required this.controller,
-      this.focusNode,
-      this.hintText,
-      this.validator,
-      this.textCapitalization = TextCapitalization.characters,
-      this.keyboardType = TextInputType.text,
-      this.inputFormatters,
-      this.autocorrect = true,
-      this.autofocus = false,
-      this.labelText,
-      this.obscureText = false,
-      this.enableInteractiveSelection = true,
-      this.enableSuggestions = true,
-      this.onTap,
-      this.onEditingComplete,
-      this.prefixText,
-      this.suffix,
-      this.prefixIcon,
-      this.onSaved,
-      this.onChanged,
-      this.textInputAction = TextInputAction.next,
-      this.maxLines,
-      this.minLines,
-      this.onFieldSubmitted,
-      this.border = const OutlineInputBorder()});
+  const CustomFormField({
+    super.key,
+    required this.name,
+    this.initialValue,
+    required this.controller,
+    this.focusNode,
+    this.hintText,
+    this.validator,
+    this.textCapitalization = TextCapitalization.characters,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
+    this.autocorrect = true,
+    this.autofocus = false,
+    this.labelText,
+    this.obscureText = false,
+    this.enableInteractiveSelection = true,
+    this.enableSuggestions = true,
+    this.onTap,
+    this.onEditingComplete,
+    this.prefixText,
+    this.suffix,
+    this.prefixIcon,
+    this.onSaved,
+    this.onChanged,
+    this.textInputAction = TextInputAction.next,
+    this.maxLines,
+    this.minLines,
+    this.onFieldSubmitted,
+    this.border,
+    this.errorBorder,
+  });
 
   final FocusNode? focusNode;
   final String? hintText;
@@ -69,6 +71,7 @@ class CustomFormField extends StatelessWidget {
   final int? minLines;
   final int? maxLines;
   final InputBorder? border;
+  final InputBorder? errorBorder;
   final Function(String?)? onFieldSubmitted;
 
   @override
@@ -97,10 +100,8 @@ class CustomFormField extends StatelessWidget {
         minLines: minLines,
         maxLines: maxLines,
         decoration: InputDecoration(
-          border: border,
-          errorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red),
-          ),
+          border: Theme.of(context).inputDecorationTheme.border,
+          errorBorder: Theme.of(context).inputDecorationTheme.errorBorder,
           prefixIcon: prefixIcon,
           prefixText: prefixText,
           suffix: suffix,

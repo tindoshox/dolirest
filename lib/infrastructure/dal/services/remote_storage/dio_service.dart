@@ -3,18 +3,20 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:get/get.dart';
 
-class DioService extends GetxService {
+class DioService extends GetxController {
   final StorageService storage = Get.find();
   final dio = Dio(); // With default `Options`.
   final String apiStub = "/api/index.php/";
 
   @override
   void onInit() {
-    var url = storage.getSetting(StorageKey.url);
-    var apiKey = storage.getSetting(StorageKey.apiKey);
+    String? url = storage.getSetting(StorageKey.url);
+    String? apiKey = storage.getSetting(StorageKey.apiKey);
+
     if (url != null && apiKey != null) {
       configureDio(url: url, apiKey: apiKey);
     }
+
     super.onInit();
   }
 

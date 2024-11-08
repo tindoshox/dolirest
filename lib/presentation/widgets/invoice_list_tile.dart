@@ -32,11 +32,11 @@ class InvoiceListTile extends StatelessWidget {
           children: [
             Text(
               invoice.ref ?? 'N/A', // Handle potential null
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
               'BALANCE: ${invoice.remaintopay}',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleSmall,
             ),
           ],
         ),
@@ -51,21 +51,20 @@ class InvoiceListTile extends StatelessWidget {
                     customer.name ??
                         'Please refresh customer list', // Handle potential null
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
                 Text(
-                    Utils.intToDMY(invoice.dateLimReglement ??
-                        ''), // Handle potential null
-                    style: TextStyle(
-                        color: Utils.overDueStyle(invoice.dateLimReglement),
-                        fontSize: 10)),
+                  Utils.intToDMY(
+                      invoice.dateLimReglement ?? ''), // Handle potential null
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Utils.overDueStyle(invoice.dateLimReglement)),
+                )
               ],
             ),
             Text(
               '${customer.town} ${customer.address}'.trim(),
-              style: const TextStyle(fontSize: 10),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -76,13 +75,13 @@ class InvoiceListTile extends StatelessWidget {
                           invoice.lines![0].description ??
                           'N/A'
                       : 'N/A',
-                  style: const TextStyle(fontSize: 10),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(
                   invoice.remaintopay == "0"
                       ? "FULLY PAID"
                       : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
-                  style: const TextStyle(fontSize: 10),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),

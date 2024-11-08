@@ -15,7 +15,7 @@ class DependencyInjection {
   static void init() {
     Get.put<StorageService>(StorageService(), permanent: true);
     Get.put<NetworkController>(NetworkController(), permanent: true);
-    Get.put(DioService());
+    Get.put(DioService(), permanent: true);
     Get.put<ServerReachablility>(ServerReachablility(), permanent: true);
     Get.put<CustomerRepository>(CustomerRepository());
     Get.put<InvoiceRepository>(InvoiceRepository());

@@ -37,15 +37,16 @@ class CustomerDetailController extends GetxController
   _fetchInvoices() async {
     isLoading(true);
 
-    if (storage.getCustomer(customerId) == null) {
-      await _refreshInvoiceData();
+    if (storage.getCustomer(customerId) == null ||
+        storage.getInvoiceList(customerId: customerId).isEmpty) {
+      await refreshInvoiceData();
     }
 
     isLoading(false);
   }
 
   // Fetch invoice data from server
-  Future _refreshInvoiceData() async {
+  Future refreshInvoiceData({String? customerId}) async {
     final result = await repository.fetchInvoiceList(customerId: customerId);
     result.fold((failure) => null, (invoices) {
       for (InvoiceModel invoice in invoices) {

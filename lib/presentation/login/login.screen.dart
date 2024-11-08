@@ -33,9 +33,7 @@ class LoginScreen extends GetView<LoginController> {
                   children: [
                     TextSpan(
                       text: 'REST',
-                      style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w100),
+                      style: TextStyle(fontWeight: FontWeight.w100),
                     ),
                   ],
                 ),
@@ -52,7 +50,7 @@ class LoginScreen extends GetView<LoginController> {
                 const SizedBox(height: 5),
                 _buildKeyField(),
                 const SizedBox(height: 10),
-                _buildLoginButton(),
+                _buildLoginButton(context),
               ],
             ),
           ),
@@ -66,6 +64,9 @@ class LoginScreen extends GetView<LoginController> {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: CustomFormField(
         prefixText: 'https://',
+        suffix: IconButton(
+            onPressed: () => controller.getClipboardUrl(),
+            icon: const Icon(Icons.paste_outlined)),
         name: 'server_url',
         labelText: 'Server Url',
         textCapitalization: TextCapitalization.none,
@@ -73,6 +74,7 @@ class LoginScreen extends GetView<LoginController> {
         autocorrect: false,
         enableSuggestions: true,
         enableInteractiveSelection: true,
+        onChanged: (p0) => controller.serverUrl.value = 'https://${p0!.trim()}',
 
         /// Returns an error message if the URL is empty or not a valid URL.
         validator: (url) {
@@ -93,7 +95,7 @@ class LoginScreen extends GetView<LoginController> {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: CustomFormField(
         suffix: IconButton(
-            onPressed: () => controller.getClipboardText(),
+            onPressed: () => controller.getClipboardApiKey(),
             icon: const Icon(Icons.paste_outlined)),
         name: 'api_key',
         labelText: 'API Key',
@@ -104,6 +106,7 @@ class LoginScreen extends GetView<LoginController> {
         maxLines: 5,
         enableInteractiveSelection: true,
         keyboardType: TextInputType.multiline,
+        onChanged: (p0) => controller.apiKey.value = p0!.trim(),
 
         /// Returns an error message if the API key is empty.
         validator: (apiKey) =>
@@ -112,7 +115,7 @@ class LoginScreen extends GetView<LoginController> {
     );
   }
 
-  Padding _buildLoginButton() {
+  Padding _buildLoginButton(context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(
@@ -124,7 +127,7 @@ class LoginScreen extends GetView<LoginController> {
 
             /// Calls the controller's `validate` method when the button is tapped.
             onTap: () {
-              controller.validate();
+              controller.validate(context);
             },
           ),
         ],

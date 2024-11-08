@@ -177,9 +177,6 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
               Icons.group_outlined,
               color: Colors.brown,
             ),
-            border: OutlineInputBorder(),
-            errorBorder:
-                OutlineInputBorder(borderSide: BorderSide(color: Colors.red)),
           ),
         ),
         itemAsString: (GroupModel group) => group.name,
@@ -272,7 +269,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           CustomActionButton(
             controller: controller,
             buttonText: 'Cancel',
-            buttonColor: Colors.red,
+            isCancel: true,
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
               Get.back();

@@ -5,6 +5,7 @@ import 'package:dolirest/presentation/invoicedetail/components/invoice_detail_wi
 import 'package:dolirest/presentation/invoicedetail/components/payment_list.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -39,7 +40,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                               },
                             );
                           } else {
-                            SnackbarHelper.networkSnackbar();
+                            SnackBarHelper.networkSnackbar();
                           }
                         }),
             ),
@@ -49,7 +50,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                   if (Get.find<NetworkController>().connected.value) {
                     controller.generateDocument();
                   } else {
-                    SnackbarHelper.networkSnackbar();
+                    SnackBarHelper.networkSnackbar();
                   }
                 } //=> ,
                 ),
@@ -58,7 +59,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
       ],
       appBar: AppBar(
         title: const Text('Invoice Detail'),
-        centerTitle: true,
+        actions: [getStatusIcon()],
         bottom: TabBar(
             controller: controller.tabController, tabs: controller.invoiceTabs),
       ),

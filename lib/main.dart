@@ -12,6 +12,7 @@ import 'package:dolirest/infrastructure/dal/services/dependancy_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/presentation/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -65,10 +66,8 @@ class Main extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: _getThmeMode(),
-      theme: ThemeData.light(
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       initialRoute: initialRoute,
       getPages: Nav.routes,
     );

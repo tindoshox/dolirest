@@ -10,68 +10,71 @@ class DueTodayScreen extends GetView<DueTodayController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildDueToday(),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: const Text("Due today"),
-      centerTitle: true,
-    );
-  }
-
-  _buildDueToday() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: DataTable2(
-          showCheckboxColumn: false,
-          sortColumnIndex: 2,
-          columnSpacing: 3,
-          columns: [
-            _buildHeading(label: 'Customer'),
-            _buildHeading(label: 'Due Date'),
-            _buildHeading(label: 'Town'),
-            _buildHeading(label: 'Address'),
-          ],
-          rows: _buildDataRow()),
-    );
-  }
-
-  DataColumn2 _buildHeading(
-          {required String label, void Function(int, bool)? onSort}) =>
-      DataColumn2(
-        onSort: onSort,
-        label: Text(label),
+    AppBar buildAppBar() {
+      return AppBar(
+        title: const Text("Due today"),
+        centerTitle: true,
       );
-
-  List<DataRow2> _buildDataRow() {
-    List<DataRow2> rows = <DataRow2>[];
-    for (DueTodayModel invoice in controller.dueList) {
-      rows.add(DataRow2(
-        onSelectChanged: (value) => Get.toNamed(Routes.INVOICEDETAIL,
-            arguments: {
-              'invoiceId': invoice.invoiceId,
-              'customerId': invoice.customerId
-            }),
-        cells: [
-          _buildCell(invoice.name),
-          _buildCell(invoice.dueDate),
-          _buildCell(invoice.town),
-          _buildCell(invoice.address),
-        ],
-      ));
     }
-    return rows;
-  }
 
-  DataCell _buildCell(String data) => DataCell(
-        Text(
-          data,
-          maxLines: 2,
-          softWrap: true,
-        ),
+    DataColumn2 buildHeading(
+            {required String label, void Function(int, bool)? onSort}) =>
+        DataColumn2(
+          onSort: onSort,
+          label: Text(label),
+        );
+
+    DataCell buildCell(String data) => DataCell(
+          Text(
+            data,
+            maxLines: 2,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+
+    List<DataRow2> buildDataRow() {
+      List<DataRow2> rows = <DataRow2>[];
+      for (DueTodayModel invoice in controller.dueList) {
+        rows.add(DataRow2(
+          onSelectChanged: (value) => Get.toNamed(Routes.INVOICEDETAIL,
+              arguments: {
+                'invoiceId': invoice.invoiceId,
+                'customerId': invoice.customerId
+              }),
+          cells: [
+            buildCell(invoice.name),
+            buildCell(invoice.dueDate),
+            buildCell(invoice.town),
+            buildCell(invoice.address),
+          ],
+        ));
+      }
+      return rows;
+    }
+
+    buildDueToday() {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: DataTable2(
+            headingTextStyle: Theme.of(context).textTheme.titleSmall,
+            dataTextStyle: Theme.of(context).textTheme.bodySmall,
+            showCheckboxColumn: false,
+            sortColumnIndex: 2,
+            columnSpacing: 0,
+            columns: [
+              buildHeading(label: 'Customer'),
+              buildHeading(label: 'Due Date'),
+              buildHeading(label: 'Town'),
+              buildHeading(label: 'Address'),
+            ],
+            rows: buildDataRow()),
       );
+    }
+
+    return Scaffold(
+      appBar: buildAppBar(),
+      body: buildDueToday(),
+    );
+  }
 }

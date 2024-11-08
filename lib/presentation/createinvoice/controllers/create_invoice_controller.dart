@@ -141,7 +141,7 @@ class CreateinvoiceController extends GetxController {
 
         result.fold((failure) {
           DialogHelper.hideLoading();
-          SnackbarHelper.errorSnackbar(message: 'Product has no stock');
+          SnackBarHelper.errorSnackbar(message: 'Product has no stock');
         }, (stock) {
           _createInvoice();
         });
@@ -182,7 +182,7 @@ class CreateinvoiceController extends GetxController {
     final result = await repository.createInvoice(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackbarHelper.errorSnackbar(
+      SnackBarHelper.errorSnackbar(
         message: failure.message,
       );
     }, (id) async => await _validateInvoice(id));
@@ -217,7 +217,7 @@ class CreateinvoiceController extends GetxController {
     result.fold((failure) {}, (deleted) {
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CREATEINVOICE);
-      SnackbarHelper.errorSnackbar(message: 'Could not create invoice');
+      SnackBarHelper.errorSnackbar(message: 'Could not create invoice');
     });
   }
 
@@ -227,7 +227,7 @@ class CreateinvoiceController extends GetxController {
         await repository.fetchInvoiceList(customerId: customer.value.id);
 
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoices) {
       for (InvoiceModel invoice in invoices) {
         storage.storeInvoice(invoice.id, invoice);

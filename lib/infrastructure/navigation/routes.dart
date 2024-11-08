@@ -5,6 +5,7 @@ class Routes {
     return HOME;
   }
 
+  static const ROOT = '/';
   static const ADDPAYMENT = '/addpayment';
   static const APPOINTMENTS = '/appointments';
   static const CASHFLOW = '/cashflow';

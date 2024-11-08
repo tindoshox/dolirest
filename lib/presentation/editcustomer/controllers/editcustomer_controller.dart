@@ -77,7 +77,7 @@ class EditCustomerController extends GetxController {
   _refreshGroups() async {
     final result = await groupRepository.fetchGroups();
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
       for (GroupModel group in groups) {
         storage.storeGroup(group.id, group);
@@ -114,7 +114,7 @@ class EditCustomerController extends GetxController {
     final result = await customerRepository.createCustomer(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackbarHelper.errorSnackbar(message: failure.message);
+      SnackBarHelper.errorSnackbar(message: failure.message);
     }, (id) {
       DialogHelper.hideLoading();
       _fetchNewCustomer(id);
@@ -126,7 +126,7 @@ class EditCustomerController extends GetxController {
     final result = await customerRepository.fetchCustomerById(id);
 
     result.fold((failure) {
-      SnackbarHelper.errorSnackbar(message: failure.message);
+      SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) => storage.storeCustomer(customer.id, customer));
   }
 
@@ -145,7 +145,7 @@ class EditCustomerController extends GetxController {
 
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackbarHelper.errorSnackbar(message: failure.message);
+      SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) {
       storage.storeCustomer(customer.id, customer);
       DialogHelper.hideLoading();

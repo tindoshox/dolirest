@@ -159,7 +159,7 @@ class PaymentController extends GetxController {
 
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackbarHelper.errorSnackbar(message: 'Payment not saved');
+      SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }, (p) async {
       await _updateDueDate(invoice.value.id);
       await refreshPayments(invoice.value.id);
@@ -182,7 +182,7 @@ class PaymentController extends GetxController {
       } else {
         DialogHelper.hideLoading();
         Get.back();
-        SnackbarHelper.successSnackbar(message: 'Payment successful');
+        SnackBarHelper.successSnackbar(message: 'Payment successful');
       }
     });
   }
@@ -201,7 +201,7 @@ class PaymentController extends GetxController {
   refreshPayments(invoiceId) async {
     final result = await (repository.fetchPaymentsByInvoice(invoiceId));
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
       for (var payment in payments) {
         PaymentModel p = PaymentModel(

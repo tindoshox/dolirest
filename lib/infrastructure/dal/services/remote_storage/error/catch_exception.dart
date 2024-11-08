@@ -5,6 +5,6 @@ Failure failure(DioException e) {
   if (e.message != null) {
     return Failure(e.message!);
   } else {
-    return Failure(e.toString());
+    return Failure(e.error.toString());
   }
 }

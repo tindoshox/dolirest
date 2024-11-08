@@ -93,10 +93,6 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               Icons.person_outline,
               color: Colors.blueAccent,
             ),
-            border: OutlineInputBorder(),
-            errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red),
-            ),
           ),
         ),
         itemAsString: (CustomerModel? customer) => customer!.name!,
@@ -280,10 +276,6 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               Icons.inventory_sharp,
               color: Colors.brown,
             ),
-            border: OutlineInputBorder(),
-            errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red),
-            ),
           ),
         ),
         itemAsString: (ProductModel product) => '${product.label}',
@@ -362,7 +354,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           CustomActionButton(
               controller: controller,
               buttonText: 'Cancel',
-              buttonColor: Colors.red,
+              isCancel: true,
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
                 Get.back();

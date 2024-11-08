@@ -39,6 +39,8 @@ class ReportsScreen extends GetView<ReportsController> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: DropdownSearch<ReportIdModel>(
+                    validator: (value) =>
+                        value == null ? 'Please select a report' : null,
                     onChanged: (report) {
                       controller.selectedReport.value = report!;
                     },
@@ -48,10 +50,6 @@ class ReportsScreen extends GetView<ReportsController> {
                         prefixIcon: Icon(
                           Icons.picture_as_pdf_outlined,
                           color: Colors.brown,
-                        ),
-                        border: OutlineInputBorder(),
-                        errorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
                         ),
                       ),
                     ),
@@ -121,6 +119,14 @@ class ReportsScreen extends GetView<ReportsController> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: DropdownSearch<GroupModel>(
+                      validator: (value) {
+                        if (controller.selectedReport.value.groupIsRequired &&
+                            value == null) {
+                          return 'Group is required';
+                        } else {
+                          return null;
+                        }
+                      },
                       onChanged: (group) {
                         if (group != null) {
                           controller.selectedGroup.value = group;

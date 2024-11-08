@@ -16,6 +16,7 @@ class ReportIdModel {
   bool hasSalesParameter;
   bool hasFromDateParameter;
   bool hasToDateParameter;
+  bool groupIsRequired;
 
   ReportIdModel({
     this.reportid = '',
@@ -24,16 +25,17 @@ class ReportIdModel {
     this.hasSalesParameter = false,
     this.hasFromDateParameter = false,
     this.hasToDateParameter = false,
+    this.groupIsRequired = false,
   });
 
   factory ReportIdModel.fromJson(Map<String, dynamic> json) => ReportIdModel(
-        reportid: json["reportid"],
-        displayName: json["displayName"],
-        hasGroupParameter: json["hasGroupParameter"],
-        hasSalesParameter: json["hasSalesParameter"],
-        hasFromDateParameter: json["hasFromDateParameter"],
-        hasToDateParameter: json["hasToDateParameter"],
-      );
+      reportid: json["reportid"],
+      displayName: json["displayName"],
+      hasGroupParameter: json["hasGroupParameter"],
+      hasSalesParameter: json["hasSalesParameter"],
+      hasFromDateParameter: json["hasFromDateParameter"],
+      hasToDateParameter: json["hasToDateParameter"],
+      groupIsRequired: json["groupIsRequired"]);
 
   Map<String, dynamic> toJson() => {
         "reportid": reportid,
@@ -42,5 +44,6 @@ class ReportIdModel {
         "hasSalesParameter": hasSalesParameter,
         "hasFromDateParameter": hasFromDateParameter,
         "hasToDateParameter": hasToDateParameter,
+        "groupIsRequired": groupIsRequired,
       };
 }

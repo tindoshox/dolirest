@@ -3,7 +3,6 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
-import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
@@ -33,7 +32,6 @@ class CustomerListScreen extends GetView<CustomerListController> {
         ),
         actions: [
           Obx(() => _buildSearchActionButton()),
-          Obx(() => getStatusIcon()),
         ],
       ),
       body: const Padding(
@@ -136,42 +134,8 @@ class _CustomerList extends GetView<CustomerListController> {
                   itemBuilder: (context, index) {
                     if (index < customers.length) {
                       CustomerModel customer = customers[index];
-                      return Card(
-                        child: ListTile(
-                          onTap: () =>
-                              Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-                            'customerId': customer.id.toString(),
-                          }),
-                          leading: Initicon(
-                            text: customer.name,
-                            size: 30,
-                          ),
-                          title: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  customers[index].name!,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  '${customer.address ?? ''} ${customer.town ?? ''}',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      return _buildCustomerListTile(
+                          customer, customers, index, context);
                     } else {
                       return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 32.0),
@@ -180,6 +144,43 @@ class _CustomerList extends GetView<CustomerListController> {
                     }
                   });
         },
+      ),
+    );
+  }
+
+  Card _buildCustomerListTile(CustomerModel customer,
+      List<CustomerModel> customers, int index, BuildContext context) {
+    return Card(
+      child: ListTile(
+        onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
+          'customerId': customer.id.toString(),
+        }),
+        leading: Initicon(
+          text: customer.name,
+          size: 30,
+        ),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                customers[index].name!,
+                style: Theme.of(context).textTheme.titleSmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        subtitle: Row(
+          children: [
+            Flexible(
+              child: Text(
+                '${customer.address ?? ''} ${customer.town ?? ''}',
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

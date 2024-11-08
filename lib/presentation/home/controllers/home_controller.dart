@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
@@ -41,7 +40,7 @@ class HomeController extends GetxController {
     await _fetchCompany();
     var invoices = storage.getInvoiceList().length;
     if (invoices == 0) {
-      _loadInitialData();
+      await _loadInitialData();
     }
     _dataRefreshSchedule();
     super.onReady();
@@ -52,34 +51,28 @@ class HomeController extends GetxController {
     DialogHelper.showLoading('Loading data');
     List<CustomerModel> customers = storage.getCustomerList();
 
-    List<InvoiceModel> invoices = storage.getInvoiceList();
-
     if (customers.isEmpty) {
-      await _refreshCustomers();
+      await _refreshCustomers()
+          .then((customers) async => await _getUnpaidInvoices());
+      DialogHelper.hideLoading();
+      refreshing.value = false;
     } else {
-      await _getModifiedCustomers();
+      await _getModifiedCustomers()
+          .then((customers) async => await _getModifiedInvoices());
+      DialogHelper.hideLoading();
+      refreshing.value = false;
     }
-
-    if (invoices.isEmpty) {
-      await _getUnpaidInvoices();
-    } else {
-      await _getModifiedInvoices();
-    }
-
-    DialogHelper.hideLoading();
-    refreshing.value = false;
   }
 
   Future _dataRefreshSchedule() async {
     Timer.periodic(const Duration(minutes: 5), (Timer timer) async {
       if (networkController.connected.value) {
         refreshing.value = true;
-        await _getModifiedCustomers().then((_) async {
-          await _getModifiedInvoices().then((_) async {
-            await _loadPaymentData().then((_) => refreshing.value = false);
-          });
-        });
+        await _getModifiedCustomers();
+        await _getModifiedInvoices();
+        await _loadPaymentData();
       }
+      refreshing.value = false;
     });
   }
 
@@ -106,31 +99,39 @@ class HomeController extends GetxController {
 
   Future _loadPaymentData() async {
     List<InvoiceModel> invoices = storage.getInvoiceList();
+    invoices.removeWhere(
+        (i) => Utils.intAmounts(i.totalTtc) == Utils.intAmounts(i.sumpayed));
 
+    List<InvoiceModel> payInvoices = <InvoiceModel>[];
     for (InvoiceModel invoice in invoices) {
-      List<PaymentModel> list = storage.getPaymentList();
+      List<PaymentModel> list = storage.getPaymentList(invoiceId: invoice.id);
       List<int> amounts =
           list.map((payment) => Utils.intAmounts(payment.amount)).toList();
       int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
-      if (Utils.intAmounts(invoice.sumpayed) != total) {
-        final result =
-            await invoiceRepository.fetchPaymentsByInvoice(invoice.id);
-        result.fold((failure) => null, (payments) {
-          for (var payment in payments) {
-            PaymentModel p = PaymentModel(
-              amount: payment.amount,
-              type: payment.type,
-              date: payment.date,
-              num: payment.num,
-              fkBankLine: payment.fkBankLine,
-              ref: payment.ref,
-              invoiceId: invoice.id,
-              refExt: payment.refExt,
-            );
-            storage.storePayment(payment.ref, p);
-          }
-        });
+
+      if (invoice.totalpaid > total) {
+        payInvoices.add(invoice);
       }
+    }
+
+    for (InvoiceModel invoice in payInvoices) {
+      final result =
+          await invoiceRepository.fetchPaymentsByInvoice(invoice.id!);
+      result.fold((failure) => null, (payments) {
+        for (var payment in payments) {
+          PaymentModel p = PaymentModel(
+            amount: payment.amount,
+            type: payment.type,
+            date: payment.date,
+            num: payment.num,
+            fkBankLine: payment.fkBankLine,
+            ref: payment.ref,
+            invoiceId: invoice.id,
+            refExt: payment.refExt,
+          );
+          storage.storePayment(payment.ref, p);
+        }
+      });
     }
   }
 
@@ -163,10 +164,10 @@ class HomeController extends GetxController {
   Future _getUnpaidInvoices() async {
     final result = await invoiceRepository.fetchInvoiceList(status: 'unpaid');
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoices) {
       for (InvoiceModel invoice in invoices) {
-        storage.storeInvoice(invoice.id, invoice);
+        storage.storeInvoice(invoice.id!, invoice);
       }
     });
   }
@@ -174,17 +175,17 @@ class HomeController extends GetxController {
   Future _getModifiedInvoices() async {
     List<InvoiceModel> invoices =
         storage.getInvoiceList().where((i) => i.remaintopay != "0").toList();
-    invoices.sort((a, b) => a.dateModification.compareTo(b.dateModification));
+    invoices.sort((a, b) => a.dateModification!.compareTo(b.dateModification!));
     if (invoices.isNotEmpty) {
-      int dateModified = invoices[invoices.length - 1].dateModification;
+      int? dateModified = invoices[invoices.length - 1].dateModification;
       final result = await invoiceRepository.fetchInvoiceList(
-          dateModified: Utils.intToYMD(dateModified));
+          dateModified: Utils.intToYMD(dateModified!) ?? '1970-01-01');
 
       result.fold(
-          (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+          (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
           (invoices) {
         for (InvoiceModel invoice in invoices) {
-          storage.storeInvoice(invoice.id, invoice);
+          storage.storeInvoice(invoice.id!, invoice);
         }
       });
     }
@@ -200,12 +201,9 @@ class HomeController extends GetxController {
 
   Future _refreshCompanyData() async {
     final result = await companyRepository.fetchCompany();
-    result.fold((failure) {
-      log('Company:  ${failure.message}');
-    }, (c) {
-      log('Company: ${c.name}');
-      storage.storeCompany(c);
-      company.value = c;
+    result.fold((failure) {}, (entity) {
+      storage.storeCompany(entity);
+      company.value = entity;
     });
   }
 
@@ -220,10 +218,18 @@ class HomeController extends GetxController {
   Future<void> _refreshUserData() async {
     final result = await userRepository.login();
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (u) {
       storage.storeUser(u);
       user.value = u;
     });
+  }
+
+  fetchModified() async {
+    refreshing.value = true;
+    await _getModifiedCustomers();
+    await _getModifiedInvoices();
+    await _loadPaymentData();
+    refreshing.value = false;
   }
 }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -93,7 +94,9 @@ class Utils {
   static Future<String> createFileFromString(
       String encodedStr, String filename) async {
     final Uint8List bytes = base64.decode(encodedStr);
-    const String dir = '/storage/emulated/0/Download/';
+    //const String dir = '/storage/emulated/0/Download/';
+    final dd = await getDownloadsDirectory();
+    final String dir = dd!.path;
     final File file = File("$dir/$filename.pdf");
     await file.writeAsBytes(bytes);
     return file.path;

@@ -44,7 +44,6 @@ class PaymentsList extends StatelessWidget {
     final List<PaymentModel> payments = box
         .toMap()
         .values
-        .toList()
         .where((p) => p.invoiceId.toString() == invoiceId)
         .toList();
     int price = int.parse(Utils.amounts(totalTtc));

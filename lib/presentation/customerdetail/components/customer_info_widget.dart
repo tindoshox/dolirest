@@ -19,8 +19,11 @@ class CustomerInfoWidget extends StatelessWidget {
           text: customer.name,
           size: 30,
         ),
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        subtitle: Text(customer.codeClient),
+        style: Theme.of(context).textTheme.titleSmall,
+        subtitle: Text(
+          customer.codeClient,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
       ),
       _buildCustomerInfoRow(
         title: '${customer.town} ${customer.address}',
@@ -28,7 +31,7 @@ class CustomerInfoWidget extends StatelessWidget {
           Icons.location_city_outlined,
           color: Colors.greenAccent,
         ),
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        style: Theme.of(context).textTheme.bodySmall,
       ),
       if (customer.phone?.trim().isNotEmpty ?? false)
         _buildCustomerInfoRow(
@@ -38,7 +41,7 @@ class CustomerInfoWidget extends StatelessWidget {
             Icons.phone_android,
             color: Colors.blueAccent,
           ),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       if (customer.fax?.trim().isNotEmpty ?? false)
         _buildCustomerInfoRow(
@@ -48,7 +51,7 @@ class CustomerInfoWidget extends StatelessWidget {
             Icons.phone_android_outlined,
             color: Colors.blueGrey,
           ),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: Theme.of(context).textTheme.bodySmall,
         ),
     ];
     return ValueListenableBuilder(

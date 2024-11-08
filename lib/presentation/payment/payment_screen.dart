@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/presentation/widgets/dialog_action_button.dart';
+import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -26,7 +26,7 @@ class PaymentScreen extends GetView<PaymentController> {
       body: Center(
         child: Column(
           children: [
-            _buildInvoiceInfo(customer, invoice),
+            _buildInvoiceInfo(customer, invoice, context),
             _buidForm(context, invoice, customer),
           ],
         ),
@@ -75,16 +75,16 @@ class PaymentScreen extends GetView<PaymentController> {
                     middleText:
                         'Do you confirm payment of R${controller.amount} for ${customer.value.name}?',
                     barrierDismissible: false,
-                    confirm: DialogActionButton(
-                        onPressed: () {
+                    confirm: CustomActionButton(
+                        onTap: () {
                           Get.back();
                           controller.validateAndSave();
                         },
                         buttonText: 'Yes'),
-                    cancel: DialogActionButton(
-                      buttonColor: Colors.red,
+                    cancel: CustomActionButton(
+                      isCancel: true,
                       buttonText: 'No',
-                      onPressed: () => Get.back(),
+                      onTap: () => Get.back(),
                     ),
                   );
                 }
@@ -92,7 +92,7 @@ class PaymentScreen extends GetView<PaymentController> {
           CustomActionButton(
               controller: controller,
               buttonText: 'Cancel',
-              buttonColor: Colors.red,
+              isCancel: true,
               onTap: () {
                 Get.back();
               }),
@@ -221,10 +221,6 @@ class PaymentScreen extends GetView<PaymentController> {
               Icons.person_outline,
               color: Colors.blueAccent,
             ),
-            border: OutlineInputBorder(),
-            errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red),
-            ),
           ),
         ),
         suffixProps: const DropdownSuffixProps(
@@ -242,42 +238,7 @@ class PaymentScreen extends GetView<PaymentController> {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             itemBuilder: (context, invoice, isSelected, l) {
-              return ListTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      invoice.ref,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'BALANCE: ${invoice.remaintopay}',
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(invoice.nom!),
-                        ),
-                        Text(Utils.intToDMY(invoice.dateLimReglement!),
-                            style: TextStyle(
-                                color: Utils.overDueStyle(
-                                    invoice.dateLimReglement!))),
-                      ],
-                    ),
-                    Text(invoice.lines![0].productLabel ??
-                        invoice.lines![0].description)
-                  ],
-                ),
-              );
+              return InvoiceListTile(invoice: invoice);
             },
             emptyBuilder: ((context, searchEntry) =>
                 const Center(child: Text('Invoice not found'))),
@@ -291,7 +252,8 @@ class PaymentScreen extends GetView<PaymentController> {
     );
   }
 
-  Card _buildInvoiceInfo(Rx<CustomerModel> customer, Rx<InvoiceModel> invoice) {
+  Card _buildInvoiceInfo(Rx<CustomerModel> customer, Rx<InvoiceModel> invoice,
+      BuildContext context) {
     return Card(
       child: Obx(() => ListTile(
             title: Row(
@@ -301,9 +263,11 @@ class PaymentScreen extends GetView<PaymentController> {
                   child: Text(
                     customer.value.name ?? 'No Invoice Selected',
                     overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
-                Text(invoice.value.ref ?? ''),
+                Text(invoice.value.ref ?? '',
+                    style: Theme.of(context).textTheme.titleSmall),
               ],
             ),
             subtitle: Row(
@@ -315,13 +279,15 @@ class PaymentScreen extends GetView<PaymentController> {
                         ? ''
                         : '${customer.value.town}: ${customer.value.address}',
                     overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
                 Text(
                   controller.customer.value.ref == null
                       ? ''
-                      : 'Balance Due: ${invoice.value.remaintopay ?? '0'}',
+                      : 'BALANCE: ${invoice.value.remaintopay ?? '0'}',
                   textAlign: TextAlign.start,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),

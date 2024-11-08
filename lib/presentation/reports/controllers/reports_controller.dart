@@ -30,7 +30,10 @@ class ReportsController extends GetxController {
   /// A list of available reports.
   List<ReportIdModel> reportList = [
     ReportIdModel(
-        reportid: 'balances', displayName: 'Balances', hasGroupParameter: true),
+        reportid: 'balances',
+        displayName: 'Balances',
+        hasGroupParameter: true,
+        groupIsRequired: true),
     ReportIdModel(
         reportid: 'receipts_mobile',
         displayName: 'Receipts',
@@ -103,7 +106,7 @@ class ReportsController extends GetxController {
   Future<List<GroupModel>> refreshGroups() async {
     final result = await groupRepository.fetchGroups();
     result.fold(
-        (failure) => SnackbarHelper.errorSnackbar(message: failure.message),
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
       for (GroupModel group in groups) {
         storage.storeGroup(group.id, group);
@@ -148,7 +151,7 @@ class ReportsController extends GetxController {
       final result = await repository.buildReport(body);
       result.fold((failure) {
         DialogHelper.hideLoading();
-        SnackbarHelper.errorSnackbar(message: failure.message);
+        SnackBarHelper.errorSnackbar(message: failure.message);
       }, (report) {
         //Creates file in storage
         Utils.createFileFromString(

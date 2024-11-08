@@ -22,13 +22,16 @@ class CustomActionButton extends StatelessWidget {
   /// maximum and minimum size of the button, respectively.
   const CustomActionButton({
     super.key,
+    this.isCancel = false,
     this.controller,
     required this.buttonText,
     this.buttonColor,
     this.onTap,
-    this.maximumSize = const Size(150, 50),
-    this.minimumSize = const Size(150, 40),
+    this.maximumSize = const WidgetStatePropertyAll(Size(150, 40)),
+    this.minimumSize = const WidgetStatePropertyAll(Size(150, 40)),
   });
+
+  final bool isCancel;
 
   /// The controller for the button.
   final GetxController? controller;
@@ -43,27 +46,30 @@ class CustomActionButton extends StatelessWidget {
   final void Function()? onTap;
 
   /// The maximum size of the button.
-  final Size? maximumSize;
+  final WidgetStateProperty<Size?>? maximumSize;
 
   /// The minimum size of the button.
-  final Size? minimumSize;
+  final WidgetStateProperty<Size?>? minimumSize;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5.0),
-        ),
-        maximumSize: maximumSize,
-        minimumSize: minimumSize,
-        side: BorderSide(
-          width: 1,
-          color: buttonColor ?? Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-      child: Text(buttonText),
-    );
+    return isCancel
+        ? FilledButton(
+            onPressed: onTap,
+            style: ButtonStyle(
+                maximumSize: maximumSize,
+                minimumSize: minimumSize,
+                elevation: WidgetStatePropertyAll(2)),
+            child: Text(buttonText),
+          )
+        : FilledButton.tonal(
+            onPressed: onTap,
+            style: ButtonStyle(
+              maximumSize: maximumSize,
+              minimumSize: minimumSize,
+              elevation: WidgetStatePropertyAll(2),
+            ),
+            child: Text(buttonText),
+          );
   }
 }

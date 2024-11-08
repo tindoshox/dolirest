@@ -33,8 +33,8 @@ class CustomerListController extends GetxController {
     final result = await repository.fetchCustomerList();
 
     result.fold((failure) {
-      SnackbarHelper.errorSnackbar(message: failure.message);
       isLoading(false);
+      SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customers) {
       for (CustomerModel customer in customers) {
         storage.storeCustomer(customer.id, customer);
