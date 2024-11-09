@@ -1,10 +1,9 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 
@@ -134,8 +133,7 @@ class _CustomerList extends GetView<CustomerListController> {
                   itemBuilder: (context, index) {
                     if (index < customers.length) {
                       CustomerModel customer = customers[index];
-                      return _buildCustomerListTile(
-                          customer, customers, index, context);
+                      return buildCustomerListTile(customer, context);
                     } else {
                       return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 32.0),
@@ -144,43 +142,6 @@ class _CustomerList extends GetView<CustomerListController> {
                     }
                   });
         },
-      ),
-    );
-  }
-
-  Card _buildCustomerListTile(CustomerModel customer,
-      List<CustomerModel> customers, int index, BuildContext context) {
-    return Card(
-      child: ListTile(
-        onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-          'customerId': customer.id.toString(),
-        }),
-        leading: Initicon(
-          text: customer.name,
-          size: 30,
-        ),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(
-                customers[index].name!,
-                style: Theme.of(context).textTheme.titleSmall,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        subtitle: Row(
-          children: [
-            Flexible(
-              child: Text(
-                '${customer.address ?? ''} ${customer.town ?? ''}',
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,4 +1,6 @@
 class Failure {
-  final String message;
-  Failure([this.message = 'Internal Server Error']);
+  int code; // 200, 201, 400, 303..500 and so on
+  String message; // error , success
+
+  Failure(this.code, this.message);
 }

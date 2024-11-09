@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/error/catch_exception.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/error/error_handler.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
@@ -28,10 +27,10 @@ class CustomerRepository extends DioService {
         List<dynamic> l = response.data;
         return right(l.map((c) => CustomerModel.fromJson(c)).toList());
       } else {
-        return left(Failure(response.statusMessage!));
+        return left(Failure(response.statusCode!, response.statusMessage!));
       }
-    } on DioException catch (e) {
-      return left(failure(e));
+    } catch (error) {
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -45,8 +44,8 @@ class CustomerRepository extends DioService {
       );
 
       return right(CustomerModel.fromJson(response.data));
-    } on DioException catch (e) {
-      return left(failure(e));
+    } catch (error) {
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -62,10 +61,10 @@ class CustomerRepository extends DioService {
           response.data.toString().replaceAll('"', ''),
         );
       } else {
-        return left(Failure(response.statusMessage!));
+        return left(Failure(response.statusCode!, response.statusMessage!));
       }
-    } on DioException catch (e) {
-      return left(failure(e));
+    } catch (error) {
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -81,10 +80,10 @@ class CustomerRepository extends DioService {
       if (response.statusCode == 200) {
         return right(customerModelFromJson(response.data));
       } else {
-        return left(Failure(response.statusMessage!));
+        return left(Failure(response.statusCode!, response.statusMessage!));
       }
-    } on DioException catch (e) {
-      return left(failure(e));
+    } catch (error) {
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

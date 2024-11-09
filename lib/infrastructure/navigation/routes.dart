@@ -5,9 +5,7 @@ class Routes {
     return HOME;
   }
 
-  static const ROOT = '/';
   static const ADDPAYMENT = '/addpayment';
-  static const APPOINTMENTS = '/appointments';
   static const CASHFLOW = '/cashflow';
   static const CREATEINVOICE = '/createinvoice';
   static const CUSTOMERDETAIL = '/customerdetail';
@@ -20,10 +18,5 @@ class Routes {
   static const PAYMENT = '/payment';
   static const REPORTS = '/reports';
   static const SETTINGS = '/settings';
-  static const SPLASHSCREEN = '/splashscreen';
-  static const SPLASH_SCREEN = '/splash-screen';
-  static const SUPPLIERDETAILS = '/supplierdetails';
-  static const SUPPLIERINVOICEDETAILS = '/supplierinvoicedetails';
-  static const SUPPLIERLIST = '/supplierlist';
   static const DUETODAY = '/duetoday';
 }

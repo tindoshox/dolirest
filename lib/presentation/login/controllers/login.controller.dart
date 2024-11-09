@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
+import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +46,11 @@ class LoginController extends GetxController {
         _writeStore();
         storage.storeUser(user);
         DialogHelper.hideLoading();
-        Restart.restartApp();
+        if (Platform.isAndroid) {
+          Restart.restartApp();
+        } else {
+          Get.offAllNamed(Routes.HOME);
+        }
       });
     }
   }

@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -109,14 +110,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           itemBuilder: (context, customer, isSelected, l) {
-            return ListTile(
-              title: Text(
-                customer.name ?? 'Name not set',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text('${customer.town}: ${customer.address}'.trim()),
-            );
+            return buildCustomerListTile(customer, context);
           },
           emptyBuilder: (context, searchEntry) => const Center(
             child: Text(
