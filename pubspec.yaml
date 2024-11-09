@@ -28,7 +28,6 @@ dependencies:
   dio: ^5.7.0
   flex_color_scheme: ^8.0.0
   restart_app: ^1.3.2
-  pretty_dio_logger: ^1.4.0
   
 
 dev_dependencies:
