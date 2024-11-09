@@ -124,7 +124,17 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshInvoiceData() async {
-    await invoiceRepository.fetchInvoiceList(customerId: customerId);
+    final result =
+        await invoiceRepository.fetchInvoiceList(customerId: customerId);
+    result.fold(
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
+        (invoices) {
+      for (InvoiceModel invoice in invoices) {
+        final customer = storage.getCustomer(invoice.socid);
+        invoice.name = customer!.name;
+        storage.storeInvoice(invoice.id, invoice);
+      }
+    });
   }
 
   Future _refreshCustomerData() async {

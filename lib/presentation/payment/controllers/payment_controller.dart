@@ -220,7 +220,18 @@ class PaymentController extends GetxController {
   }
 
   refreshInvoice(invoiceId) async {
-    await repository.fetchInvoiceList(customerId: customer.value.id);
+    final result =
+        await repository.fetchInvoiceList(customerId: customer.value.id);
+
+    result.fold(
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
+        (invoices) {
+      for (InvoiceModel invoice in invoices) {
+        final customer = storage.getCustomer(invoice.socid);
+        invoice.name = customer!.name;
+        storage.storeInvoice(invoice.id, invoice);
+      }
+    });
   }
 
   fetchInvoices() {

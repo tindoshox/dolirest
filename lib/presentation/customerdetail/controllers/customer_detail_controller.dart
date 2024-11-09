@@ -51,6 +51,8 @@ class CustomerDetailController extends GetxController
     final result = await repository.fetchInvoiceList(customerId: customerId);
     result.fold((failure) => null, (invoices) {
       for (InvoiceModel invoice in invoices) {
+        final customer = storage.getCustomer(invoice.socid);
+        invoice.name = customer!.name;
         storage.storeInvoice(invoice.id, invoice);
       }
     });

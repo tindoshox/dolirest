@@ -39,6 +39,8 @@ class InvoicelistController extends GetxController {
     }, (invoices) {
       isLoading(false);
       for (InvoiceModel invoice in invoices) {
+        final customer = storage.getCustomer(invoice.socid);
+        invoice.name = customer!.name;
         storage.storeInvoice(invoice.id, invoice);
       }
     });
