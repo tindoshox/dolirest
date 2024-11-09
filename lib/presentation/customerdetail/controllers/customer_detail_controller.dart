@@ -9,6 +9,7 @@ class CustomerDetailController extends GetxController
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   final String customerId = Get.arguments['customerId'];
+
   final List<Tab> customerTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Invoices')

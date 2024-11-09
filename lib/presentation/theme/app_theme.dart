@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 sealed class AppTheme {
   // The defined light theme.
   static ThemeData light = FlexThemeData.light(
-    scheme: FlexScheme.redWine,
+    scheme: FlexScheme.indigoM3,
     surfaceMode: FlexSurfaceMode.highBackgroundLowScaffold,
     blendLevel: 1,
     appBarStyle: FlexAppBarStyle.background,
@@ -97,7 +97,7 @@ sealed class AppTheme {
   );
   // The defined dark theme.
   static ThemeData dark = FlexThemeData.dark(
-    scheme: FlexScheme.redWine,
+    scheme: FlexScheme.indigoM3,
     surfaceMode: FlexSurfaceMode.highBackgroundLowScaffold,
     blendLevel: 2,
     appBarStyle: FlexAppBarStyle.background,
