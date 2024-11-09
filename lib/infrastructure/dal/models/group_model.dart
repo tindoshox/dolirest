@@ -2,7 +2,7 @@
 //
 //     final groupModel = groupModelFromJson(jsonString);
 
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'dart:convert';
 
 part 'group_model.g.dart';

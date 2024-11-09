@@ -4,7 +4,7 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 class PaymentsList extends StatelessWidget {
   const PaymentsList({

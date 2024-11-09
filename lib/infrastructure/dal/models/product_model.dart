@@ -2,7 +2,7 @@
 //
 //     final productModel = productModelFromJson(jsonString);
 
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'dart:convert';
 
 part 'product_model.g.dart';

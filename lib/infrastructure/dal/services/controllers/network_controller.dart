@@ -6,7 +6,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reach
 import 'package:get/get.dart';
 
 class NetworkController extends GetxController {
-  final ServerReachablility reachablility = Get.put(ServerReachablility());
+  final ServerReachability reachablility = Get.put(ServerReachability());
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> subscription;
   Timer? _serverCheckTimer;

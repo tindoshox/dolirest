@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dolirest/hive_registrar.g.dart';
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
@@ -8,7 +9,7 @@ import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
-import 'package:dolirest/infrastructure/dal/services/dependancy_injection.dart';
+import 'package:dolirest/infrastructure/dal/services/dependency_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -16,7 +17,7 @@ import 'package:dolirest/presentation/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'infrastructure/navigation/navigation.dart';
@@ -25,16 +26,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final Directory dir = await getApplicationDocumentsDirectory();
-  await Hive.initFlutter(dir.path);
-  Hive.registerAdapter<InvoiceModel>(InvoiceModelAdapter());
-  Hive.registerAdapter<Line>(LineAdapter());
-  Hive.registerAdapter(CustomerModelAdapter());
-  Hive.registerAdapter<PaymentModel>(PaymentModelAdapter());
-  Hive.registerAdapter<GroupModel>(GroupModelAdapter());
-  Hive.registerAdapter<ProductModel>(ProductModelAdapter());
-  Hive.registerAdapter<CompanyModel>(CompanyModelAdapter());
-  Hive.registerAdapter<AddressModel>(AddressModelAdapter());
-  Hive.registerAdapter<UserModel>(UserModelAdapter());
+  Hive
+    ..init(dir.path)
+    ..registerAdapters();
 
   await Hive.openBox<InvoiceModel>('invoices');
   await Hive.openBox<CustomerModel>('customers');

@@ -1,7 +1,7 @@
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 
-class ServerReachablility extends DioService {
+class ServerReachability extends DioService {
   // Actual HTTP request to check server reachability
   Future<bool> checkServerReachability() async {
     try {

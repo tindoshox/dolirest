@@ -11,7 +11,7 @@ import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 class CustomerDetailScreen extends GetView<CustomerDetailController> {
   const CustomerDetailScreen({super.key});

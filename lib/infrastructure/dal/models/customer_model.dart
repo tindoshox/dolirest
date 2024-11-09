@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 part 'customer_model.g.dart';
 

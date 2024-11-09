@@ -16,7 +16,7 @@ class DependencyInjection {
     Get.put<StorageService>(StorageService(), permanent: true);
     Get.put<NetworkController>(NetworkController(), permanent: true);
     Get.put(DioService(), permanent: true);
-    Get.put<ServerReachablility>(ServerReachablility(), permanent: true);
+    Get.put<ServerReachability>(ServerReachability(), permanent: true);
     Get.put<CustomerRepository>(CustomerRepository());
     Get.put<InvoiceRepository>(InvoiceRepository());
     Get.put<ProductRepository>(ProductRepository());

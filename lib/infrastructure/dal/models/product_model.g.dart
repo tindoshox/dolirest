@@ -156,7 +156,7 @@ class ProductModelAdapter extends TypeAdapter<ProductModel> {
       userClosingId: fields[137] as dynamic,
       userModification: fields[138] as dynamic,
       userModificationId: fields[139] as dynamic,
-      specimen: fields[140] as int?,
+      specimen: (fields[140] as num?)?.toInt(),
       labelStatus: fields[141] as dynamic,
       showphotoOnPopup: fields[142] as dynamic,
       nb: (fields[143] as List?)?.cast<dynamic>(),
