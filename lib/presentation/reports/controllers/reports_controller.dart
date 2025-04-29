@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/models/build_report_request_mode.dart';
+import 'package:dolirest/infrastructure/dal/models/build_report_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
@@ -19,53 +19,87 @@ class ReportsController extends GetxController {
   final StorageService storage = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
-  TextEditingController fromDateController = TextEditingController();
-  TextEditingController toDateController = TextEditingController();
+  TextEditingController endDateController = TextEditingController();
+  TextEditingController toEndController = TextEditingController();
+  TextEditingController startReceiptController = TextEditingController();
+  TextEditingController endReceiptController = TextEditingController();
   RxList<GroupModel> groups = List<GroupModel>.empty().obs;
   final DocumentRepository repository = Get.find();
 
   late bool permissionReady;
   late TargetPlatform? platform;
 
+  var startPeriod = ''.obs;
+  var endPeriod = ''.obs;
+
   /// A list of available reports.
   List<ReportIdModel> reportList = [
     ReportIdModel(
         reportid: 'balances',
         displayName: 'Balances',
-        hasGroupParameter: true,
+        hasGroupParam: true,
         groupIsRequired: true),
     ReportIdModel(
         reportid: 'receipts_mobile',
         displayName: 'Receipts',
-        hasFromDateParameter: true,
-        hasToDateParameter: true),
+        hasStartDateParam: true,
+        hasEndDateParam: true),
     ReportIdModel(
       reportid: 'receipts',
       displayName: 'Receipts (A4)',
-      hasFromDateParameter: true,
-      hasToDateParameter: true,
+      hasStartDateParam: true,
+      hasEndDateParam: true,
     ),
     ReportIdModel(
-      reportid: 'Monthly_Collection_Totals',
+      reportid: 'daily_totals',
+      displayName: 'Daily Totals',
+      hasStartPeriodParam: true,
+    ),
+    ReportIdModel(
+      reportid: 'monthly_totals',
       displayName: 'Monthly Totals',
-      hasFromDateParameter: true,
-      hasToDateParameter: true,
+      hasStartPeriodParam: true,
+      hasEndPeriodParam: true,
     ),
     ReportIdModel(
-        reportid: 'Overdue',
-        displayName: 'Overdue',
-        hasFromDateParameter: true,
-        hasToDateParameter: true,
-        hasGroupParameter: true),
+      reportid: 'percentage',
+      displayName: 'Performance',
+      hasStartPeriodParam: true,
+    ),
     ReportIdModel(
-        reportid: 'Sales_Invoices',
+      reportid: 'overdue',
+      displayName: 'Overdue',
+      hasStartDateParam: true,
+      hasEndDateParam: true,
+      hasGroupParam: true,
+    ),
+    ReportIdModel(
+        reportid: 'sales',
         displayName: 'Sales',
-        hasFromDateParameter: true,
-        hasToDateParameter: true),
+        hasStartDateParam: true,
+        hasEndDateParam: true,
+        hasGroupParam: true),
+    ReportIdModel(
+      reportid: 'returns',
+      displayName: 'Returns',
+      hasStartDateParam: true,
+      hasEndDateParam: true,
+      hasGroupParam: true,
+    ),
+    ReportIdModel(
+        reportid: 'receiptbook',
+        displayName: 'Receipt Book',
+        hasStartReceiptParam: true,
+        hasEndReceiptParam: true),
+    ReportIdModel(
+      reportid: 'stock',
+      displayName: 'Stock',
+      hasWarehouseParam: true,
+    ),
   ];
 
-  Rx<DateTime> fromdate = DateTime.now().obs;
-  Rx<DateTime> todate = DateTime.now().obs;
+  Rx<DateTime> startdate = DateTime.now().obs;
+  Rx<DateTime> enddate = DateTime.now().obs;
   Rx<GroupModel> selectedGroup = GroupModel().obs;
   Rx<ReportIdModel> selectedReport = ReportIdModel().obs;
   RxString salesperson = ''.obs;
@@ -86,8 +120,8 @@ class ReportsController extends GetxController {
     } else {
       groups.value = list;
     }
-    fromDateController.text = Utils.dateTimeToString(DateTime.now());
-    toDateController.text = Utils.dateTimeToString(DateTime.now());
+    endDateController.text = Utils.dateTimeToString(DateTime.now());
+    toEndController.text = Utils.dateTimeToString(DateTime.now());
     super.onInit();
   }
 
@@ -122,18 +156,25 @@ class ReportsController extends GetxController {
     if (form.validate()) {
       var requestModel = BuildReportRequestModel(
         reportid: selectedReport.value.reportid,
-        groupid: selectedReport.value.hasGroupParameter
-            ? selectedGroup.value.id
-            : '',
+        groupid:
+            selectedReport.value.hasGroupParam ? selectedGroup.value.id : '',
         salesperson:
-            selectedReport.value.hasSalesParameter ? salesperson.value : '',
-        fromdate: selectedReport.value.hasFromDateParameter
-            ? DateFormat('yyyy-MM-dd').format(fromdate.value)
+            selectedReport.value.hasSalesParam ? salesperson.value : '',
+        startdate: selectedReport.value.hasStartDateParam
+            ? DateFormat('yyyy-MM-dd').format(startdate.value)
             : '',
-        todate: selectedReport.value.hasToDateParameter
-            ? DateFormat('yyyy-MM-dd').format(todate.value)
+        enddate: selectedReport.value.hasEndDateParam
+            ? DateFormat('yyyy-MM-dd').format(enddate.value)
             : '',
-      ).toMap();
+        startreceipt: selectedReport.value.hasStartReceiptParam
+            ? startReceiptController.text.trim()
+            : '',
+        endreceipt: selectedReport.value.hasEndReceiptParam
+            ? endReceiptController.text.trim()
+            : '',
+        startperiod: startPeriod.value,
+        endperiod: endPeriod.value,
+      ).toJson();
 
       requestModel.removeWhere((key, value) => value == null || value == '');
 
@@ -170,30 +211,30 @@ class ReportsController extends GetxController {
   }
 
   /// Sets the initial from date.
-  void setFromDate() async {
+  void setStartDate() async {
     DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
-        initialDate: fromdate.value,
+        initialDate: startdate.value,
         firstDate: DateTime(2000),
         lastDate: DateTime.now());
 
     if (selectedDate != null) {
-      fromdate.value = selectedDate;
-      fromDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+      startdate.value = selectedDate;
+      endDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
     }
   }
 
   /// Sets the initial to date.
-  void setToDate() async {
+  void setEndDate() async {
     DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
-        initialDate: fromdate.value,
+        initialDate: startdate.value,
         firstDate: DateTime(2000),
         lastDate: DateTime.now());
     if (selectedDate != null) {
-      todate.value = selectedDate;
-      todate.value = selectedDate;
-      toDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+      enddate.value = selectedDate;
+      enddate.value = selectedDate;
+      toEndController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
     }
   }
 

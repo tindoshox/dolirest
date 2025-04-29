@@ -11,14 +11,14 @@ class InvoiceRepository extends DioService {
   Future<Either<Failure, List<InvoiceModel>>> fetchInvoiceList({
     String? customerId,
     String dateModified = '1970-01-01',
-    String status = "",
+    String? status,
   }) async {
     final Map<String, String> queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
       "page": "1",
       "limit": "0",
-      "status": status,
+      "status": status ?? '',
       "thirdparty_ids": customerId ?? '',
       "sqlfilters": "(t.type:=:0) and (t.tms:>:'$dateModified')"
     };
@@ -29,12 +29,14 @@ class InvoiceRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      if (response.statusCode == 200) {
+      if (response.data is List) {
         List<dynamic> l = response.data;
-
         return right(l.map((i) => InvoiceModel.fromJson(i)).toList());
       } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
+        return left(Failure(
+          response.statusCode!,
+          "Unexpected response format: Expected a List but got ${response.data.runtimeType}",
+        ));
       }
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
@@ -48,12 +50,9 @@ class InvoiceRepository extends DioService {
       var response = await dio.get(
         '${ApiPath.invoices}/$invoiceId/payments',
       );
-      if (response.statusCode == 200) {
-        List<dynamic> l = response.data;
-        return right(l.map((p) => PaymentModel.fromJson(p)).toList());
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      List<dynamic> l = response.data;
+      return right(l.map((p) => PaymentModel.fromJson(p)).toList());
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -67,11 +66,8 @@ class InvoiceRepository extends DioService {
         '${ApiPath.invoices}/$invoiceId',
         data: body,
       );
-      if (response.statusCode == 200) {
-        return right(InvoiceModel.fromJson(response.data));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      return right(InvoiceModel.fromJson(response.data));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -84,11 +80,8 @@ class InvoiceRepository extends DioService {
         ApiPath.invoices,
         data: body,
       );
-      if (response.statusCode == 200) {
-        return right(response.data.toString().replaceAll('"', ''));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      return right(response.data.toString().replaceAll('"', ''));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -104,11 +97,8 @@ class InvoiceRepository extends DioService {
         '${ApiPath.invoices}/$invoiceId/validate',
         data: body,
       );
-      if (response.statusCode == 200) {
-        return right(response.data.toString().replaceAll('"', ''));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      return right(response.data.toString().replaceAll('"', ''));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -119,11 +109,8 @@ class InvoiceRepository extends DioService {
       var response = await dio.delete(
         '${ApiPath.invoices}/$invoiceId',
       );
-      if (response.statusCode == 200) {
-        return right(response.data.toString().replaceAll('"', ''));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      return right(response.data.toString().replaceAll('"', ''));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -137,11 +124,8 @@ class InvoiceRepository extends DioService {
         '${ApiPath.invoices}/paymentsdistributed',
         data: body,
       );
-      if (response.statusCode == 200) {
-        return right(response.data.toString().replaceAll('"', ''));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
+      return right(response.data.toString().replaceAll('"', ''));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }

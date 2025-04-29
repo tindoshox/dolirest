@@ -58,7 +58,7 @@ class SnackBarHelper {
       title: title,
       message: message ?? 'No connection to server',
       icon: Icons.network_locked,
-      backgroundColor: Colors.amber,
+      backgroundColor: const Color.fromARGB(255, 255, 7, 7),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dolirest/presentation/widgets/period_dropdown.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -87,35 +88,35 @@ class ReportsScreen extends GetView<ReportsController> {
                 ///
                 ///
                 /// From Date
-                if (controller.selectedReport.value.hasFromDateParameter)
+                if (controller.selectedReport.value.hasStartDateParam)
                   CustomFormField(
                     textInputAction: TextInputAction.next,
-                    name: 'from_date',
+                    name: 'startdate',
                     prefixIcon: const Icon(Icons.date_range),
-                    controller: controller.fromDateController,
+                    controller: controller.endDateController,
                     labelText: 'From Date',
                     suffix: IconButton(
                         icon: const Icon(Icons.calendar_today),
-                        onPressed: () => controller.setFromDate()),
+                        onPressed: () => controller.setStartDate()),
                   ),
 
                 ///
                 ///
                 /// To Date
-                if (controller.selectedReport.value.hasToDateParameter)
+                if (controller.selectedReport.value.hasEndDateParam)
                   CustomFormField(
-                    name: 'to_date',
+                    name: 'enddate',
                     textInputAction: TextInputAction.next,
                     prefixIcon: const Icon(Icons.date_range),
-                    controller: controller.toDateController,
+                    controller: controller.toEndController,
                     labelText: 'To Date',
                     suffix: IconButton(
                         icon: const Icon(Icons.calendar_today),
-                        onPressed: () => controller.setToDate()),
+                        onPressed: () => controller.setEndDate()),
                   ),
 
                 /// Group List
-                if (controller.selectedReport.value.hasGroupParameter)
+                if (controller.selectedReport.value.hasGroupParam)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: DropdownSearch<GroupModel>(
@@ -172,6 +173,62 @@ class ReportsScreen extends GetView<ReportsController> {
                       },
                     ),
                   ),
+
+                //Start Receipt
+                if (controller.selectedReport.value.hasStartReceiptParam)
+                  CustomFormField(
+                    name: 'startreceipt',
+                    controller: controller.startReceiptController,
+                    validator: (receipt) =>
+                        GetUtils.isLengthLessThan(receipt, 3)
+                            ? 'Receipt number is required'
+                            : null,
+                    keyboardType: TextInputType.number,
+                    labelText: 'Start Receipt',
+                    prefixIcon: const Icon(Icons.receipt_long),
+                    autofocus: true,
+                  ),
+
+                //End Receipt
+                if (controller.selectedReport.value.hasEndReceiptParam)
+                  CustomFormField(
+                    name: 'endreceipt',
+                    controller: controller.endReceiptController,
+                    validator: (receipt) =>
+                        GetUtils.isLengthLessThan(receipt, 3)
+                            ? 'Receipt number is required'
+                            : null,
+                    keyboardType: TextInputType.number,
+                    labelText: 'End Receipt',
+                    prefixIcon: const Icon(Icons.receipt_long),
+                  ),
+                if (controller.selectedReport.value.hasStartPeriodParam)
+                  Obx(() => PeriodDropdown(
+                        value: controller.startPeriod.value.isEmpty
+                            ? null
+                            : controller.startPeriod.value,
+                        onChanged: (val) =>
+                            controller.startPeriod.value = val ?? '',
+                        labelText: 'Start Period',
+                        hintText: 'Select Start Period',
+                        validator: (val) => val == null || val.isEmpty
+                            ? 'Start period is required'
+                            : null,
+                      )),
+                SizedBox(height: 16),
+                if (controller.selectedReport.value.hasEndPeriodParam)
+                  Obx(() => PeriodDropdown(
+                        value: controller.endPeriod.value.isEmpty
+                            ? null
+                            : controller.endPeriod.value,
+                        onChanged: (val) =>
+                            controller.endPeriod.value = val ?? '',
+                        labelText: 'End Period',
+                        hintText: 'Select End Period',
+                        validator: (val) => val == null || val.isEmpty
+                            ? 'End period is required'
+                            : null,
+                      )),
               ],
             ),
           ),

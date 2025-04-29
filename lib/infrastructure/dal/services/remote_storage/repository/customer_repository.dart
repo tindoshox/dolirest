@@ -23,14 +23,14 @@ class CustomerRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      if (response.statusCode == 200) {
+      
+      
         List<dynamic> l = response.data;
         return right(l.map((c) => CustomerModel.fromJson(c)).toList());
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+ 
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+      
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -45,7 +45,7 @@ class CustomerRepository extends DioService {
 
       return right(CustomerModel.fromJson(response.data));
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+    return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -56,15 +56,13 @@ class CustomerRepository extends DioService {
         ApiPath.customers,
         data: body,
       );
-      if (response.statusCode == 200) {
+      
         return right(
           response.data.toString().replaceAll('"', ''),
         );
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -77,13 +75,11 @@ class CustomerRepository extends DioService {
         data: body,
       );
 
-      if (response.statusCode == 200) {
+      
         return right(customerModelFromJson(response.data));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

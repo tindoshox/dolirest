@@ -8,7 +8,7 @@ part of 'group_model.dart';
 
 class GroupModelAdapter extends TypeAdapter<GroupModel> {
   @override
-  final int typeId = 6;
+  final typeId = 6;
 
   @override
   GroupModel read(BinaryReader reader) {

@@ -1,8 +1,11 @@
+// ignore_for_file: unused_import
+
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/error_handler.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
+import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 
 class UserRepository extends DioService {
@@ -18,15 +21,15 @@ class UserRepository extends DioService {
       var response = await dio.get(
         ApiPath.users,
       );
-      if (response.statusCode == 200) {
+      
+       
+        
         return right(
           UserModel.fromJson(response.data),
         );
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

@@ -17,7 +17,7 @@ class InvoiceListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () =>
-          controller.refreshInvoiceData(customerId: controller.customerId),
+          controller.refreshCustomerInvoiceData(customerId: controller.customerId),
       child: ListView.builder(
           itemCount: invoices.length,
           itemBuilder: (context, index) {

@@ -91,7 +91,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
               .toList()
               .where((element) => element.remaintopay != "0")
               .toList();
-          list.sort((a, b) => a.nom.compareTo(b.nom));
+          list.sort((a, b) => a.name.compareTo(b.name));
           List<InvoiceModel> invoices = search != ""
               ? list
                   .where(

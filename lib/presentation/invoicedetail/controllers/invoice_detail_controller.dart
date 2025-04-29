@@ -174,7 +174,7 @@ class InvoiceDetailController extends GetxController
     DialogHelper.hideLoading();
   }
 
-  setDueDate() async {
+  setDueDate( ) async {
     DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
         initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -194,7 +194,7 @@ class InvoiceDetailController extends GetxController
     }
   }
 
-  Future _updateDueDate(int selectedDate) async {
+  Future _updateDueDate(int selectedDate ) async {
     DialogHelper.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
@@ -206,6 +206,7 @@ class InvoiceDetailController extends GetxController
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
+          DialogHelper.hideLoading();
       SnackBarHelper.successSnackbar(message: 'Due date changed');
       _refreshInvoiceData();
     });

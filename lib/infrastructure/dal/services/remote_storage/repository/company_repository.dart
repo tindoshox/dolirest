@@ -11,13 +11,11 @@ class CompanyRepository extends DioService {
       final response = await dio.get(
         ApiPath.company,
       );
-      if (response.statusCode == 200) {
+     
         return right(CompanyModel.fromJson(response.data));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+  
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

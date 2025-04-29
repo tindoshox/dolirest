@@ -131,7 +131,7 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-      DialogHelper.showLoading('Creating Invoice...');
+       DialogHelper.showLoading('Creating Invoice...');
       // If stock type is free text.
       if (stockType.value != '0') {
         await _createInvoice();
@@ -153,14 +153,19 @@ class CreateinvoiceController extends GetxController {
   /// Attempt draft creation
   Future _createInvoice() async {
     /// Generate product line
-    Line line = Line(
-        qty: '1',
-        subprice: priceController.text,
-        fkProduct: selectedProduct.value.id,
-        desc: freetextController.text,
-        description: freetextController.text,
-        fkProductType:
-            stockType.value == '0' ? int.parse(stockType.value) : null);
+
+    var ln = Line(
+            qty: '1',
+            subprice: priceController.text,
+            fkProduct: selectedProduct.value.id,
+            desc: freetextController.text,
+            description: freetextController.text,
+            fkProductType:
+                stockType.value == '0' ? int.parse(stockType.value) : null)
+        .toJson();
+
+    ln.removeWhere((key, value) => value == null);
+    var lines = [ln];
 
     /// Generate main draft
     var invoice = InvoiceModel(
@@ -171,15 +176,17 @@ class CreateinvoiceController extends GetxController {
         dateLimReglement: Utils.dateTimeToInt(dueDate.value),
         condReglementCode: 'RECEP',
         modeReglementCode: 'LIQ',
-        lines: [line]).toJson();
+        lines: []).toJson();
 
     invoice.removeWhere((key, value) => value == null);
+    invoice['lines'] = lines;
 
     String body = jsonEncode(invoice);
 
-    /// Submit for draft creation
+    // Submit for draft creation
 
     final result = await repository.createInvoice(body);
+
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
@@ -199,6 +206,7 @@ class CreateinvoiceController extends GetxController {
 
     final result = await repository.validateInvoice(body, invoiceId);
     result.fold((failure) {
+      DialogHelper.hideLoading();
       _deleteInvoice(invoiceId);
     }, (v) async {
       await _getNewInvoice(invoiceId).then((value) {

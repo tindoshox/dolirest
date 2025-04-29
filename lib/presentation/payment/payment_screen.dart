@@ -204,7 +204,7 @@ class PaymentScreen extends GetView<PaymentController> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: DropdownSearch<InvoiceModel>(
         key: controller.dropdownKey,
-        compareFn: (item1, item2) => item1.id == item2.id,
+        compareFn: (item1, item2) => item1.name == item2.name,
         onChanged: (invoice) {
           if (invoice != null) {
             controller.fetchData(invoice.socid!, invoice.id!);
@@ -246,8 +246,8 @@ class PaymentScreen extends GetView<PaymentController> {
         items: (filter, loadProps) async {
           return await controller.fetchInvoices();
         },
-        filterFn: (item, filter) =>
-            item.nom.contains(filter) || item.ref.contains(filter),
+        filterFn: (invoice, filter) =>
+            invoice.name.contains(filter) || invoice.ref.contains(filter),
       ),
     );
   }

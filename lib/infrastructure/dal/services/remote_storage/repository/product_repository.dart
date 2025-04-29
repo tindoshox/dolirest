@@ -15,12 +15,10 @@ class ProductRepository extends DioService {
     try {
       var response =
           await dio.get(ApiPath.products, queryParameters: queryParameters);
-      if (response.statusCode == 200) {
+ 
         List<dynamic> l = response.data;
         return right(l.map((p) => ProductModel.fromJson(p)).toList());
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+     
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }

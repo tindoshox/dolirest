@@ -16,16 +16,14 @@ class GroupRepository extends DioService {
       var response =
           await dio.get(ApiPath.groups, queryParameters: queryParameters);
 
-      if (response.statusCode == 200) {
+      
         List<dynamic> l = response.data;
         return right(l
             .map((g) => GroupModel.fromJson(g as Map<String, dynamic>))
             .toList());
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

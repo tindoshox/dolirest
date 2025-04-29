@@ -11,6 +11,7 @@ class ServerReachability extends DioService {
 
       return response.statusCode == 200 || response.statusCode == 401;
     } catch (e) {
+      
       return false;
     }
   }

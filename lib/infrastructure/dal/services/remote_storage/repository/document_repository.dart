@@ -15,13 +15,11 @@ class DocumentRepository extends DioService {
         ApiPath.buildDocument,
         data: body,
       );
-      if (response.statusCode == 200) {
+      
         return right(BuildDucumentResponseModel.fromJson(response.data));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+     
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -33,13 +31,11 @@ class DocumentRepository extends DioService {
         ApiPath.buildReport,
         data: body,
       );
-      if (response.statusCode == 200) {
+      
         return right(BuildReportResponseModel.fromJson(response.data));
-      } else {
-        return left(Failure(response.statusCode!, response.statusMessage!));
-      }
+  
     } catch (error) {
-      return Left(ErrorHandler.handle(error).failure);
+     return Left(ErrorHandler.handle(error).failure);
     }
   }
 }
