@@ -314,7 +314,8 @@ class HomeScreen extends GetView<HomeController> {
                   color: const Color.fromARGB(255, 241, 205, 192)),
               shortcutItem(
                   onTap: () {
-                    if (Get.find<NetworkController>().connected.value) {
+                    if (Get.find<NetworkController>().connected.value &&
+                        controller.moduleReportsEnabled.value) {
                       Get.toNamed(Routes.REPORTS);
                     }
                   },

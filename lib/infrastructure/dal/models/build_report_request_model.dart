@@ -25,7 +25,7 @@ class BuildReportRequestModel {
   String? startdate;
   @JsonKey(name: "enddate")
   String? enddate;
-  @JsonKey(name: "period")
+  @JsonKey(name: "startperiod")
   String? startperiod;
   @JsonKey(name: "endperiod")
   String? endperiod;

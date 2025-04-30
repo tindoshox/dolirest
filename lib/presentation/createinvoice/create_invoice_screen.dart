@@ -214,18 +214,19 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                 title: const Text('Free Text'),
               ),
             ),
-            Flexible(
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(0),
-                leading: Radio(
-                    value: '0',
-                    groupValue: controller.stockType.value,
-                    onChanged: (value) {
-                      controller.setStockType(value.toString());
-                    }),
-                title: const Text('Predefined'),
+            if (controller.moduleProductEnabled.value)
+              Flexible(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(0),
+                  leading: Radio(
+                      value: '0',
+                      groupValue: controller.stockType.value,
+                      onChanged: (value) {
+                        controller.setStockType(value.toString());
+                      }),
+                  title: const Text('Predefined'),
+                ),
               ),
-            ),
           ],
         ),
       ],
@@ -298,11 +299,8 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<ProductModel> products = controller.storage
-              .getProductList()
-              .where((product) => product.description!.contains(searchString))
-              .toList();
-          products.sort((a, b) => a.description!.compareTo(b.description!));
+          List<ProductModel> products =
+              controller.searchProduct(searchString: searchString);
           return products;
         },
       ),

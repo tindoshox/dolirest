@@ -6,6 +6,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reachablility.dart';
@@ -24,5 +25,6 @@ class DependencyInjection {
     Get.put<CompanyRepository>(CompanyRepository());
     Get.put<UserRepository>(UserRepository());
     Get.put<DocumentRepository>(DocumentRepository());
+    Get.put<ModuleRepository>(ModuleRepository());
   }
 }

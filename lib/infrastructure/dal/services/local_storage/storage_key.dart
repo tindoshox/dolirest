@@ -10,4 +10,6 @@ class StorageKey {
   static const String company = 'company';
 
   static const String addresses = 'addresses';
+
+  static const String enabledModules = 'enabledModules';
 }

@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:hive_ce/hive.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'user_model.g.dart';

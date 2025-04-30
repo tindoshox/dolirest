@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
@@ -19,10 +20,10 @@ import 'package:intl/intl.dart';
 class CreateinvoiceController extends GetxController {
   final bool fromHomeScreen = Get.arguments['fromhome'];
   final _customerId = Get.arguments['customerId'];
-
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   final ProductRepository products = Get.find();
+  Rx<bool> moduleProductEnabled = false.obs;
   Rx<CustomerModel> customer = CustomerModel().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
@@ -45,6 +46,8 @@ class CreateinvoiceController extends GetxController {
 
   @override
   onInit() {
+    moduleProductEnabled.value =
+        storage.getEnabledModules().contains('product');
     invoiceDateController.text = Utils.dateTimeToString(invoiceDate.value);
     dueDateController.text = Utils.dateTimeToString(dueDate.value);
 
@@ -89,7 +92,10 @@ class CreateinvoiceController extends GetxController {
 
   _refreshProducts() async {
     final result = await products.fetchProducts();
-    result.fold((failure) => null, (products) {
+    result.fold((failure) {
+      log(failure.message);
+      SnackBarHelper.errorSnackbar(message: 'Unable to load products');
+    }, (products) {
       for (ProductModel product in products) {
         storage.storeProduct(product.id!, product);
       }
@@ -131,7 +137,7 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-       DialogHelper.showLoading('Creating Invoice...');
+      DialogHelper.showLoading('Creating Invoice...');
       // If stock type is free text.
       if (stockType.value != '0') {
         await _createInvoice();
@@ -267,6 +273,25 @@ class CreateinvoiceController extends GetxController {
     }
 
     return customers;
+  }
+
+  ///Product search for DropDown
+  searchProduct({String searchString = ""}) {
+    List<ProductModel> products = [];
+
+    if (searchString == "") {
+      products = storage.getProductList();
+      products.sort((a, b) => a.label!.compareTo(b.label!));
+    } else {
+      products = storage
+          .getProductList()
+          .where((product) => product.ref!.contains(searchString))
+          .toList();
+      products.sort((a, b) => a.label!.compareTo(b.label!));
+    }
+    debugPrint(products.toString());
+
+    return products;
   }
 
   void clearProduct() {

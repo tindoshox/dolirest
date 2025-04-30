@@ -2,7 +2,7 @@
 //
 //     final companyModel = companyModelFromJson(jsonString);
 
-import 'package:hive_ce/hive.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'dart:convert';
 

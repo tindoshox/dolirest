@@ -11,6 +11,7 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -24,6 +25,8 @@ class HomeController extends GetxController {
   final InvoiceRepository invoiceRepository = Get.find();
   final CompanyRepository companyRepository = Get.find();
   final UserRepository userRepository = Get.find();
+  final ModuleRepository moduleRepository = Get.find();
+  var moduleReportsEnabled = false.obs;
   var user = UserModel().obs;
   var company = CompanyModel().obs;
   var refreshing = false.obs;
@@ -31,7 +34,9 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     await _fetchUser();
-
+    await _fetchEnabledModules();
+    moduleReportsEnabled.value =
+        storage.getEnabledModules().contains('reports');
     super.onInit();
   }
 
@@ -235,5 +240,11 @@ class HomeController extends GetxController {
     await _getModifiedInvoices();
     await _loadPaymentData();
     refreshing.value = false;
+  }
+
+  _fetchEnabledModules() async {
+    final result = await moduleRepository.fetchEnabledModules();
+    result.fold((failure) => storage.storeEnabledModules([]),
+        (modules) => storage.storeEnabledModules(modules));
   }
 }

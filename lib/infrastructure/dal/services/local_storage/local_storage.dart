@@ -141,6 +141,21 @@ class StorageService extends GetxController {
     return _products.isOpen ? _products.get(key) : null;
   }
 
+  void storeEnabledModules(List<String> modules) async {
+    if (_settings.isOpen) {
+      await _settings.put(StorageKey.enabledModules, modules);
+    }
+  }
+
+  List<String> getEnabledModules() {
+    return _settings.isOpen
+        ? _settings.get(StorageKey.enabledModules) != null
+            ? List<String>.from(
+                _settings.get(StorageKey.enabledModules).map((x) => x))
+            : <String>[]
+        : <String>[];
+  }
+
   void clearAll() {
     _customers.clear();
     _groups.clear();
@@ -151,5 +166,6 @@ class StorageService extends GetxController {
     _company.clear();
     _addresses.clear();
     _user.clear();
+    _settings.clear();
   }
 }

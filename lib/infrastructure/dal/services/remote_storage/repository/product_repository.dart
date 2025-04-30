@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/error_handler.dart';
@@ -15,11 +17,11 @@ class ProductRepository extends DioService {
     try {
       var response =
           await dio.get(ApiPath.products, queryParameters: queryParameters);
- 
-        List<dynamic> l = response.data;
-        return right(l.map((p) => ProductModel.fromJson(p)).toList());
-     
+
+      List<dynamic> l = response.data;
+      return right(l.map((p) => ProductModel.fromJson(p)).toList());
     } catch (error) {
+      log(error.toString());
       return Left(ErrorHandler.handle(error).failure);
     }
   }

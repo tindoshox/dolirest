@@ -8,4 +8,5 @@ class ApiPath {
   static final buildReport = "reports/builddoc";
   static final status = "status";
   static final company = "setup/company";
+  static final modules = "setup/modules";
 }

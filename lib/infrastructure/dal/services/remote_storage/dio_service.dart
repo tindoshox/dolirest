@@ -32,12 +32,12 @@ class DioService extends GetxController {
     dio.options.receiveTimeout = Duration(seconds: 60);
     dio.options.headers.addAll(auth);
 
-    if (!kReleaseMode) {
-      dio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        // responseHeader: true,
-      ));
-    }
+    //   if (!kReleaseMode) {
+    //     dio.interceptors.add(PrettyDioLogger(
+    //       requestHeader: true,
+    //       requestBody: true,
+    //       // responseHeader: true,
+    //     ));
+    //   }
   }
 }

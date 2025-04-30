@@ -2,312 +2,448 @@
 //
 //     final productModel = productModelFromJson(jsonString);
 
-import 'package:hive_ce/hive.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'dart:convert';
 
 part 'product_model.g.dart';
 
-ProductModel productModelFromJson(String str) =>
-    ProductModel.fromJson(json.decode(str));
+List<ProductModel> productModelFromJson(String str) => List<ProductModel>.from(
+    json.decode(str).map((x) => ProductModel.fromJson(x)));
 
-String productModelToJson(ProductModel data) => json.encode(data.toJson());
+String productModelToJson(List<ProductModel> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 @HiveType(typeId: 8)
+@JsonSerializable()
 class ProductModel {
   @HiveField(1)
-  String? label;
-  @HiveField(2)
-  String? description;
-  @HiveField(3)
-  dynamic other;
-  @HiveField(4)
-  String? type;
-  @HiveField(5)
-  String? price;
-  @HiveField(6)
-  dynamic priceFormated;
-  @HiveField(7)
-  String? priceTtc;
-  @HiveField(8)
-  dynamic priceTtcFormated;
-  @HiveField(9)
-  String? priceMin;
-  @HiveField(10)
-  String? priceMinTtc;
-  @HiveField(11)
-  String? priceBaseType;
-  @HiveField(12)
-  List<dynamic>? multiprices;
-  @HiveField(13)
-  List<dynamic>? multipricesTtc;
-  @HiveField(14)
-  List<dynamic>? multipricesBaseType;
-  @HiveField(15)
-  List<dynamic>? multipricesMin;
-  @HiveField(16)
-  List<dynamic>? multipricesMinTtc;
-  @HiveField(17)
-  List<dynamic>? multipricesTvaTx;
-  @HiveField(18)
-  List<dynamic>? pricesByQty;
-  @HiveField(19)
-  List<dynamic>? pricesByQtyList;
-  @HiveField(20)
-  List<dynamic>? multilangs;
-  @HiveField(21)
-  dynamic defaultVatCode;
-  @HiveField(22)
-  String? tvaTx;
-  @HiveField(23)
-  dynamic remisePercent;
-  @HiveField(24)
-  String? localtax1Tx;
-  @HiveField(25)
-  String? localtax2Tx;
-  @HiveField(26)
-  String? localtax1Type;
-  @HiveField(27)
-  String? localtax2Type;
-  @HiveField(28)
-  dynamic descSupplier;
-  @HiveField(29)
-  dynamic vatrateSupplier;
-  @HiveField(30)
-  dynamic defaultVatCodeSupplier;
-  @HiveField(31)
-  dynamic fournMulticurrencyPrice;
-  @HiveField(32)
-  dynamic fournMulticurrencyUnitprice;
-  @HiveField(33)
-  dynamic fournMulticurrencyTx;
-  @HiveField(34)
-  dynamic fournMulticurrencyId;
-  @HiveField(35)
-  dynamic fournMulticurrencyCode;
-  @HiveField(36)
-  dynamic packaging;
-  @HiveField(37)
-  dynamic lifetime;
-  @HiveField(38)
-  dynamic qcFrequency;
-  @HiveField(39)
-  dynamic stockReel;
-  @HiveField(40)
-  dynamic stockTheorique;
-  @HiveField(41)
-  dynamic costPrice;
-  @HiveField(42)
-  String? pmp;
-  @HiveField(43)
-  String? seuilStockAlerte;
-  @HiveField(44)
-  String? desiredstock;
-  @HiveField(45)
-  dynamic durationValue;
-  @HiveField(46)
-  dynamic durationUnit;
-  @HiveField(47)
-  String? duration;
-  @HiveField(48)
-  dynamic fkDefaultWorkstation;
-  @HiveField(49)
-  String? status;
-  @HiveField(50)
-  dynamic tosell;
-  @HiveField(51)
-  String? statusBuy;
-  @HiveField(52)
-  dynamic tobuy;
-  @HiveField(53)
-  String? finished;
-  @HiveField(54)
-  dynamic fkDefaultBom;
-  @HiveField(55)
-  String? statusBatch;
-  @HiveField(56)
-  String? batchMask;
-  @HiveField(57)
-  String? customcode;
-  @HiveField(58)
-  dynamic url;
-  @HiveField(59)
-  dynamic weight;
-  @HiveField(60)
-  dynamic weightUnits;
-  @HiveField(61)
-  dynamic length;
-  @HiveField(62)
-  dynamic lengthUnits;
-  @HiveField(63)
-  dynamic width;
-  @HiveField(64)
-  dynamic widthUnits;
-  @HiveField(65)
-  dynamic height;
-  @HiveField(66)
-  dynamic heightUnits;
-  @HiveField(67)
-  dynamic surface;
-  @HiveField(68)
-  dynamic surfaceUnits;
-  @HiveField(69)
-  dynamic volume;
-  @HiveField(70)
-  dynamic volumeUnits;
-  @HiveField(71)
-  dynamic netMeasure;
-  @HiveField(72)
-  dynamic netMeasureUnits;
-  @HiveField(73)
-  String? accountancyCodeSell;
-  @HiveField(74)
-  String? accountancyCodeSellIntra;
-  @HiveField(75)
-  String? accountancyCodeSellExport;
-  @HiveField(76)
-  String? accountancyCodeBuy;
-  @HiveField(77)
-  String? accountancyCodeBuyIntra;
-  @HiveField(78)
-  String? accountancyCodeBuyExport;
-  @HiveField(79)
-  dynamic barcode;
-  @HiveField(80)
-  dynamic barcodeType;
-  @HiveField(81)
-  List<dynamic>? statsProposalSupplier;
-  @HiveField(82)
-  List<dynamic>? statsExpedition;
-  @HiveField(83)
-  List<dynamic>? statsMo;
-  @HiveField(84)
-  List<dynamic>? statsBom;
-  @HiveField(85)
-  List<dynamic>? statsFacturerec;
-  @HiveField(86)
-  List<dynamic>? statsFactureFournisseur;
-  @HiveField(87)
-  DateTime? dateCreation;
-  @HiveField(88)
-  DateTime? dateModification;
-  @HiveField(89)
-  List<dynamic>? stockWarehouse;
-  @HiveField(90)
-  String? fkDefaultWarehouse;
-  @HiveField(91)
-  dynamic fkPriceExpression;
-  @HiveField(92)
-  dynamic fournQty;
-  @HiveField(93)
-  dynamic fkUnit;
-  @HiveField(94)
-  String? priceAutogen;
-  @HiveField(95)
-  dynamic sousprods;
-  @HiveField(96)
-  dynamic res;
-  @HiveField(97)
-  dynamic isObjectUsed;
-  @HiveField(98)
-  String? mandatoryPeriod;
-  @HiveField(99)
+  @JsonKey(name: "module")
   dynamic module;
-  @HiveField(100)
-  String? id;
-  @HiveField(101)
-  String? entity;
-  @HiveField(102)
+  @HiveField(3)
+  @JsonKey(name: "id")
+  dynamic id;
+  @HiveField(5)
+  @JsonKey(name: "entity")
+  dynamic entity;
+  @HiveField(7)
+  @JsonKey(name: "import_key")
   dynamic importKey;
-  @HiveField(103)
+  @HiveField(9)
+  @JsonKey(name: "array_options")
   List<dynamic>? arrayOptions;
-  @HiveField(104)
+  @HiveField(11)
+  @JsonKey(name: "array_languages")
   dynamic arrayLanguages;
-  @HiveField(105)
+  @HiveField(13)
+  @JsonKey(name: "contacts_ids")
   dynamic contactsIds;
-  @HiveField(106)
-  dynamic linkedObjects;
-  @HiveField(107)
-  dynamic linkedObjectsIds;
-  @HiveField(108)
-  dynamic oldref;
-  @HiveField(109)
-  String? canvas;
-  @HiveField(110)
-  String? ref;
-  @HiveField(111)
+  @HiveField(15)
+  @JsonKey(name: "canvas")
+  dynamic canvas;
+  @HiveField(17)
+  @JsonKey(name: "origin_type")
+  dynamic originType;
+  @HiveField(19)
+  @JsonKey(name: "ref")
+  dynamic ref;
+  @HiveField(21)
+  @JsonKey(name: "ref_ext")
   dynamic refExt;
-  @HiveField(112)
+  @HiveField(23)
+  @JsonKey(name: "status")
+  dynamic status;
+  @HiveField(25)
+  @JsonKey(name: "country_id")
   dynamic countryId;
-  @HiveField(113)
-  String? countryCode;
-  @HiveField(114)
+  @HiveField(27)
+  @JsonKey(name: "country_code")
+  dynamic countryCode;
+  @HiveField(29)
+  @JsonKey(name: "state_id")
   dynamic stateId;
-  @HiveField(115)
+  @HiveField(31)
+  @JsonKey(name: "region_id")
   dynamic regionId;
-  @HiveField(116)
+  @HiveField(33)
+  @JsonKey(name: "barcode_type")
+  dynamic barcodeType;
+  @HiveField(35)
+  @JsonKey(name: "barcode_type_coder")
   dynamic barcodeTypeCoder;
-  @HiveField(117)
+  @HiveField(37)
+  @JsonKey(name: "shipping_method")
   dynamic shippingMethod;
-  @HiveField(118)
+  @HiveField(39)
+  @JsonKey(name: "fk_multicurrency")
+  dynamic fkMulticurrency;
+  @HiveField(41)
+  @JsonKey(name: "multicurrency_code")
   dynamic multicurrencyCode;
-  @HiveField(119)
+  @HiveField(43)
+  @JsonKey(name: "multicurrency_tx")
   dynamic multicurrencyTx;
-  @HiveField(120)
-  dynamic lastMainDoc;
-  @HiveField(121)
-  dynamic notePublic;
-  @HiveField(122)
-  String? notePrivate;
-  @HiveField(123)
-  dynamic totalHt;
-  @HiveField(124)
-  dynamic totalTva;
-  @HiveField(125)
-  dynamic totalLocaltax1;
-  @HiveField(126)
-  dynamic totalLocaltax2;
-  @HiveField(127)
+  @HiveField(45)
+  @JsonKey(name: "multicurrency_total_ht")
+  dynamic multicurrencyTotalHt;
+  @HiveField(47)
+  @JsonKey(name: "multicurrency_total_tva")
+  dynamic multicurrencyTotalTva;
+  @HiveField(49)
+  @JsonKey(name: "multicurrency_total_ttc")
+  dynamic multicurrencyTotalTtc;
+  @HiveField(51)
+  @JsonKey(name: "multicurrency_total_localtax1")
+  dynamic multicurrencyTotalLocaltax1;
+  @HiveField(53)
+  @JsonKey(name: "multicurrency_total_localtax2")
+  dynamic multicurrencyTotalLocaltax2;
+  @HiveField(55)
+  @JsonKey(name: "total_ttc")
   dynamic totalTtc;
-  @HiveField(128)
+  @HiveField(57)
+  @JsonKey(name: "actiontypecode")
+  dynamic actiontypecode;
+  @HiveField(59)
+  @JsonKey(name: "date_creation")
+  dynamic dateCreation;
+  @HiveField(61)
+  @JsonKey(name: "date_validation")
   dynamic dateValidation;
-  @HiveField(129)
-  dynamic dateUpdate;
-  @HiveField(130)
+  @HiveField(63)
+  @JsonKey(name: "date_modification")
+  dynamic dateModification;
+  @HiveField(65)
+  @JsonKey(name: "tms")
+  dynamic tms;
+  @HiveField(67)
+  @JsonKey(name: "date_cloture")
   dynamic dateCloture;
+  @HiveField(69)
+  @JsonKey(name: "specimen")
+  dynamic specimen;
+  @HiveField(71)
+  @JsonKey(name: "totalpaid")
+  dynamic totalpaid;
+  @HiveField(73)
+  @JsonKey(name: "product")
+  dynamic product;
+  @HiveField(75)
+  @JsonKey(name: "cond_reglement_supplier_id")
+  dynamic condReglementSupplierId;
+  @HiveField(77)
+  @JsonKey(name: "retained_warranty_fk_cond_reglement")
+  dynamic retainedWarrantyFkCondReglement;
+  @HiveField(79)
+  @JsonKey(name: "warehouse_id")
+  dynamic warehouseId;
+  @HiveField(81)
+  @JsonKey(name: "label")
+  dynamic label;
+  @HiveField(83)
+  @JsonKey(name: "other")
+  dynamic other;
+  @HiveField(85)
+  @JsonKey(name: "type")
+  dynamic type;
+  @HiveField(87)
+  @JsonKey(name: "price")
+  dynamic price;
+  @HiveField(89)
+  @JsonKey(name: "price_formated")
+  dynamic priceFormated;
+  @HiveField(91)
+  @JsonKey(name: "price_ttc")
+  dynamic priceTtc;
+  @HiveField(93)
+  @JsonKey(name: "price_ttc_formated")
+  dynamic priceTtcFormated;
+  @HiveField(95)
+  @JsonKey(name: "price_min")
+  dynamic priceMin;
+  @HiveField(97)
+  @JsonKey(name: "price_min_ttc")
+  dynamic priceMinTtc;
+  @HiveField(99)
+  @JsonKey(name: "price_base_type")
+  dynamic priceBaseType;
+  @HiveField(101)
+  @JsonKey(name: "price_label")
+  dynamic priceLabel;
+  @HiveField(103)
+  @JsonKey(name: "multiprices")
+  List<dynamic>? multiprices;
+  @HiveField(105)
+  @JsonKey(name: "multiprices_ttc")
+  List<dynamic>? multipricesTtc;
+  @HiveField(107)
+  @JsonKey(name: "multiprices_base_type")
+  List<dynamic>? multipricesBaseType;
+  @HiveField(109)
+  @JsonKey(name: "multiprices_default_vat_code")
+  List<dynamic>? multipricesDefaultVatCode;
+  @HiveField(111)
+  @JsonKey(name: "multiprices_min")
+  List<dynamic>? multipricesMin;
+  @HiveField(113)
+  @JsonKey(name: "multiprices_min_ttc")
+  List<dynamic>? multipricesMinTtc;
+  @HiveField(115)
+  @JsonKey(name: "multiprices_tva_tx")
+  List<dynamic>? multipricesTvaTx;
+  @HiveField(117)
+  @JsonKey(name: "prices_by_qty")
+  List<dynamic>? pricesByQty;
+  @HiveField(119)
+  @JsonKey(name: "prices_by_qty_list")
+  List<dynamic>? pricesByQtyList;
+  @HiveField(121)
+  @JsonKey(name: "level")
+  dynamic level;
+  @HiveField(123)
+  @JsonKey(name: "default_vat_code")
+  dynamic defaultVatCode;
+  @HiveField(125)
+  @JsonKey(name: "tva_tx")
+  dynamic tvaTx;
+  @HiveField(127)
+  @JsonKey(name: "remise_percent")
+  dynamic remisePercent;
+  @HiveField(129)
+  @JsonKey(name: "localtax1_tx")
+  dynamic localtax1Tx;
   @HiveField(131)
-  dynamic userAuthor;
-  @HiveField(132)
-  dynamic userCreation;
+  @JsonKey(name: "localtax2_tx")
+  dynamic localtax2Tx;
   @HiveField(133)
-  dynamic userCreationId;
-  @HiveField(134)
-  dynamic userValid;
+  @JsonKey(name: "localtax1_type")
+  dynamic localtax1Type;
   @HiveField(135)
-  dynamic userValidation;
-  @HiveField(136)
-  dynamic userValidationId;
+  @JsonKey(name: "localtax2_type")
+  dynamic localtax2Type;
   @HiveField(137)
-  dynamic userClosingId;
-  @HiveField(138)
-  dynamic userModification;
+  @JsonKey(name: "desc_supplier")
+  dynamic descSupplier;
   @HiveField(139)
-  dynamic userModificationId;
-  @HiveField(140)
-  int? specimen;
+  @JsonKey(name: "vatrate_supplier")
+  dynamic vatrateSupplier;
   @HiveField(141)
-  dynamic labelStatus;
-  @HiveField(142)
-  dynamic showphotoOnPopup;
+  @JsonKey(name: "default_vat_code_supplier")
+  dynamic defaultVatCodeSupplier;
   @HiveField(143)
-  List<dynamic>? nb;
-  @HiveField(144)
-  dynamic output;
+  @JsonKey(name: "fourn_multicurrency_price")
+  dynamic fournMulticurrencyPrice;
   @HiveField(145)
-  List<dynamic>? extraparams;
+  @JsonKey(name: "fourn_multicurrency_unitprice")
+  dynamic fournMulticurrencyUnitprice;
+  @HiveField(147)
+  @JsonKey(name: "fourn_multicurrency_tx")
+  dynamic fournMulticurrencyTx;
+  @HiveField(149)
+  @JsonKey(name: "fourn_multicurrency_id")
+  dynamic fournMulticurrencyId;
+  @HiveField(151)
+  @JsonKey(name: "fourn_multicurrency_code")
+  dynamic fournMulticurrencyCode;
+  @HiveField(153)
+  @JsonKey(name: "packaging")
+  dynamic packaging;
+  @HiveField(155)
+  @JsonKey(name: "lifetime")
+  dynamic lifetime;
+  @HiveField(157)
+  @JsonKey(name: "qc_frequency")
+  dynamic qcFrequency;
+  @HiveField(159)
+  @JsonKey(name: "stock_reel")
+  dynamic stockReel;
+  @HiveField(161)
+  @JsonKey(name: "stock_theorique")
+  dynamic stockTheorique;
+  @HiveField(163)
+  @JsonKey(name: "cost_price")
+  dynamic costPrice;
+  @HiveField(165)
+  @JsonKey(name: "pmp")
+  dynamic pmp;
+  @HiveField(167)
+  @JsonKey(name: "seuil_stock_alerte")
+  dynamic seuilStockAlerte;
+  @HiveField(169)
+  @JsonKey(name: "desiredstock")
+  dynamic desiredstock;
+  @HiveField(171)
+  @JsonKey(name: "duration_value")
+  dynamic durationValue;
+  @HiveField(173)
+  @JsonKey(name: "duration_unit")
+  dynamic durationUnit;
+  @HiveField(175)
+  @JsonKey(name: "duration")
+  dynamic duration;
+  @HiveField(177)
+  @JsonKey(name: "tosell")
+  dynamic tosell;
+  @HiveField(179)
+  @JsonKey(name: "status_buy")
+  dynamic statusBuy;
+  @HiveField(181)
+  @JsonKey(name: "tobuy")
+  dynamic tobuy;
+  @HiveField(183)
+  @JsonKey(name: "finished")
+  dynamic finished;
+  @HiveField(185)
+  @JsonKey(name: "fk_default_bom")
+  dynamic fkDefaultBom;
+  @HiveField(187)
+  @JsonKey(name: "product_fourn_price_id")
+  dynamic productFournPriceId;
+  @HiveField(189)
+  @JsonKey(name: "buyprice")
+  dynamic buyprice;
+  @HiveField(191)
+  @JsonKey(name: "tobatch")
+  dynamic tobatch;
+  @HiveField(193)
+  @JsonKey(name: "status_batch")
+  dynamic statusBatch;
+  @HiveField(195)
+  @JsonKey(name: "sell_or_eat_by_mandatory")
+  dynamic sellOrEatByMandatory;
+  @HiveField(197)
+  @JsonKey(name: "batch_mask")
+  dynamic batchMask;
+  @HiveField(199)
+  @JsonKey(name: "customcode")
+  dynamic customcode;
+  @HiveField(201)
+  @JsonKey(name: "url")
+  dynamic url;
+  @HiveField(203)
+  @JsonKey(name: "weight")
+  dynamic weight;
+  @HiveField(205)
+  @JsonKey(name: "weight_units")
+  dynamic weightUnits;
+  @HiveField(207)
+  @JsonKey(name: "length")
+  dynamic length;
+  @HiveField(209)
+  @JsonKey(name: "length_units")
+  dynamic lengthUnits;
+  @HiveField(211)
+  @JsonKey(name: "width")
+  dynamic width;
+  @HiveField(213)
+  @JsonKey(name: "width_units")
+  dynamic widthUnits;
+  @HiveField(215)
+  @JsonKey(name: "height")
+  dynamic height;
+  @HiveField(217)
+  @JsonKey(name: "height_units")
+  dynamic heightUnits;
+  @HiveField(219)
+  @JsonKey(name: "surface")
+  dynamic surface;
+  @HiveField(221)
+  @JsonKey(name: "surface_units")
+  dynamic surfaceUnits;
+  @HiveField(223)
+  @JsonKey(name: "volume")
+  dynamic volume;
+  @HiveField(225)
+  @JsonKey(name: "volume_units")
+  dynamic volumeUnits;
+  @HiveField(227)
+  @JsonKey(name: "net_measure")
+  dynamic netMeasure;
+  @HiveField(229)
+  @JsonKey(name: "net_measure_units")
+  dynamic netMeasureUnits;
+  @HiveField(231)
+  @JsonKey(name: "barcode")
+  dynamic barcode;
+  @HiveField(233)
+  @JsonKey(name: "stock_warehouse")
+  List<dynamic>? stockWarehouse;
+  @HiveField(235)
+  @JsonKey(name: "fk_default_warehouse")
+  dynamic fkDefaultWarehouse;
+  @HiveField(237)
+  @JsonKey(name: "fk_price_expression")
+  dynamic fkPriceExpression;
+  @HiveField(239)
+  @JsonKey(name: "fourn_qty")
+  dynamic fournQty;
+  @HiveField(241)
+  @JsonKey(name: "fk_unit")
+  dynamic fkUnit;
+  @HiveField(243)
+  @JsonKey(name: "price_autogen")
+  dynamic priceAutogen;
+  @HiveField(245)
+  @JsonKey(name: "sousprods")
+  dynamic sousprods;
+  @HiveField(247)
+  @JsonKey(name: "res")
+  dynamic res;
+  @HiveField(249)
+  @JsonKey(name: "is_object_used")
+  dynamic isObjectUsed;
+  @HiveField(251)
+  @JsonKey(name: "is_sousproduit_qty")
+  dynamic isSousproduitQty;
+  @HiveField(253)
+  @JsonKey(name: "is_sousproduit_incdec")
+  dynamic isSousproduitIncdec;
+  @HiveField(255)
+  @JsonKey(name: "mandatory_period")
+  dynamic mandatoryPeriod;
 
   ProductModel({
+    this.module,
+    this.id,
+    this.entity,
+    this.importKey,
+    this.arrayOptions,
+    this.arrayLanguages,
+    this.contactsIds,
+    this.canvas,
+    this.originType,
+    this.ref,
+    this.refExt,
+    this.status,
+    this.countryId,
+    this.countryCode,
+    this.stateId,
+    this.regionId,
+    this.barcodeType,
+    this.barcodeTypeCoder,
+    this.shippingMethod,
+    this.fkMulticurrency,
+    this.multicurrencyCode,
+    this.multicurrencyTx,
+    this.multicurrencyTotalHt,
+    this.multicurrencyTotalTva,
+    this.multicurrencyTotalTtc,
+    this.multicurrencyTotalLocaltax1,
+    this.multicurrencyTotalLocaltax2,
+    this.totalTtc,
+    this.actiontypecode,
+    this.dateCreation,
+    this.dateValidation,
+    this.dateModification,
+    this.tms,
+    this.dateCloture,
+    this.specimen,
+    this.totalpaid,
+    this.product,
+    this.condReglementSupplierId,
+    this.retainedWarrantyFkCondReglement,
+    this.warehouseId,
     this.label,
-    this.description,
     this.other,
     this.type,
     this.price,
@@ -317,15 +453,17 @@ class ProductModel {
     this.priceMin,
     this.priceMinTtc,
     this.priceBaseType,
+    this.priceLabel,
     this.multiprices,
     this.multipricesTtc,
     this.multipricesBaseType,
+    this.multipricesDefaultVatCode,
     this.multipricesMin,
     this.multipricesMinTtc,
     this.multipricesTvaTx,
     this.pricesByQty,
     this.pricesByQtyList,
-    this.multilangs,
+    this.level,
     this.defaultVatCode,
     this.tvaTx,
     this.remisePercent,
@@ -353,14 +491,16 @@ class ProductModel {
     this.durationValue,
     this.durationUnit,
     this.duration,
-    this.fkDefaultWorkstation,
-    this.status,
     this.tosell,
     this.statusBuy,
     this.tobuy,
     this.finished,
     this.fkDefaultBom,
+    this.productFournPriceId,
+    this.buyprice,
+    this.tobatch,
     this.statusBatch,
+    this.sellOrEatByMandatory,
     this.batchMask,
     this.customcode,
     this.url,
@@ -378,22 +518,7 @@ class ProductModel {
     this.volumeUnits,
     this.netMeasure,
     this.netMeasureUnits,
-    this.accountancyCodeSell,
-    this.accountancyCodeSellIntra,
-    this.accountancyCodeSellExport,
-    this.accountancyCodeBuy,
-    this.accountancyCodeBuyIntra,
-    this.accountancyCodeBuyExport,
     this.barcode,
-    this.barcodeType,
-    this.statsProposalSupplier,
-    this.statsExpedition,
-    this.statsMo,
-    this.statsBom,
-    this.statsFacturerec,
-    this.statsFactureFournisseur,
-    this.dateCreation,
-    this.dateModification,
     this.stockWarehouse,
     this.fkDefaultWarehouse,
     this.fkPriceExpression,
@@ -403,427 +528,13 @@ class ProductModel {
     this.sousprods,
     this.res,
     this.isObjectUsed,
+    this.isSousproduitQty,
+    this.isSousproduitIncdec,
     this.mandatoryPeriod,
-    this.module,
-    this.id,
-    this.entity,
-    this.importKey,
-    this.arrayOptions,
-    this.arrayLanguages,
-    this.contactsIds,
-    this.linkedObjects,
-    this.linkedObjectsIds,
-    this.oldref,
-    this.canvas,
-    this.ref,
-    this.refExt,
-    this.countryId,
-    this.countryCode,
-    this.stateId,
-    this.regionId,
-    this.barcodeTypeCoder,
-    this.shippingMethod,
-    this.multicurrencyCode,
-    this.multicurrencyTx,
-    this.lastMainDoc,
-    this.notePublic,
-    this.notePrivate,
-    this.totalHt,
-    this.totalTva,
-    this.totalLocaltax1,
-    this.totalLocaltax2,
-    this.totalTtc,
-    this.dateValidation,
-    this.dateUpdate,
-    this.dateCloture,
-    this.userAuthor,
-    this.userCreation,
-    this.userCreationId,
-    this.userValid,
-    this.userValidation,
-    this.userValidationId,
-    this.userClosingId,
-    this.userModification,
-    this.userModificationId,
-    this.specimen,
-    this.labelStatus,
-    this.showphotoOnPopup,
-    this.nb,
-    this.output,
-    this.extraparams,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
-        label: json["label"],
-        description: json["description"],
-        other: json["other"],
-        type: json["type"],
-        price: json["price"],
-        priceFormated: json["price_formated"],
-        priceTtc: json["price_ttc"],
-        priceTtcFormated: json["price_ttc_formated"],
-        priceMin: json["price_min"],
-        priceMinTtc: json["price_min_ttc"],
-        priceBaseType: json["price_base_type"],
-        multiprices: json["multiprices"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices"]!.map((x) => x)),
-        multipricesTtc: json["multiprices_ttc"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices_ttc"]!.map((x) => x)),
-        multipricesBaseType: json["multiprices_base_type"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices_base_type"]!.map((x) => x)),
-        multipricesMin: json["multiprices_min"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices_min"]!.map((x) => x)),
-        multipricesMinTtc: json["multiprices_min_ttc"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices_min_ttc"]!.map((x) => x)),
-        multipricesTvaTx: json["multiprices_tva_tx"] == null
-            ? []
-            : List<dynamic>.from(json["multiprices_tva_tx"]!.map((x) => x)),
-        pricesByQty: json["prices_by_qty"] == null
-            ? []
-            : List<dynamic>.from(json["prices_by_qty"]!.map((x) => x)),
-        pricesByQtyList: json["prices_by_qty_list"] == null
-            ? []
-            : List<dynamic>.from(json["prices_by_qty_list"]!.map((x) => x)),
-        multilangs: json["multilangs"] == null
-            ? []
-            : List<dynamic>.from(json["multilangs"]!.map((x) => x)),
-        defaultVatCode: json["default_vat_code"],
-        tvaTx: json["tva_tx"],
-        remisePercent: json["remise_percent"],
-        localtax1Tx: json["localtax1_tx"],
-        localtax2Tx: json["localtax2_tx"],
-        localtax1Type: json["localtax1_type"],
-        localtax2Type: json["localtax2_type"],
-        descSupplier: json["desc_supplier"],
-        vatrateSupplier: json["vatrate_supplier"],
-        defaultVatCodeSupplier: json["default_vat_code_supplier"],
-        fournMulticurrencyPrice: json["fourn_multicurrency_price"],
-        fournMulticurrencyUnitprice: json["fourn_multicurrency_unitprice"],
-        fournMulticurrencyTx: json["fourn_multicurrency_tx"],
-        fournMulticurrencyId: json["fourn_multicurrency_id"],
-        fournMulticurrencyCode: json["fourn_multicurrency_code"],
-        packaging: json["packaging"],
-        lifetime: json["lifetime"],
-        qcFrequency: json["qc_frequency"],
-        stockReel: json["stock_reel"],
-        stockTheorique: json["stock_theorique"],
-        costPrice: json["cost_price"],
-        pmp: json["pmp"],
-        seuilStockAlerte: json["seuil_stock_alerte"],
-        desiredstock: json["desiredstock"],
-        durationValue: json["duration_value"],
-        durationUnit: json["duration_unit"],
-        duration: json["duration"],
-        fkDefaultWorkstation: json["fk_default_workstation"],
-        status: json["status"],
-        tosell: json["tosell"],
-        statusBuy: json["status_buy"],
-        tobuy: json["tobuy"],
-        finished: json["finished"],
-        fkDefaultBom: json["fk_default_bom"],
-        statusBatch: json["status_batch"],
-        batchMask: json["batch_mask"],
-        customcode: json["customcode"],
-        url: json["url"],
-        weight: json["weight"],
-        weightUnits: json["weight_units"],
-        length: json["length"],
-        lengthUnits: json["length_units"],
-        width: json["width"],
-        widthUnits: json["width_units"],
-        height: json["height"],
-        heightUnits: json["height_units"],
-        surface: json["surface"],
-        surfaceUnits: json["surface_units"],
-        volume: json["volume"],
-        volumeUnits: json["volume_units"],
-        netMeasure: json["net_measure"],
-        netMeasureUnits: json["net_measure_units"],
-        accountancyCodeSell: json["accountancy_code_sell"],
-        accountancyCodeSellIntra: json["accountancy_code_sell_intra"],
-        accountancyCodeSellExport: json["accountancy_code_sell_export"],
-        accountancyCodeBuy: json["accountancy_code_buy"],
-        accountancyCodeBuyIntra: json["accountancy_code_buy_intra"],
-        accountancyCodeBuyExport: json["accountancy_code_buy_export"],
-        barcode: json["barcode"],
-        barcodeType: json["barcode_type"],
-        statsProposalSupplier: json["stats_proposal_supplier"] == null
-            ? []
-            : List<dynamic>.from(
-                json["stats_proposal_supplier"]!.map((x) => x)),
-        statsExpedition: json["stats_expedition"] == null
-            ? []
-            : List<dynamic>.from(json["stats_expedition"]!.map((x) => x)),
-        statsMo: json["stats_mo"] == null
-            ? []
-            : List<dynamic>.from(json["stats_mo"]!.map((x) => x)),
-        statsBom: json["stats_bom"] == null
-            ? []
-            : List<dynamic>.from(json["stats_bom"]!.map((x) => x)),
-        statsFacturerec: json["stats_facturerec"] == null
-            ? []
-            : List<dynamic>.from(json["stats_facturerec"]!.map((x) => x)),
-        statsFactureFournisseur: json["stats_facture_fournisseur"] == null
-            ? []
-            : List<dynamic>.from(
-                json["stats_facture_fournisseur"]!.map((x) => x)),
-        dateCreation: json["date_creation"] == null
-            ? null
-            : DateTime.parse(json["date_creation"]),
-        dateModification: json["date_modification"] == null
-            ? null
-            : DateTime.parse(json["date_modification"]),
-        stockWarehouse: json["stock_warehouse"] == null
-            ? []
-            : List<dynamic>.from(json["stock_warehouse"]!.map((x) => x)),
-        fkDefaultWarehouse: json["fk_default_warehouse"],
-        fkPriceExpression: json["fk_price_expression"],
-        fournQty: json["fourn_qty"],
-        fkUnit: json["fk_unit"],
-        priceAutogen: json["price_autogen"],
-        sousprods: json["sousprods"],
-        res: json["res"],
-        isObjectUsed: json["is_object_used"],
-        mandatoryPeriod: json["mandatory_period"],
-        module: json["module"],
-        id: json["id"],
-        entity: json["entity"],
-        importKey: json["import_key"],
-        arrayOptions: json["array_options"] == null
-            ? []
-            : List<dynamic>.from(json["array_options"]!.map((x) => x)),
-        arrayLanguages: json["array_languages"],
-        contactsIds: json["contacts_ids"],
-        linkedObjects: json["linked_objects"],
-        linkedObjectsIds: json["linkedObjectsIds"],
-        oldref: json["oldref"],
-        canvas: json["canvas"],
-        ref: json["ref"],
-        refExt: json["ref_ext"],
-        countryId: json["country_id"],
-        countryCode: json["country_code"],
-        stateId: json["state_id"],
-        regionId: json["region_id"],
-        barcodeTypeCoder: json["barcode_type_coder"],
-        shippingMethod: json["shipping_method"],
-        multicurrencyCode: json["multicurrency_code"],
-        multicurrencyTx: json["multicurrency_tx"],
-        lastMainDoc: json["last_main_doc"],
-        notePublic: json["note_public"],
-        notePrivate: json["note_private"],
-        totalHt: json["total_ht"],
-        totalTva: json["total_tva"],
-        totalLocaltax1: json["total_localtax1"],
-        totalLocaltax2: json["total_localtax2"],
-        totalTtc: json["total_ttc"],
-        dateValidation: json["date_validation"],
-        dateUpdate: json["date_update"],
-        dateCloture: json["date_cloture"],
-        userAuthor: json["user_author"],
-        userCreation: json["user_creation"],
-        userCreationId: json["user_creation_id"],
-        userValid: json["user_valid"],
-        userValidation: json["user_validation"],
-        userValidationId: json["user_validation_id"],
-        userClosingId: json["user_closing_id"],
-        userModification: json["user_modification"],
-        userModificationId: json["user_modification_id"],
-        specimen: json["specimen"],
-        labelStatus: json["labelStatus"],
-        showphotoOnPopup: json["showphoto_on_popup"],
-        nb: json["nb"] == null
-            ? []
-            : List<dynamic>.from(json["nb"]!.map((x) => x)),
-        output: json["output"],
-        extraparams: json["extraparams"] == null
-            ? []
-            : List<dynamic>.from(json["extraparams"]!.map((x) => x)),
-      );
+  factory ProductModel.fromJson(Map<String, dynamic> json) =>
+      _$ProductModelFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-        "label": label,
-        "description": description,
-        "other": other,
-        "type": type,
-        "price": price,
-        "price_formated": priceFormated,
-        "price_ttc": priceTtc,
-        "price_ttc_formated": priceTtcFormated,
-        "price_min": priceMin,
-        "price_min_ttc": priceMinTtc,
-        "price_base_type": priceBaseType,
-        "multiprices": multiprices == null
-            ? []
-            : List<dynamic>.from(multiprices!.map((x) => x)),
-        "multiprices_ttc": multipricesTtc == null
-            ? []
-            : List<dynamic>.from(multipricesTtc!.map((x) => x)),
-        "multiprices_base_type": multipricesBaseType == null
-            ? []
-            : List<dynamic>.from(multipricesBaseType!.map((x) => x)),
-        "multiprices_min": multipricesMin == null
-            ? []
-            : List<dynamic>.from(multipricesMin!.map((x) => x)),
-        "multiprices_min_ttc": multipricesMinTtc == null
-            ? []
-            : List<dynamic>.from(multipricesMinTtc!.map((x) => x)),
-        "multiprices_tva_tx": multipricesTvaTx == null
-            ? []
-            : List<dynamic>.from(multipricesTvaTx!.map((x) => x)),
-        "prices_by_qty": pricesByQty == null
-            ? []
-            : List<dynamic>.from(pricesByQty!.map((x) => x)),
-        "prices_by_qty_list": pricesByQtyList == null
-            ? []
-            : List<dynamic>.from(pricesByQtyList!.map((x) => x)),
-        "multilangs": multilangs == null
-            ? []
-            : List<dynamic>.from(multilangs!.map((x) => x)),
-        "default_vat_code": defaultVatCode,
-        "tva_tx": tvaTx,
-        "remise_percent": remisePercent,
-        "localtax1_tx": localtax1Tx,
-        "localtax2_tx": localtax2Tx,
-        "localtax1_type": localtax1Type,
-        "localtax2_type": localtax2Type,
-        "desc_supplier": descSupplier,
-        "vatrate_supplier": vatrateSupplier,
-        "default_vat_code_supplier": defaultVatCodeSupplier,
-        "fourn_multicurrency_price": fournMulticurrencyPrice,
-        "fourn_multicurrency_unitprice": fournMulticurrencyUnitprice,
-        "fourn_multicurrency_tx": fournMulticurrencyTx,
-        "fourn_multicurrency_id": fournMulticurrencyId,
-        "fourn_multicurrency_code": fournMulticurrencyCode,
-        "packaging": packaging,
-        "lifetime": lifetime,
-        "qc_frequency": qcFrequency,
-        "stock_reel": stockReel,
-        "stock_theorique": stockTheorique,
-        "cost_price": costPrice,
-        "pmp": pmp,
-        "seuil_stock_alerte": seuilStockAlerte,
-        "desiredstock": desiredstock,
-        "duration_value": durationValue,
-        "duration_unit": durationUnit,
-        "duration": duration,
-        "fk_default_workstation": fkDefaultWorkstation,
-        "status": status,
-        "tosell": tosell,
-        "status_buy": statusBuy,
-        "tobuy": tobuy,
-        "finished": finished,
-        "fk_default_bom": fkDefaultBom,
-        "status_batch": statusBatch,
-        "batch_mask": batchMask,
-        "customcode": customcode,
-        "url": url,
-        "weight": weight,
-        "weight_units": weightUnits,
-        "length": length,
-        "length_units": lengthUnits,
-        "width": width,
-        "width_units": widthUnits,
-        "height": height,
-        "height_units": heightUnits,
-        "surface": surface,
-        "surface_units": surfaceUnits,
-        "volume": volume,
-        "volume_units": volumeUnits,
-        "net_measure": netMeasure,
-        "net_measure_units": netMeasureUnits,
-        "accountancy_code_sell": accountancyCodeSell,
-        "accountancy_code_sell_intra": accountancyCodeSellIntra,
-        "accountancy_code_sell_export": accountancyCodeSellExport,
-        "accountancy_code_buy": accountancyCodeBuy,
-        "accountancy_code_buy_intra": accountancyCodeBuyIntra,
-        "accountancy_code_buy_export": accountancyCodeBuyExport,
-        "barcode": barcode,
-        "barcode_type": barcodeType,
-        "stats_proposal_supplier": statsProposalSupplier == null
-            ? []
-            : List<dynamic>.from(statsProposalSupplier!.map((x) => x)),
-        "stats_expedition": statsExpedition == null
-            ? []
-            : List<dynamic>.from(statsExpedition!.map((x) => x)),
-        "stats_mo":
-            statsMo == null ? [] : List<dynamic>.from(statsMo!.map((x) => x)),
-        "stats_bom":
-            statsBom == null ? [] : List<dynamic>.from(statsBom!.map((x) => x)),
-        "stats_facturerec": statsFacturerec == null
-            ? []
-            : List<dynamic>.from(statsFacturerec!.map((x) => x)),
-        "stats_facture_fournisseur": statsFactureFournisseur == null
-            ? []
-            : List<dynamic>.from(statsFactureFournisseur!.map((x) => x)),
-        "date_creation": dateCreation?.toIso8601String(),
-        "date_modification": dateModification?.toIso8601String(),
-        "stock_warehouse": stockWarehouse == null
-            ? []
-            : List<dynamic>.from(stockWarehouse!.map((x) => x)),
-        "fk_default_warehouse": fkDefaultWarehouse,
-        "fk_price_expression": fkPriceExpression,
-        "fourn_qty": fournQty,
-        "fk_unit": fkUnit,
-        "price_autogen": priceAutogen,
-        "sousprods": sousprods,
-        "res": res,
-        "is_object_used": isObjectUsed,
-        "mandatory_period": mandatoryPeriod,
-        "module": module,
-        "id": id,
-        "entity": entity,
-        "import_key": importKey,
-        "array_options": arrayOptions == null
-            ? []
-            : List<dynamic>.from(arrayOptions!.map((x) => x)),
-        "array_languages": arrayLanguages,
-        "contacts_ids": contactsIds,
-        "linked_objects": linkedObjects,
-        "linkedObjectsIds": linkedObjectsIds,
-        "oldref": oldref,
-        "canvas": canvas,
-        "ref": ref,
-        "ref_ext": refExt,
-        "country_id": countryId,
-        "country_code": countryCode,
-        "state_id": stateId,
-        "region_id": regionId,
-        "barcode_type_coder": barcodeTypeCoder,
-        "shipping_method": shippingMethod,
-        "multicurrency_code": multicurrencyCode,
-        "multicurrency_tx": multicurrencyTx,
-        "last_main_doc": lastMainDoc,
-        "note_public": notePublic,
-        "note_private": notePrivate,
-        "total_ht": totalHt,
-        "total_tva": totalTva,
-        "total_localtax1": totalLocaltax1,
-        "total_localtax2": totalLocaltax2,
-        "total_ttc": totalTtc,
-        "date_validation": dateValidation,
-        "date_update": dateUpdate,
-        "date_cloture": dateCloture,
-        "user_author": userAuthor,
-        "user_creation": userCreation,
-        "user_creation_id": userCreationId,
-        "user_valid": userValid,
-        "user_validation": userValidation,
-        "user_validation_id": userValidationId,
-        "user_closing_id": userClosingId,
-        "user_modification": userModification,
-        "user_modification_id": userModificationId,
-        "specimen": specimen,
-        "labelStatus": labelStatus,
-        "showphoto_on_popup": showphotoOnPopup,
-        "nb": nb == null ? [] : List<dynamic>.from(nb!.map((x) => x)),
-        "output": output,
-        "extraparams": extraparams == null
-            ? []
-            : List<dynamic>.from(extraparams!.map((x) => x)),
-      };
+  Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 }
