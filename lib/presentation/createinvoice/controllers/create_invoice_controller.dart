@@ -212,8 +212,10 @@ class CreateinvoiceController extends GetxController {
 
     final result = await repository.validateInvoice(body, invoiceId);
     result.fold((failure) {
-      DialogHelper.hideLoading();
       _deleteInvoice(invoiceId);
+      DialogHelper.hideLoading();
+      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
+          arguments: {'customerId': customer.value.id});
     }, (v) async {
       await _getNewInvoice(invoiceId).then((value) {
         DialogHelper.hideLoading();
@@ -230,7 +232,8 @@ class CreateinvoiceController extends GetxController {
     final result = await repository.deleteInvoice(invoiceId);
     result.fold((failure) {}, (deleted) {
       DialogHelper.hideLoading();
-      Get.offAndToNamed(Routes.CREATEINVOICE);
+      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
+          arguments: {'customerId': customer.value.id});
       SnackBarHelper.errorSnackbar(message: 'Could not create invoice');
     });
   }

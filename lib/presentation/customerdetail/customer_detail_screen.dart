@@ -20,6 +20,15 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   Widget build(BuildContext context) {
     final StorageService storage = Get.find();
     return Scaffold(
+      floatingActionButton: storage
+              .getInvoiceList(customerId: controller.customerId)
+              .isNotEmpty
+          ? null
+          : FloatingActionButton(
+              backgroundColor: Colors.redAccent,
+              onPressed: () => controller.deleteCustomer(controller.customerId),
+              child: const Icon(Icons.delete),
+            ),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(

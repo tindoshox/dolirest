@@ -146,12 +146,12 @@ class EditCustomerController extends GetxController {
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (customer) {
+    }, (customer) async {
       storage.storeCustomer(customer.id, customer);
       DialogHelper.hideLoading();
-      Get.offAndToNamed(Routes.CUSTOMERDETAIL, arguments: {
-        'customerId': customerId,
-      });
+      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
+          arguments: {'customerId': customerId});
+      SnackBarHelper.successSnackbar(message: 'Customer updated successfully');
     });
   }
 

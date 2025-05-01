@@ -184,10 +184,17 @@ class PaymentScreen extends GetView<PaymentController> {
             Icons.date_range,
             color: Colors.orangeAccent,
           ),
-          validator: (payDate) =>
-              controller.payDate.value.isAfter(DateTime.now())
-                  ? 'Date cannot be in the future'
-                  : null,
+          validator: (payDate) {
+            if (controller.payDate.value.isAfter(DateTime.now())) {
+              return 'Pay date cannot be inthe futire';
+            }
+
+            if (controller.paymentDates.contains(payDate)) {
+              return 'Payment date already used for this customer';
+            }
+
+            return null;
+          },
           controller: controller.payDateController,
           labelText: 'Pay Date', //'Payment Date',
           suffix: IconButton(

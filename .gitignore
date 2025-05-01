@@ -1,4 +1,5 @@
 # Miscellaneous
+*.keys
 *.class
 *.log
 *.pyc
@@ -48,4 +49,3 @@ lib/infrastructure/dal/services/fresh_controller.dart
 lib/infrastructure/dal/services/storage
 lib/infrastructure/dal/services/storage/storage_service.dart
 lib/infrastructure/dal/models/company_model.g.dart
-apikeys

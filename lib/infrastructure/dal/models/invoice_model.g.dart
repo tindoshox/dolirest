@@ -834,6 +834,7 @@ class LineAdapter extends TypeAdapter<Line> {
 // JsonSerializableGenerator
 // **************************************************************************
 
+// ignore: unused_element
 InvoiceModel _$InvoiceModelFromJson(Map<String, dynamic> json) => InvoiceModel(
       module: json['module'],
       id: json['id'],

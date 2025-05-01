@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/error_handler.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 
 class CustomerRepository extends DioService {
@@ -23,14 +27,10 @@ class CustomerRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      
-      
-        List<dynamic> l = response.data;
-        return right(l.map((c) => CustomerModel.fromJson(c)).toList());
- 
+      List<dynamic> l = response.data;
+      return right(l.map((c) => CustomerModel.fromJson(c)).toList());
     } catch (error) {
-      
-     return Left(ErrorHandler.handle(error).failure);
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -45,7 +45,10 @@ class CustomerRepository extends DioService {
 
       return right(CustomerModel.fromJson(response.data));
     } catch (error) {
-    return Left(ErrorHandler.handle(error).failure);
+      if (!kReleaseMode) {
+        log('Error: $error');
+      }
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -56,13 +59,15 @@ class CustomerRepository extends DioService {
         ApiPath.customers,
         data: body,
       );
-      
-        return right(
-          response.data.toString().replaceAll('"', ''),
-        );
 
+      return right(
+        response.data.toString().replaceAll('"', ''),
+      );
     } catch (error) {
-     return Left(ErrorHandler.handle(error).failure);
+      if (!kReleaseMode) {
+        log('Error: $error');
+      }
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 
@@ -71,15 +76,32 @@ class CustomerRepository extends DioService {
       String body, String customerId) async {
     try {
       var response = await dio.put(
-        '/$customerId',
+        '${ApiPath.customers}/$customerId',
         data: body,
       );
+      var json = jsonEncode(response.data);
 
-      
-        return right(customerModelFromJson(response.data));
-
+      return right(customerModelFromJson(json));
     } catch (error) {
-     return Left(ErrorHandler.handle(error).failure);
+      if (!kReleaseMode) {
+        log('Error: $error');
+      }
+      return Left(ErrorHandler.handle(error).failure);
+    }
+  }
+
+  /// Delete Customer
+  Future<Either<Failure, String>> deleteCustomer(String customerId) async {
+    try {
+      var response = await dio.delete(
+        '${ApiPath.customers}/$customerId',
+      );
+      return right(response.statusCode.toString());
+    } catch (error) {
+      if (!kReleaseMode) {
+        log('Error: $error');
+      }
+      return Left(ErrorHandler.handle(error).failure);
     }
   }
 }

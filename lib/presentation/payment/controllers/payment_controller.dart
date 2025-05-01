@@ -39,6 +39,7 @@ class PaymentController extends GetxController {
   RxString amount = ''.obs;
   RxString receipt = ''.obs;
   RxList receiptNumbers = [].obs;
+  RxList paymentDates = [].obs;
 
   @override
   void onInit() {
@@ -84,6 +85,10 @@ class PaymentController extends GetxController {
 
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
+
+    paymentDates.value = list
+        .map((payment) => DateFormat('dd-MM-yyyy').format(payment.date!))
+        .toList();
   }
 
   _fetchCustomerById(String customerId) {

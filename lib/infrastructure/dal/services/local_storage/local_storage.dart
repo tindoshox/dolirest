@@ -96,6 +96,10 @@ class StorageService extends GetxController {
         : <CustomerModel>[];
   }
 
+  void deleteCustomer(String key) {
+    if (_customers.isOpen) _customers.delete(key);
+  }
+
   ValueListenable<Box<CustomerModel>> customersListenable(
       {List<dynamic>? keys}) {
     return _customers.listenable(keys: keys);
