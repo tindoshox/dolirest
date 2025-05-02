@@ -144,7 +144,7 @@ class PaymentScreen extends GetView<PaymentController> {
         }
         // ignore: invalid_use_of_protected_member
         if (controller.receiptNumbers.value.contains(receipt)) {
-          return 'Receipt number already used for this customer';
+          return 'Receipt number already used for this invoice';
         }
         return null;
       },
@@ -186,11 +186,11 @@ class PaymentScreen extends GetView<PaymentController> {
           ),
           validator: (payDate) {
             if (controller.payDate.value.isAfter(DateTime.now())) {
-              return 'Pay date cannot be inthe futire';
+              return 'Pay date cannot be in the future';
             }
 
             if (controller.paymentDates.contains(payDate)) {
-              return 'Payment date already used for this customer';
+              return 'Payment date already used for this invoice';
             }
 
             return null;

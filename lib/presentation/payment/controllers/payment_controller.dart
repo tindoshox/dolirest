@@ -81,7 +81,7 @@ class PaymentController extends GetxController {
   }
 
   Future _fetchPayments(invoiceId) async {
-    List<PaymentModel> list = storage.getPaymentList();
+    List<PaymentModel> list = storage.getPaymentList(invoiceId: invoiceId);
 
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
@@ -167,8 +167,8 @@ class PaymentController extends GetxController {
       SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }, (p) async {
       await _updateDueDate(invoice.value.id);
-      await refreshPayments(invoice.value.id);
-      await refreshInvoice(invoice.value.id);
+      await _refreshPayments(invoice.value.id);
+      await _refreshInvoice(invoice.value.id);
 
       if (fromHomeScreen) {
         DialogHelper.hideLoading();
@@ -203,7 +203,7 @@ class PaymentController extends GetxController {
     await repository.updateInvoice(invoiceId, body);
   }
 
-  refreshPayments(invoiceId) async {
+  _refreshPayments(invoiceId) async {
     final result = await (repository.fetchPaymentsByInvoice(invoiceId));
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
@@ -224,7 +224,7 @@ class PaymentController extends GetxController {
     });
   }
 
-  refreshInvoice(invoiceId) async {
+  _refreshInvoice(invoiceId) async {
     final result =
         await repository.fetchInvoiceList(customerId: customer.value.id);
 
