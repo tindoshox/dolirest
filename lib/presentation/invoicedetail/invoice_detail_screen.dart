@@ -23,8 +23,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ValueListenableBuilder(
-              valueListenable:
-                  storage.invoicesListenable(keys: [controller.invoiceId]),
+              valueListenable: storage.invoicesListenable(),
               builder: (context, invoice, child) => CustomActionButton(
                   buttonText: 'Payment',
                   onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
@@ -72,8 +71,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                 controller: controller.tabController,
                 children: [
                   ValueListenableBuilder(
-                    valueListenable: storage
-                        .invoicesListenable(keys: [controller.invoiceId]),
+                    valueListenable: storage.invoicesListenable(),
                     builder: (context, invoices, child) => InvoiceDetailWidget(
                         onPressed: () {
                           if (Get.find<NetworkController>().connected.value) {
@@ -84,8 +82,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         invoice: invoices.get(controller.invoiceId)!),
                   ),
                   ValueListenableBuilder(
-                    valueListenable: storage
-                        .invoicesListenable(keys: [controller.customerId]),
+                    valueListenable: storage.invoicesListenable(),
                     builder: (context, invoices, child) {
                       return invoices.get(controller.invoiceId)!.totalpaid == 0
                           ? const ListTile(

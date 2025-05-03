@@ -81,8 +81,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   Widget _customerInfoTab(StorageService storage) {
     return ValueListenableBuilder<Box>(
-      valueListenable:
-          storage.customersListenable(keys: [controller.customerId]),
+      valueListenable: storage.customersListenable(),
       builder: (context, box, child) {
         final customer = box.get(controller.customerId);
         return CustomerInfoWidget(
@@ -95,8 +94,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   Widget _invoicesTab() {
     final StorageService storage = Get.find();
     return ValueListenableBuilder<Box>(
-      valueListenable:
-          storage.invoicesListenable(keys: [controller.customerId]),
+      valueListenable: storage.invoicesListenable(),
       builder: (context, box, child) {
         List<InvoiceModel> invoices = box.values
             .where((invoice) => invoice.socid == controller.customerId)

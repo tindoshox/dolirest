@@ -78,8 +78,8 @@ class StorageService extends GetxController {
     }
   }
 
-  ValueListenable<Box<InvoiceModel>> invoicesListenable({List<dynamic>? keys}) {
-    return _invoices.listenable(keys: keys);
+  ValueListenable<Box<InvoiceModel>> invoicesListenable() {
+    return _invoices.listenable();
   }
 
   void storeCustomer(String key, CustomerModel value) async {
@@ -100,9 +100,8 @@ class StorageService extends GetxController {
     if (_customers.isOpen) _customers.delete(key);
   }
 
-  ValueListenable<Box<CustomerModel>> customersListenable(
-      {List<dynamic>? keys}) {
-    return _customers.listenable(keys: keys);
+  ValueListenable<Box<CustomerModel>> customersListenable() {
+    return _customers.listenable();
   }
 
   void storeSetting(String key, dynamic value) async {
