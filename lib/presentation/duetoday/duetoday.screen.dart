@@ -27,11 +27,11 @@ class DueTodayScreen extends GetView<DueTodayController> {
           label: Text(label),
         );
 
-    DataCell buildCell(String data) => DataCell(
+    DataCell buildCell(String data, {bool softWrap = true}) => DataCell(
           Text(
             data,
             maxLines: 2,
-            softWrap: true,
+            softWrap: softWrap,
             overflow: TextOverflow.ellipsis,
           ),
         );
@@ -47,7 +47,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
               }),
           cells: [
             buildCell(invoice.name),
-            buildCell(invoice.dueDate),
+            buildCell(invoice.dueDate, softWrap: false),
             buildCell(invoice.town),
             buildCell(invoice.address),
           ],
@@ -62,13 +62,13 @@ class DueTodayScreen extends GetView<DueTodayController> {
           dataTextStyle: Theme.of(context).textTheme.bodySmall,
           showCheckboxColumn: false,
           sortColumnIndex: 2,
-          columnSpacing: 4,
+          columnSpacing: 3,
           empty: Center(
             child: Text('No invoices due today'),
           ),
           columns: [
-            buildHeading(label: 'Customer', size: ColumnSize.L),
-            buildHeading(label: 'Due Date', size: ColumnSize.S),
+            buildHeading(label: 'Customer', size: ColumnSize.M),
+            buildHeading(label: 'Due Date', size: ColumnSize.M),
             buildHeading(label: 'Town', size: ColumnSize.S),
             buildHeading(label: 'Address', size: ColumnSize.S),
           ],
