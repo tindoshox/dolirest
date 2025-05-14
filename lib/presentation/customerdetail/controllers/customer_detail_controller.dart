@@ -10,7 +10,7 @@ import 'package:get/get.dart';
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final StorageService storage = Get.find();
-  final InvoiceRepository repository = Get.find();
+  final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final String customerId = Get.arguments['customerId'];
 
@@ -52,9 +52,13 @@ class CustomerDetailController extends GetxController
 
   // Fetch invoice data from server
   Future refreshCustomerInvoiceData({String? customerId}) async {
-    final result = await repository.fetchInvoiceList(customerId: customerId);
+    final result =
+        await invoiceRepository.fetchInvoiceList(customerId: customerId);
 
-    result.fold((failure) => null, (invoices) {
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(message: failure.message);
+    }, (invoices) {
       for (InvoiceModel invoice in invoices) {
         final customer = storage.getCustomer(invoice.socid);
         invoice.name = customer!.name;
@@ -75,8 +79,7 @@ class CustomerDetailController extends GetxController
       (res) {
         DialogHelper.hideLoading();
         Get.back();
-        SnackBarHelper.successSnackbar(
-            message: 'Customer deleted successfully');
+        SnackBarHelper.successSnackbar(message: 'Customer deleted');
         storage.deleteCustomer(customerId);
       },
     );

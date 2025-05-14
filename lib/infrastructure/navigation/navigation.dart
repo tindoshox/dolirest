@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/createinvoice_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerdetail_controller_binding.dart';
 import 'package:dolirest/infrastructure/navigation/bindings/controllers/customerlist_controller_binding.dart';
@@ -19,7 +21,6 @@ import 'package:dolirest/presentation/invoicelist/invoicelist_screen.dart';
 import 'package:dolirest/presentation/login/login.screen.dart';
 import 'package:dolirest/presentation/payment/payment_screen.dart';
 import 'package:dolirest/presentation/reports/reports_screen.dart';
-import 'package:get/get.dart';
 
 import '../../presentation/cashflow/collections_screen.dart';
 import 'bindings/controllers/cashflow.controller.binding.dart';

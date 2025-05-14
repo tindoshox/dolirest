@@ -8,6 +8,7 @@ import '../../../infrastructure/dal/models/address_model.dart';
 import '../../../utils/snackbar_helper.dart';
 
 class CustomerListController extends GetxController {
+  bool noInvoiceCustomers = Get.arguments['noInvoiceCustomers'] ?? false;
   var isLoading = false.obs;
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();

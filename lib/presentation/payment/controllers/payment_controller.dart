@@ -23,8 +23,7 @@ class PaymentController extends GetxController {
   TextEditingController amountController = TextEditingController();
   TextEditingController invoiceController = TextEditingController();
 
-  final bool fromHomeScreen = Get.arguments['fromhome'];
-  final String invid = Get.arguments['invid'];
+  final String invoiceId = Get.arguments['invoiceId'];
   final String socid = Get.arguments['socid'];
 
   GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
@@ -43,8 +42,8 @@ class PaymentController extends GetxController {
 
   @override
   void onInit() {
-    if (!fromHomeScreen) {
-      fetchData(socid, invid);
+    if (invoiceId.isNotEmpty) {
+      fetchData(socid, invoiceId);
     }
     payDateController.text = Utils.dateTimeToString(payDate.value);
     dueDateController.text = Utils.dateTimeToString(dueDate.value);
@@ -160,7 +159,7 @@ class PaymentController extends GetxController {
 
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
-    final result = await repository.addpayment(body);
+    final result = await repository.addpayment(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -170,7 +169,7 @@ class PaymentController extends GetxController {
       await _refreshPayments(invoice.value.id);
       await _refreshInvoice(invoice.value.id);
 
-      if (fromHomeScreen) {
+      if (invoiceId.isNotEmpty) {
         DialogHelper.hideLoading();
 
         Get.snackbar(
@@ -200,11 +199,12 @@ class PaymentController extends GetxController {
 
     String body = jsonEncode(update);
 
-    await repository.updateInvoice(invoiceId, body);
+    await repository.updateInvoice(invoiceId: invoiceId, body: body);
   }
 
   _refreshPayments(invoiceId) async {
-    final result = await (repository.fetchPaymentsByInvoice(invoiceId));
+    final result =
+        await (repository.fetchPaymentsByInvoice(invoiceId: invoiceId));
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {

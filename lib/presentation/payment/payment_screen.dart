@@ -42,7 +42,7 @@ class PaymentScreen extends GetView<PaymentController> {
         child: Card(
           child: ListView(
             children: [
-              if (controller.fromHomeScreen) _buildSearchField(context),
+              if (controller.invoiceId.isEmpty) _buildSearchField(context),
               _buildPayDateField(),
               _buildDueDateField(),
               _buildReceiptNumberField(),

@@ -18,7 +18,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class CreateinvoiceController extends GetxController {
-  final bool fromHomeScreen = Get.arguments['fromhome'];
+  final String invoiceId = '';
   final _customerId = Get.arguments['customerId'];
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
@@ -191,7 +191,7 @@ class CreateinvoiceController extends GetxController {
 
     // Submit for draft creation
 
-    final result = await repository.createInvoice(body);
+    final result = await repository.createInvoice(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -210,7 +210,8 @@ class CreateinvoiceController extends GetxController {
       "notrigger": 0
       }''';
 
-    final result = await repository.validateInvoice(body, invoiceId);
+    final result =
+        await repository.validateInvoice(body: body, documentId: invoiceId);
     result.fold((failure) {
       _deleteInvoice(invoiceId);
       DialogHelper.hideLoading();
@@ -229,7 +230,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _deleteInvoice(String invoiceId) async {
-    final result = await repository.deleteInvoice(invoiceId);
+    final result = await repository.deleteInvoice(documentId: invoiceId);
     result.fold((failure) {}, (deleted) {
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,

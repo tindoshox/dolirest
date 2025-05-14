@@ -9,4 +9,8 @@ class ApiPath {
   static final status = "status";
   static final company = "setup/company";
   static final modules = "setup/modules";
+  static final credit = "markAsCreditAvailable";
+  static final discount = "discount";
+  static final usecreditnote = "usecreditnote";
+  static final settopaid = "settopaid";
 }

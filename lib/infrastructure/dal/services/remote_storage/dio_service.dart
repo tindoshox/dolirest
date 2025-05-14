@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/error/cache_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -28,16 +29,18 @@ class DioService extends GetxController {
     };
     // Set default configs
     dio.options.baseUrl = '$url$apiStub';
-    dio.options.connectTimeout = Duration(seconds: 30);
-    dio.options.receiveTimeout = Duration(seconds: 60);
+    dio.options.connectTimeout = Duration(seconds: 10);
+    dio.options.receiveTimeout = Duration(seconds: 30);
     dio.options.headers.addAll(auth);
+    dio.interceptors.add(CacheInterceptor());
 
     if (!kReleaseMode) {
-      dio.interceptors.add(PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseHeader: true,
-          responseBody: false));
+      dio.interceptors.add(
+        PrettyDioLogger(
+          error: true,
+          responseBody: false,
+        ),
+      );
     }
   }
 }

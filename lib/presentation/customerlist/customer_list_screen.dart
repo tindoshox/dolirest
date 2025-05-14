@@ -84,22 +84,38 @@ class _CustomerList extends GetView<CustomerListController> {
           child: Obx(() => controller.isLoading.isTrue
               ? const LoadingIndicator(
                   message: Text('Refreshing customer data'))
-              : _buildCustomerListView()),
+              : _buildCustomerList()),
         ),
       ],
     );
   }
 
-  Widget _buildCustomerListView() {
+  Widget _buildCustomerList() {
     StorageService storage = Get.find();
     String search = controller.searchString.value;
+
     return RefreshIndicator(
       onRefresh: () => controller.refreshCustomerList(),
       child: ValueListenableBuilder(
         valueListenable: storage.customersListenable(),
         builder: (context, box, child) {
-          List<CustomerModel> sortedValues = box.values.toList()
+          //  List<CustomerModel> customers = box.values.toList();
+          List<CustomerModel> noInvoiceCustomers = [];
+          for (var customer in box.values.toList()) {
+            var invoices = controller.storage
+                .getInvoiceList()
+                .where((invoice) => invoice.socid == customer.id)
+                .toList();
+            if (invoices.isEmpty) {
+              noInvoiceCustomers.add(customer);
+            }
+          }
+
+          List<CustomerModel> sortedValues = controller.noInvoiceCustomers
+              ? noInvoiceCustomers
+              : box.values.toList()
             ..sort((a, b) => a.name.compareTo(b.name));
+
           List<CustomerModel> customers = search.length > 2
               ? sortedValues
                   .where((customer) =>

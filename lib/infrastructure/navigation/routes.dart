@@ -10,6 +10,7 @@ class Routes {
   static const CREATEINVOICE = '/createinvoice';
   static const CUSTOMERDETAIL = '/customerdetail';
   static const CUSTOMERLIST = '/customerlist';
+  static const DUETODAY = '/duetoday';
   static const EDITCUSTOMER = '/editcustomer';
   static const HOME = '/home';
   static const INVOICEDETAIL = '/invoicedetail';
@@ -18,5 +19,5 @@ class Routes {
   static const PAYMENT = '/payment';
   static const REPORTS = '/reports';
   static const SETTINGS = '/settings';
-  static const DUETODAY = '/duetoday';
+  static const DRAFTS = '/drafts';
 }

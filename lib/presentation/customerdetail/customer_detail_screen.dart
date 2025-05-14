@@ -46,7 +46,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     return [
       _actionButton('Edit', Routes.EDITCUSTOMER),
       _actionButton('New Invoice', Routes.CREATEINVOICE,
-          additionalArgs: {'fromhome': false}),
+          additionalArgs: {'invoiceId': ''}),
     ];
   }
 
@@ -84,9 +84,11 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
       valueListenable: storage.customersListenable(),
       builder: (context, box, child) {
         final customer = box.get(controller.customerId);
-        return CustomerInfoWidget(
-          customer: customer,
-        );
+        return customer == null
+            ? Center()
+            : CustomerInfoWidget(
+                customer: customer,
+              );
       },
     );
   }

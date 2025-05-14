@@ -77,6 +77,7 @@ class HomeController extends GetxController {
         await _getModifiedInvoices();
         await _loadPaymentData();
       }
+
       refreshing.value = false;
     });
   }
@@ -86,6 +87,7 @@ class HomeController extends GetxController {
 
     result.fold((failure) {
       DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customers) {
       for (CustomerModel customer in customers) {
         storage.storeCustomer(customer.id, customer);
@@ -99,6 +101,7 @@ class HomeController extends GetxController {
           );
         }
       }
+      DialogHelper.hideLoading();
     });
   }
 
@@ -120,8 +123,8 @@ class HomeController extends GetxController {
     }
 
     for (InvoiceModel invoice in payInvoices) {
-      final result =
-          await invoiceRepository.fetchPaymentsByInvoice(invoice.id!);
+      final result = await invoiceRepository.fetchPaymentsByInvoice(
+          invoiceId: invoice.id!);
       result.fold((failure) => null, (payments) {
         for (var payment in payments) {
           PaymentModel p = PaymentModel(
@@ -167,7 +170,8 @@ class HomeController extends GetxController {
   }
 
   Future _getUnpaidInvoices() async {
-    final result = await invoiceRepository.fetchInvoiceList(status: 'unpaid');
+    final result =
+        await invoiceRepository.fetchInvoiceList(status: 'unpaid, draft');
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoices) {
@@ -180,13 +184,12 @@ class HomeController extends GetxController {
   }
 
   Future _getModifiedInvoices() async {
-    List<InvoiceModel> invoices =
-        storage.getInvoiceList().where((i) => i.remaintopay != "0").toList();
+    List<InvoiceModel> invoices = storage.getInvoiceList();
     invoices.sort((a, b) => a.dateModification!.compareTo(b.dateModification!));
     if (invoices.isNotEmpty) {
       int? dateModified = invoices[invoices.length - 1].dateModification;
       final result = await invoiceRepository.fetchInvoiceList(
-          dateModified: Utils.intToYMD(dateModified!) ?? '1970-01-01');
+          dateModified: Utils.intToYMD(dateModified!));
 
       result.fold(
           (failure) => SnackBarHelper.errorSnackbar(message: failure.message),

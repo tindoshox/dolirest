@@ -28,7 +28,7 @@ class InvoiceDetailWidget extends StatelessWidget {
             ),
             if (invoice.refClient != null)
               Text(
-                'Deliver Note: ${invoice.refClient}',
+                'Delivery Note: ${invoice.refClient}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
           ],

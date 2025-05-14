@@ -18,16 +18,16 @@ String userModelToJson(UserModel data) => json.encode(data.toJson());
 class UserModel {
   @HiveField(1)
   @JsonKey(name: "id")
-  String? id;
+  dynamic id;
   @HiveField(3)
   @JsonKey(name: "statut")
-  String? statut;
+  dynamic statut;
   @HiveField(5)
   @JsonKey(name: "employee")
-  String? employee;
+  dynamic employee;
   @HiveField(7)
   @JsonKey(name: "civility_code")
-  String? civilityCode;
+  dynamic civilityCode;
   @HiveField(9)
   @JsonKey(name: "fullname")
   dynamic fullname;
@@ -36,49 +36,49 @@ class UserModel {
   dynamic gender;
   @HiveField(13)
   @JsonKey(name: "birth")
-  String? birth;
+  dynamic birth;
   @HiveField(15)
   @JsonKey(name: "email")
-  String? email;
+  dynamic email;
   @HiveField(17)
   @JsonKey(name: "personal_email")
-  String? personalEmail;
+  dynamic personalEmail;
   @HiveField(19)
   @JsonKey(name: "socialnetworks")
   List<dynamic>? socialnetworks;
   @HiveField(21)
   @JsonKey(name: "job")
-  String? job;
+  dynamic job;
   @HiveField(23)
   @JsonKey(name: "signature")
-  String? signature;
+  dynamic signature;
   @HiveField(25)
   @JsonKey(name: "office_phone")
-  String? officePhone;
+  dynamic officePhone;
   @HiveField(27)
   @JsonKey(name: "office_fax")
-  String? officeFax;
+  dynamic officeFax;
   @HiveField(29)
   @JsonKey(name: "user_mobile")
-  String? userMobile;
+  dynamic userMobile;
   @HiveField(31)
   @JsonKey(name: "personal_mobile")
-  String? personalMobile;
+  dynamic personalMobile;
   @HiveField(33)
   @JsonKey(name: "admin")
-  String? admin;
+  dynamic admin;
   @HiveField(35)
   @JsonKey(name: "login")
-  String? login;
+  dynamic login;
   @HiveField(37)
   @JsonKey(name: "entity")
-  String? entity;
+  dynamic entity;
   @HiveField(39)
   @JsonKey(name: "datec")
-  int? datec;
+  dynamic datec;
   @HiveField(41)
   @JsonKey(name: "datem")
-  int? datem;
+  dynamic datem;
   @HiveField(43)
   @JsonKey(name: "socid")
   dynamic socid;
@@ -108,25 +108,25 @@ class UserModel {
   dynamic clicktodialPoste;
   @HiveField(61)
   @JsonKey(name: "datelastlogin")
-  int? datelastlogin;
+  dynamic datelastlogin;
   @HiveField(63)
   @JsonKey(name: "datepreviouslogin")
-  int? datepreviouslogin;
+  dynamic datepreviouslogin;
   @HiveField(65)
   @JsonKey(name: "flagdelsessionsbefore")
-  int? flagdelsessionsbefore;
+  dynamic flagdelsessionsbefore;
   @HiveField(67)
   @JsonKey(name: "iplastlogin")
-  String? iplastlogin;
+  dynamic iplastlogin;
   @HiveField(69)
   @JsonKey(name: "ippreviouslogin")
-  String? ippreviouslogin;
+  dynamic ippreviouslogin;
   @HiveField(71)
   @JsonKey(name: "datestartvalidity")
-  String? datestartvalidity;
+  dynamic datestartvalidity;
   @HiveField(73)
   @JsonKey(name: "dateendvalidity")
-  String? dateendvalidity;
+  dynamic dateendvalidity;
   @HiveField(75)
   @JsonKey(name: "photo")
   dynamic photo;
@@ -144,7 +144,7 @@ class UserModel {
   dynamic parentof;
   @HiveField(85)
   @JsonKey(name: "accountancy_code")
-  String? accountancyCode;
+  dynamic accountancyCode;
   @HiveField(87)
   @JsonKey(name: "thm")
   dynamic thm;
@@ -162,22 +162,22 @@ class UserModel {
   dynamic weeklyhours;
   @HiveField(97)
   @JsonKey(name: "color")
-  String? color;
+  dynamic color;
   @HiveField(99)
   @JsonKey(name: "dateemployment")
-  String? dateemployment;
+  dynamic dateemployment;
   @HiveField(101)
   @JsonKey(name: "dateemploymentend")
-  String? dateemploymentend;
+  dynamic dateemploymentend;
   @HiveField(103)
   @JsonKey(name: "default_c_exp_tax_cat")
   dynamic defaultCExpTaxCat;
   @HiveField(105)
   @JsonKey(name: "ref_employee")
-  String? refEmployee;
+  dynamic refEmployee;
   @HiveField(107)
   @JsonKey(name: "national_registration_number")
-  String? nationalRegistrationNumber;
+  dynamic nationalRegistrationNumber;
   @HiveField(109)
   @JsonKey(name: "default_range")
   dynamic defaultRange;
@@ -225,22 +225,22 @@ class UserModel {
   dynamic originId;
   @HiveField(139)
   @JsonKey(name: "ref")
-  String? ref;
+  dynamic ref;
   @HiveField(141)
   @JsonKey(name: "ref_ext")
   dynamic refExt;
   @HiveField(143)
   @JsonKey(name: "status")
-  String? status;
+  dynamic status;
   @HiveField(145)
   @JsonKey(name: "country_id")
   dynamic countryId;
   @HiveField(147)
   @JsonKey(name: "country_code")
-  String? countryCode;
+  dynamic countryCode;
   @HiveField(149)
   @JsonKey(name: "state_id")
-  String? stateId;
+  dynamic stateId;
   @HiveField(151)
   @JsonKey(name: "region_id")
   dynamic regionId;
@@ -282,19 +282,19 @@ class UserModel {
   dynamic fkAccount;
   @HiveField(177)
   @JsonKey(name: "note_public")
-  String? notePublic;
+  dynamic notePublic;
   @HiveField(179)
   @JsonKey(name: "note_private")
-  String? notePrivate;
+  dynamic notePrivate;
   @HiveField(181)
   @JsonKey(name: "name")
   dynamic name;
   @HiveField(183)
   @JsonKey(name: "lastname")
-  String? lastname;
+  dynamic lastname;
   @HiveField(185)
   @JsonKey(name: "firstname")
-  String? firstname;
+  dynamic firstname;
   @HiveField(187)
   @JsonKey(name: "civility_id")
   dynamic civilityId;
@@ -342,7 +342,7 @@ class UserModel {
   dynamic userModificationId;
   @HiveField(217)
   @JsonKey(name: "specimen")
-  int? specimen;
+  dynamic specimen;
   @HiveField(219)
   @JsonKey(name: "labelStatus")
   dynamic labelStatus;
@@ -360,13 +360,13 @@ class UserModel {
   List<dynamic>? extraparams;
   @HiveField(229)
   @JsonKey(name: "address")
-  String? address;
+  dynamic address;
   @HiveField(231)
   @JsonKey(name: "zip")
-  String? zip;
+  dynamic zip;
   @HiveField(233)
   @JsonKey(name: "town")
-  String? town;
+  dynamic town;
 
   UserModel({
     this.id,

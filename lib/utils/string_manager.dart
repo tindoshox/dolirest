@@ -17,3 +17,16 @@ class AppStrings {
   static const String strCacheError = "Cache Error";
   static const String strNoInternetError = "No Internet";
 }
+
+class DocumentType {
+  static const String invoice = "0";
+  static const String typeCreditNote = "2";
+}
+
+class DocumentStatus {
+  //Invoice Status
+  static const String unpaid = "1";
+  static const String draft = "2";
+  static const String paid = "0";
+  static const String cancelled = "";
+}

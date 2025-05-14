@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class InvoicelistController extends GetxController {
+  int drafts = Get.arguments['drafts'] ?? 0;
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   var isLoading = false.obs;

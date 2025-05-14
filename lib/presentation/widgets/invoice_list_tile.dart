@@ -96,7 +96,7 @@ class InvoiceListTile extends StatelessWidget {
       Routes.INVOICEDETAIL,
       arguments: {
         'customerId': invoice.socid,
-        'invoiceId': invoice.id,
+        'documentId': invoice.id,
       },
     );
   }

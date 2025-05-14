@@ -82,6 +82,10 @@ class StorageService extends GetxController {
     return _invoices.listenable();
   }
 
+  void deleteInvoice(String key) {
+    if (_invoices.isOpen) _invoices.delete(key);
+  }
+
   void storeCustomer(String key, CustomerModel value) async {
     if (_customers.isOpen) await _customers.put(key, value);
   }

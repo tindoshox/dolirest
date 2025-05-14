@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
+import 'package:dolirest/infrastructure/dal/models/credit_available_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/document_list_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -30,12 +32,13 @@ class InvoiceDetailController extends GetxController
   RxInt tabIndex = 0.obs;
 
   Rx<CustomerModel> customer = CustomerModel().obs;
+  Rx<InvoiceModel> document = InvoiceModel().obs;
+
   RxBool isLoading = false.obs;
 
-  String invoiceId = Get.arguments['invoiceId'];
+  String documentId = Get.arguments['documentId'];
   String customerId = Get.arguments['customerId'];
   Rx<DateTime> selectedDate = DateTime.now().obs;
-  List<DocumentListModel> documentList = <DocumentListModel>[];
   TextEditingController refController = TextEditingController();
 
   late TabController tabController;
@@ -56,6 +59,7 @@ class InvoiceDetailController extends GetxController
     });
 
     await _fetchData();
+
     super.onInit();
   }
 
@@ -68,15 +72,25 @@ class InvoiceDetailController extends GetxController
     isLoading(true);
     await _fetchPayments();
     await _fetchCustomer();
+    await _fetchDocument();
 
     isLoading(false);
   }
 
+  _fetchDocument() async {
+    if (storage.getInvoice(documentId) == null) {
+      _refreshInvoiceData()
+          .then((value) => document.value = storage.getInvoice(documentId)!);
+    } else {
+      customer.value = storage.getCustomer(documentId)!;
+    }
+  }
+
   Future _fetchPayments() async {
-    InvoiceModel invoice = storage.getInvoice(invoiceId)!;
+    InvoiceModel invoice = storage.getInvoice(documentId)!;
     List<PaymentModel> list = storage
         .getPaymentList()
-        .where((p) => p.invoiceId == invoiceId)
+        .where((p) => p.invoiceId == documentId)
         .toList();
 
     List<int> amounts =
@@ -93,7 +107,8 @@ class InvoiceDetailController extends GetxController
   }
 
   Future _refreshPaymentData() async {
-    final result = await (invoiceRepository.fetchPaymentsByInvoice(invoiceId));
+    final result =
+        await (invoiceRepository.fetchPaymentsByInvoice(invoiceId: documentId));
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
@@ -106,7 +121,7 @@ class InvoiceDetailController extends GetxController
           num: payment.num,
           fkBankLine: payment.fkBankLine,
           ref: payment.ref,
-          invoiceId: invoiceId,
+          invoiceId: documentId,
           refExt: payment.refExt,
         );
         storage.storePayment(payment.ref, p);
@@ -145,7 +160,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future generateDocument() async {
-    InvoiceModel invoice = storage.getInvoice(invoiceId)!;
+    InvoiceModel invoice = storage.getInvoice(documentId)!;
     permissionReady = await Utils.checkPermission(platform);
 
     DialogHelper.showLoading('Downloading document...');
@@ -174,7 +189,7 @@ class InvoiceDetailController extends GetxController
     DialogHelper.hideLoading();
   }
 
-  setDueDate( ) async {
+  setDueDate() async {
     DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
         initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -194,7 +209,7 @@ class InvoiceDetailController extends GetxController
     }
   }
 
-  Future _updateDueDate(int selectedDate ) async {
+  _updateDueDate(int selectedDate) async {
     DialogHelper.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
@@ -202,13 +217,177 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(update);
 
-    final result = await invoiceRepository.updateInvoice(invoiceId, body);
+    final result = await invoiceRepository.updateInvoice(
+        invoiceId: documentId, body: body);
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
-          DialogHelper.hideLoading();
+      DialogHelper.hideLoading();
       SnackBarHelper.successSnackbar(message: 'Due date changed');
       _refreshInvoiceData();
     });
   }
+
+  validateDraft(invoiceId) async {
+    DialogHelper.showLoading('Validating invoice...');
+    String body = '''{
+      "idwarehouse": 1,
+      "notrigger": 0
+      }''';
+
+    final result = await invoiceRepository.validateInvoice(
+        body: body, documentId: invoiceId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(message: 'Invoice validation failed');
+    }, (v) async {
+      await _refreshInvoiceData().then((value) {
+        DialogHelper.hideLoading();
+
+        SnackBarHelper.successSnackbar(message: 'Invoce validated');
+      });
+    });
+  }
+
+  void deleteDocument({required String invoiceId}) async {
+    DialogHelper.showLoading('Deleting Invoice');
+    final result = await invoiceRepository.deleteInvoice(documentId: invoiceId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
+    }, (deleted) {
+      storage.deleteInvoice(invoiceId);
+
+      DialogHelper.hideLoading();
+      Get.back();
+      SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+    });
+  }
+
+  creditNote({required bool productReturned}) async {
+    DialogHelper.showLoading('Returning Item');
+    var invoice = storage.getInvoice(documentId)!;
+
+    /// Generate product line
+    var ln = Line(
+            qty: '1',
+            subprice: invoice.remaintopay,
+            fkProduct: productReturned ? invoice.lines![0].fkProduct : null,
+            desc: productReturned
+                ? invoice.lines![0].desc
+                : 'Balance Written Off',
+            description: productReturned
+                ? invoice.lines![0].description
+                : 'Balance Written Off',
+            fkProductType:
+                productReturned ? invoice.lines![0].fkProductType : null)
+        .toJson();
+    ln.removeWhere((key, value) => value == null);
+    var lines = [ln];
+
+    /// Generate main draft
+    var credit = InvoiceModel(
+        fkFactureSource: invoice.id,
+        socid: invoice.socid,
+        refClient: refController.text,
+        type: '2',
+        lines: []).toJson();
+
+    credit.removeWhere((key, value) => value == null);
+    credit['lines'] = lines;
+
+    String body = jsonEncode(credit);
+
+    final result = await invoiceRepository.createInvoice(body: body);
+
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(message: 'Create Draft: ${failure.message}');
+    }, (id) async {
+      await _validateDocument(documentId: id);
+    });
+  }
+
+  ///
+  /// Invoice validation
+  /// Validate draft
+  Future<void> _validateDocument({required String documentId}) async {
+    String body = '''{
+      "idwarehouse": 1,
+      "notrigger": 0
+      }''';
+
+    final result = await invoiceRepository.validateInvoice(
+        body: body, documentId: documentId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(
+          message: 'Vaidate Credit Note: ${failure.message}');
+    }, (v) async {
+      await _markAsCreditAvailable(creditNoteId: documentId)
+          .then((credit) async {
+        await _fetchDiscount(credit: credit).then((discountId) async {
+          await _applyDiscount(discountId: discountId).then(() async {
+            await _classifyPaid();
+          });
+        });
+      });
+    });
+  }
+
+  _markAsCreditAvailable({required String creditNoteId}) async {
+    final result = await invoiceRepository.markAsCreditAvailable(
+        creditNoteId: creditNoteId);
+
+    result.fold((failure) {
+      log(failure.code.toString());
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(
+          message: 'Credit Available: ${failure.message}');
+    }, (credit) {
+      return credit;
+    });
+  }
+
+  _fetchDiscount({required CreditAvailableModel credit}) async {
+    final result =
+        await invoiceRepository.fetchDiscount(creditNoteId: credit.id!);
+
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(
+          message: 'Fetch Discount: ${failure.message}');
+    }, (discount) {
+      return discount.id;
+    });
+  }
+
+  _applyDiscount({required String discountId}) async {
+    final result = await invoiceRepository.useCreditNote(
+        invoiceId: documentId, discountId: discountId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(
+          message: 'Apply Discount: ${failure.message}');
+    }, (code) {
+      return code;
+    });
+  }
+
+  _classifyPaid() async {
+    final result = await invoiceRepository.classifyPaid(invoiceId: documentId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      SnackBarHelper.errorSnackbar(
+          message: 'Classify Paid: ${failure.message}');
+    }, (code) async {
+      await _refreshInvoiceData().then((r) {
+        DialogHelper.hideLoading();
+        Get.back();
+        SnackBarHelper.successSnackbar(message: 'Successful');
+      });
+    });
+  }
+
+  closeCreditNote({required String creditNoteId}) {}
 }

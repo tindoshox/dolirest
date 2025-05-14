@@ -39,7 +39,6 @@ void main() async {
   await Hive.openBox<AddressModel>('addresses');
   await Hive.openBox<UserModel>('user');
   await Hive.openBox('settings');
-
   runApp(Main());
   DependencyInjection.init();
 }

@@ -70,9 +70,8 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
       child: Column(
         children: [
           Expanded(
-            child: Obx(() => controller.isLoading.isTrue
-                ? const LoadingIndicator(
-                    message: Text('Refreshing invoice data'))
+            child: Obx(() => controller.isLoading.value
+                ? const LoadingIndicator()
                 : buildInvoiceList()),
           ),
         ],
@@ -89,7 +88,12 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
         builder: (context, box, child) {
           List<InvoiceModel> list = box.values
               .toList()
-              .where((element) => element.remaintopay != "0")
+              .where(
+                (invoice) =>
+                    invoice.remaintopay != "0" && controller.drafts == 0
+                        ? invoice.status == "1"
+                        : invoice.status == "0" && invoice.paye == "0",
+              )
               .toList();
           list.sort((a, b) => a.name.compareTo(b.name));
           List<InvoiceModel> invoices = search != ""
@@ -98,7 +102,10 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                     (invoice) =>
                         invoice.name.toString().toUpperCase().contains(
                             controller.searchString.value.toUpperCase()) ||
-                        invoice.ref.contains(controller.searchString.value),
+                        invoice.ref.contains(controller.searchString.value) ||
+                        invoice.refClient
+                            .toString()
+                            .contains(controller.searchString.value),
                   )
                   .toList()
               : list;

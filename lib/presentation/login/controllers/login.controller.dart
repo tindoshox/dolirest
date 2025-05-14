@@ -39,7 +39,7 @@ class LoginController extends GetxController {
       final result = await userRepositoty.login(
           url: serverUrl.value, apiKey: apiKey.value);
       result.fold((failure) {
-              DialogHelper.hideLoading();
+        DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);
         _clearStorage();
       }, (user) async {

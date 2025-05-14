@@ -7,6 +7,7 @@ import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,50 +19,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
   Widget build(BuildContext context) {
     final StorageService storage = Get.find();
     return Scaffold(
-      persistentFooterButtons: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ValueListenableBuilder(
-              valueListenable: storage.invoicesListenable(),
-              builder: (context, invoice, child) => CustomActionButton(
-                  buttonText: 'Payment',
-                  onTap: invoice.get(controller.invoiceId)!.remaintopay == '0'
-                      ? null
-                      : () {
-                          if (Get.find<NetworkController>().connected.value) {
-                            Get.toNamed(
-                              Routes.PAYMENT,
-                              arguments: {
-                                'invid': controller.invoiceId,
-                                'socid': controller.customerId,
-                                'fromhome': false
-                              },
-                            );
-                          } else {
-                            SnackBarHelper.networkSnackbar();
-                          }
-                        }),
-            ),
-            CustomActionButton(
-                buttonText: 'Download',
-                onTap: () {
-                  if (Get.find<NetworkController>().connected.value) {
-                    controller.generateDocument();
-                  } else {
-                    SnackBarHelper.networkSnackbar();
-                  }
-                } //=> ,
-                ),
-          ],
-        ),
-      ],
-      appBar: AppBar(
-        title: const Text('Invoice Detail'),
-        actions: [getStatusIcon()],
-        bottom: TabBar(
-            controller: controller.tabController, tabs: controller.invoiceTabs),
-      ),
+      persistentFooterButtons: _buildFooterButtons(storage),
+      appBar: _buildAppBar(),
       body: Obx(
         () => controller.isLoading.value
             ? const LoadingIndicator(
@@ -79,12 +38,12 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                           }
                         },
                         customer: controller.customer.value,
-                        invoice: invoices.get(controller.invoiceId)!),
+                        invoice: invoices.get(controller.documentId)!),
                   ),
                   ValueListenableBuilder(
                     valueListenable: storage.invoicesListenable(),
                     builder: (context, invoices, child) {
-                      return invoices.get(controller.invoiceId)!.totalpaid == 0
+                      return invoices.get(controller.documentId)!.totalpaid == 0
                           ? const ListTile(
                               title: Text(
                                 'No payments.',
@@ -95,9 +54,9 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8.0),
                               child: PaymentsList(
-                                invoiceId: controller.invoiceId,
+                                invoiceId: controller.documentId,
                                 totalTtc: invoices
-                                    .get(controller.invoiceId)!
+                                    .get(controller.documentId)!
                                     .totalTtc,
                               ),
                             );
@@ -107,5 +66,94 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
               ),
       ),
     );
+  }
+
+  _buildAppBar() {
+    return AppBar(
+      title: const Text('Invoice Detail'),
+      actions: [getStatusIcon(), _getMenu()],
+      bottom: TabBar(
+          controller: controller.tabController, tabs: controller.invoiceTabs),
+    );
+  }
+
+  _getMenu() {
+    return PopupMenuButton(
+      onSelected: (item) {},
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          child: Text('Return Item'),
+          onTap: () => controller.creditNote(productReturned: true),
+        ),
+        PopupMenuItem(
+          child: Text('Write-off Item'),
+          onTap: () => controller.creditNote(productReturned: false),
+        )
+      ],
+    );
+  }
+
+  _buildFooterButtons(StorageService storage) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ValueListenableBuilder(
+            valueListenable: storage.invoicesListenable(),
+            builder: (context, box, child) {
+              var invoice = box.get(controller.documentId);
+              return Row(
+                children: [
+                  if (invoice!.status == DocumentStatus.draft)
+                    CustomActionButton(
+                        buttonText: 'Validate',
+                        onTap: () =>
+                            (Get.find<NetworkController>().connected.value)
+                                ? controller.validateDraft(invoice.id)
+                                : SnackBarHelper.networkSnackbar()),
+                  if (invoice.status == DocumentStatus.unpaid &&
+                      invoice.type == DocumentType.typeCreditNote)
+                    CustomActionButton(
+                      buttonText: 'Close',
+                      onTap: () {},
+                    ),
+                  if (invoice.type == DocumentType.invoice &&
+                      invoice.remaintopay != "0")
+                    CustomActionButton(
+                        buttonText: 'Payment',
+                        onTap: () =>
+                            (Get.find<NetworkController>().connected.value)
+                                ? Get.toNamed(
+                                    Routes.PAYMENT,
+                                    arguments: {
+                                      'documentId': controller.documentId,
+                                      'socid': controller.customerId,
+                                    },
+                                  )
+                                : SnackBarHelper.networkSnackbar()),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  CustomActionButton(
+                    buttonText: invoice.status == '0'
+                        ? 'Delete'
+                        : (invoice.status == '1' ? 'Delete' : 'Download'),
+                    onTap: () {
+                      if (Get.find<NetworkController>().connected.value) {
+                        invoice.status == '0'
+                            ? controller.deleteDocument(invoiceId: invoice.id)
+                            : controller.generateDocument();
+                      } else {
+                        SnackBarHelper.networkSnackbar();
+                      }
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    ];
   }
 }
