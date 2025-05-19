@@ -81,53 +81,43 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
 
   Widget buildInvoiceList() {
     String search = controller.searchString.value;
+    var list = controller.invoices;
+
+    List<InvoiceModel> invoices = search != ""
+        ? list
+            .where(
+              (invoice) =>
+                  invoice.name
+                      .toString()
+                      .toUpperCase()
+                      .contains(controller.searchString.value.toUpperCase()) ||
+                  invoice.ref.contains(controller.searchString.value) ||
+                  invoice.refClient
+                      .toString()
+                      .contains(controller.searchString.value),
+            )
+            .toList()
+        : list;
     return RefreshIndicator(
       onRefresh: () => controller.refreshInvoiceList(),
-      child: ValueListenableBuilder(
-        valueListenable: controller.storage.invoicesListenable(),
-        builder: (context, box, child) {
-          List<InvoiceModel> list = box.values
-              .toList()
-              .where(
-                (invoice) =>
-                    invoice.remaintopay != "0" && controller.drafts == 0
-                        ? invoice.status == "1"
-                        : invoice.status == "0" && invoice.paye == "0",
-              )
-              .toList();
-          list.sort((a, b) => a.name.compareTo(b.name));
-          List<InvoiceModel> invoices = search != ""
-              ? list
-                  .where(
-                    (invoice) =>
-                        invoice.name.toString().toUpperCase().contains(
-                            controller.searchString.value.toUpperCase()) ||
-                        invoice.ref.contains(controller.searchString.value) ||
-                        invoice.refClient
-                            .toString()
-                            .contains(controller.searchString.value),
-                  )
-                  .toList()
-              : list;
-          return invoices.isEmpty
-              ? ListTile(
-                  title: const Text('No invoices found',
-                      textAlign: TextAlign.center),
-                  trailing: ElevatedButton(
-                      onPressed: () => controller.refreshInvoiceList(),
-                      child: const Text('Refresh')),
-                )
-              : ListView.builder(
-                  controller: controller.scrollController,
-                  itemCount: invoices.length + 1,
-                  itemBuilder: (context, index) => index < invoices.length
-                      ? InvoiceListTile(invoice: invoices[index])
-                      : const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: Center(child: Text('End of list!'))),
-                );
-        },
-      ),
+      child: invoices.isEmpty
+          ? ListTile(
+              title:
+                  const Text('No invoices found', textAlign: TextAlign.center),
+              trailing: ElevatedButton(
+                  onPressed: () => controller.refreshInvoiceList(),
+                  child: const Text('Refresh')),
+            )
+          : ListView.builder(
+              controller: controller.scrollController,
+              itemCount: invoices.length + 1,
+              itemBuilder: (context, index) => index < invoices.length
+                  ? InvoiceListTile(invoice: invoices[index])
+                  : const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32.0),
+                      child: Center(child: Text('End of list!')),
+                    ),
+            ),
     );
   }
 }

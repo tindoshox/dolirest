@@ -1,4 +1,3 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -11,7 +10,6 @@ import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
 
 class CustomerDetailScreen extends GetView<CustomerDetailController> {
   const CustomerDetailScreen({super.key});
@@ -38,7 +36,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
             controller: controller.tabController,
             tabs: controller.customerTabs),
       ),
-      body: _buildBody(storage),
+      body: _buildBody(),
     );
   }
 
@@ -67,49 +65,37 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     );
   }
 
-  Widget _buildBody(StorageService storage) {
+  Widget _buildBody() {
     return Obx(() => controller.isLoading.value
         ? const LoadingIndicator(message: Text('Loading...'))
         : TabBarView(
             controller: controller.tabController,
             children: [
-              _customerInfoTab(storage),
+              _customerInfoTab(),
               _invoicesTab(),
             ],
           ));
   }
 
-  Widget _customerInfoTab(StorageService storage) {
-    return ValueListenableBuilder<Box>(
-      valueListenable: storage.customersListenable(),
-      builder: (context, box, child) {
-        final customer = box.get(controller.customerId);
-        return customer == null
-            ? Center()
-            : CustomerInfoWidget(
-                customer: customer,
-              );
-      },
-    );
+  Widget _customerInfoTab() {
+    final customer = controller.customer.value;
+    return customer.id == null
+        ? Center()
+        : CustomerInfoWidget(
+            customer: customer,
+          );
   }
 
   Widget _invoicesTab() {
-    final StorageService storage = Get.find();
-    return ValueListenableBuilder<Box>(
-      valueListenable: storage.invoicesListenable(),
-      builder: (context, box, child) {
-        List<InvoiceModel> invoices = box.values
-            .where((invoice) => invoice.socid == controller.customerId)
-            .toList()
-            .cast();
-        return invoices.isEmpty
-            ? const ListTile(
-                title: Text('No invoices.', textAlign: TextAlign.center))
-            : InvoiceListWidget(
-                invoices: invoices,
-                controller: controller,
-              );
-      },
-    );
+    final invoices = controller.invoices
+        .where((invoice) => invoice.socid == controller.customerId)
+        .toList();
+    return invoices.isEmpty
+        ? const ListTile(
+            title: Text('No invoices.', textAlign: TextAlign.center))
+        : InvoiceListWidget(
+            invoices: invoices,
+            controller: controller,
+          );
   }
 }

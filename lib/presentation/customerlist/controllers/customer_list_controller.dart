@@ -15,8 +15,16 @@ class CustomerListController extends GetxController {
   StorageService storage = Get.find();
   CustomerRepository repository = Get.find();
   var searchIconVisible = true.obs;
-
   var searchString = ''.obs;
+
+  var customers = <CustomerModel>[].obs;
+
+  @override
+  void onInit() {
+    _watchBoxes();
+    _updateCustomers();
+    super.onInit();
+  }
 
   @override
   void onClose() {
@@ -49,7 +57,42 @@ class CustomerListController extends GetxController {
           );
         }
       }
+      final apiIds = customers.map((customer) => customer.id).toSet();
+      List<CustomerModel> localCustomers = storage.getCustomerList();
+      final keysToDelete = <dynamic>[];
+      for (var localCustomer in localCustomers) {
+        if (!apiIds.contains(localCustomer.id)) {
+          keysToDelete.add(localCustomer.id);
+        }
+      }
+
+      storage.deleteAllCustomer(keysToDelete);
       isLoading(false);
     });
+  }
+
+  void _watchBoxes() {
+    storage.invoicesListenable().addListener(_updateCustomers);
+  }
+
+  void _updateCustomers() {
+    final list = storage.getCustomerList();
+    var nic = <CustomerModel>[];
+    if (noInvoiceCustomers) {
+      for (var customer in list) {
+        var invoices = storage
+            .getInvoiceList()
+            .where((invoice) => invoice.socid == customer.id)
+            .toList();
+        if (invoices.isEmpty) {
+          nic.add(customer);
+        }
+      }
+      nic.sort((a, b) => a.name.compareTo(b.name));
+      customers.value = nic;
+    } else {
+      list.sort((a, b) => a.name.compareTo(b.name));
+      customers.value = list;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
@@ -35,7 +36,10 @@ class InvoiceListTile extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
-              'BALANCE: ${invoice.remaintopay}',
+              invoice.type == DocumentType.typeCreditNote &&
+                      invoice.paye == PaidStatus.paid
+                  ? 'BALANCE: 0'
+                  : 'BALANCE: ${invoice.remaintopay}',
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ],
@@ -78,9 +82,12 @@ class InvoiceListTile extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(
-                  invoice.remaintopay == "0"
-                      ? "FULLY PAID"
-                      : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
+                  invoice.type == DocumentType.typeCreditNote &&
+                          invoice.paye == PaidStatus.paid
+                      ? 'CREDITED'
+                      : invoice.remaintopay == "0"
+                          ? "FULLY PAID"
+                          : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],

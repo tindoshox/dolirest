@@ -4,12 +4,21 @@ import 'package:dolirest/infrastructure/dal/services/controllers/network_control
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:get/get.dart';
 
 class CashflowController extends GetxController {
   var connected = Get.find<NetworkController>().connected.value;
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
+  var dayCashflow = <PaymentModel>[].obs;
+
+  @override
+  void onInit() {
+    _watchBoxes();
+    _updatePayments();
+    super.onInit();
+  }
 
   refreshPayments() async {
     var invoices = storage.getInvoiceList();
@@ -34,5 +43,18 @@ class CashflowController extends GetxController {
         }
       });
     }
+  }
+
+  void _watchBoxes() {
+    storage.paymentsListenable().addListener(_updatePayments);
+  }
+
+  void _updatePayments() {
+    final list = storage.getPaymentList();
+    //Day Cashflow
+    dayCashflow.value = list
+        .where((f) => Utils.datePaid(f.date!) == Utils.datePaid(DateTime.now()))
+        .cast<PaymentModel>()
+        .toList();
   }
 }

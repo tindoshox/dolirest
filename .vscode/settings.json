@@ -28,5 +28,9 @@
         "sumpayed",
         "totalpaid",
         "unfocus"
-    ]
+    ],
+    "editor.tokenColorCustomizations": {
+        "comments": "",
+        "textMateRules": []
+    }
 }

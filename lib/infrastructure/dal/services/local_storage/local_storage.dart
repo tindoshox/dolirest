@@ -86,6 +86,14 @@ class StorageService extends GetxController {
     if (_invoices.isOpen) _invoices.delete(key);
   }
 
+  void deleteAllInvoices(keys) {
+    if (_invoices.isOpen) _invoices.deleteAll(keys);
+  }
+
+  void deleteAllPayments(keys) {
+    if (_invoices.isOpen) _payments.deleteAll(keys);
+  }
+
   void storeCustomer(String key, CustomerModel value) async {
     if (_customers.isOpen) await _customers.put(key, value);
   }
@@ -102,6 +110,10 @@ class StorageService extends GetxController {
 
   void deleteCustomer(String key) {
     if (_customers.isOpen) _customers.delete(key);
+  }
+
+  void deleteAllCustomer(keys) {
+    if (_invoices.isOpen) _customers.deleteAll(keys);
   }
 
   ValueListenable<Box<CustomerModel>> customersListenable() {

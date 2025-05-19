@@ -1,9 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
-import 'package:get/get.dart';
 
 class CustomerInfoWidget extends StatelessWidget {
   const CustomerInfoWidget({super.key, required this.customer});
@@ -11,7 +9,6 @@ class CustomerInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final StorageService storage = Get.find();
     List<Widget> children = [
       _buildCustomerInfoRow(
         title: customer.name,
@@ -54,16 +51,12 @@ class CustomerInfoWidget extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
     ];
-    return ValueListenableBuilder(
-      valueListenable: storage.customersListenable(),
-      builder: (context, box, widget) {
-        return ListView.separated(
-          itemBuilder: (context, index) => children[index],
-          separatorBuilder: (context, index) =>
-              const Divider(color: Colors.grey, thickness: 1),
-          itemCount: children.length,
-        );
-      },
+
+    return ListView.separated(
+      itemBuilder: (context, index) => children[index],
+      separatorBuilder: (context, index) =>
+          const Divider(color: Colors.grey, thickness: 1),
+      itemCount: children.length,
     );
   }
 

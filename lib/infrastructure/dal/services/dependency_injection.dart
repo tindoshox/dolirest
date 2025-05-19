@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
@@ -26,5 +27,6 @@ class DependencyInjection {
     Get.put<UserRepository>(UserRepository());
     Get.put<DocumentRepository>(DocumentRepository());
     Get.put<ModuleRepository>(ModuleRepository());
+    Get.put<DataRefreshContoller>(DataRefreshContoller(), permanent: true);
   }
 }

@@ -211,7 +211,7 @@ class CreateinvoiceController extends GetxController {
       }''';
 
     final result =
-        await repository.validateInvoice(body: body, documentId: invoiceId);
+        await repository.validateInvoice(body: body, docId: invoiceId);
     result.fold((failure) {
       _deleteInvoice(invoiceId);
       DialogHelper.hideLoading();
@@ -222,7 +222,7 @@ class CreateinvoiceController extends GetxController {
         DialogHelper.hideLoading();
 
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {
-          'invoiceId': invoiceId,
+          'documentId': invoiceId,
           'customerId': customer.value.id,
         });
       });

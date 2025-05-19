@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
@@ -14,8 +13,6 @@ class CustomerListScreen extends GetView<CustomerListController> {
 
   @override
   Widget build(BuildContext context) {
-    final Debouncer debouncer =
-        Debouncer(delay: const Duration(milliseconds: 1000));
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         tooltip: 'Go to top',
@@ -27,20 +24,24 @@ class CustomerListScreen extends GetView<CustomerListController> {
         title: Obx(
           () => controller.searchIconVisible.value
               ? const Text('Customers')
-              : _buildSearchField(debouncer),
+              : _buildSearchField(),
         ),
         actions: [
           Obx(() => _buildSearchActionButton()),
         ],
       ),
-      body: const Padding(
+      body: Padding(
         padding: EdgeInsets.all(10),
-        child: _CustomerList(),
+        child: Obx(() => controller.isLoading.isTrue
+            ? const LoadingIndicator(message: Text('Refreshing customer data'))
+            : _buildCustomerList()),
       ),
     );
   }
 
-  Widget _buildSearchField(Debouncer debouncer) {
+  Widget _buildSearchField() {
+    final Debouncer debouncer =
+        Debouncer(delay: const Duration(milliseconds: 1000));
     return CustomFormField(
       name: 'search',
       autofocus: true,
@@ -71,94 +72,56 @@ class CustomerListScreen extends GetView<CustomerListController> {
       ),
     );
   }
-}
-
-class _CustomerList extends GetView<CustomerListController> {
-  const _CustomerList();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Obx(() => controller.isLoading.isTrue
-              ? const LoadingIndicator(
-                  message: Text('Refreshing customer data'))
-              : _buildCustomerList()),
-        ),
-      ],
-    );
-  }
 
   Widget _buildCustomerList() {
-    StorageService storage = Get.find();
+    var customers = <CustomerModel>[];
+    var list = controller.customers;
     String search = controller.searchString.value;
+    customers = search.length > 2
+        ? list
+            .where((customer) =>
+                customer.name
+                    .toString()
+                    .toUpperCase()
+                    .contains(search.toUpperCase()) ||
+                customer.address
+                    .toString()
+                    .toUpperCase()
+                    .contains(search.toUpperCase()) ||
+                customer.town
+                    .toString()
+                    .toUpperCase()
+                    .contains(search.toUpperCase()) ||
+                customer.phone.toString().contains(search) ||
+                customer.fax.toString().contains(search))
+            .toList()
+        : list;
 
     return RefreshIndicator(
       onRefresh: () => controller.refreshCustomerList(),
-      child: ValueListenableBuilder(
-        valueListenable: storage.customersListenable(),
-        builder: (context, box, child) {
-          //  List<CustomerModel> customers = box.values.toList();
-          List<CustomerModel> noInvoiceCustomers = [];
-          for (var customer in box.values.toList()) {
-            var invoices = controller.storage
-                .getInvoiceList()
-                .where((invoice) => invoice.socid == customer.id)
-                .toList();
-            if (invoices.isEmpty) {
-              noInvoiceCustomers.add(customer);
-            }
-          }
-
-          List<CustomerModel> sortedValues = controller.noInvoiceCustomers
-              ? noInvoiceCustomers
-              : box.values.toList()
-            ..sort((a, b) => a.name.compareTo(b.name));
-
-          List<CustomerModel> customers = search.length > 2
-              ? sortedValues
-                  .where((customer) =>
-                      customer.name
-                          .toString()
-                          .toUpperCase()
-                          .contains(search.toUpperCase()) ||
-                      customer.address
-                          .toString()
-                          .toUpperCase()
-                          .contains(search.toUpperCase()) ||
-                      customer.town
-                          .toString()
-                          .toUpperCase()
-                          .contains(search.toUpperCase()) ||
-                      customer.phone.toString().contains(search) ||
-                      customer.fax.toString().contains(search))
-                  .toList()
-              : sortedValues;
-          return customers.isEmpty
-              ? ListTile(
-                  title: const Text('No customers found',
-                      textAlign: TextAlign.center),
-                  trailing: ElevatedButton(
-                      onPressed: () => controller.refreshCustomerList(),
-                      child: const Text('Refresh')),
-                )
-              : ListView.builder(
-                  controller: controller.scrollController,
-                  itemCount: customers.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index < customers.length) {
-                      CustomerModel customer = customers[index];
-                      return buildCustomerListTile(customer, context);
-                    } else {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 32.0),
-                        child: Center(child: Text('nothing more to load!')),
-                      );
-                    }
-                  });
-        },
-      ),
+      child: customers.isEmpty
+          ? ListTile(
+              title:
+                  const Text('No customers found', textAlign: TextAlign.center),
+              trailing: ElevatedButton(
+                  onPressed: () => controller.refreshCustomerList(),
+                  child: const Text('Refresh')),
+            )
+          : ListView.builder(
+              controller: controller.scrollController,
+              itemCount: customers.length + 1,
+              itemBuilder: (context, index) {
+                if (index < customers.length) {
+                  CustomerModel customer = customers[index];
+                  return buildCustomerListTile(customer, context);
+                } else {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    child: Center(child: Text('nothing more to load!')),
+                  );
+                }
+              },
+            ),
     );
   }
 }

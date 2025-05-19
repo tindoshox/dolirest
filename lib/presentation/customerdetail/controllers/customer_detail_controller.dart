@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -13,6 +14,8 @@ class CustomerDetailController extends GetxController
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final String customerId = Get.arguments['customerId'];
+  var customer = CustomerModel().obs;
+  var invoices = <InvoiceModel>[].obs;
 
   final List<Tab> customerTabs = [
     const Tab(text: 'Details'),
@@ -26,7 +29,9 @@ class CustomerDetailController extends GetxController
   @override
   void onInit() async {
     tabController = TabController(length: customerTabs.length, vsync: this);
-    await _fetchInvoices();
+    _watchBoxes();
+    _updateCustomer();
+    _updateInvoices();
     tabController.addListener(() {
       tabIndex(tabController.index);
     });
@@ -37,17 +42,6 @@ class CustomerDetailController extends GetxController
   @override
   void onClose() {
     tabController.dispose();
-  }
-
-  _fetchInvoices() async {
-    isLoading(true);
-
-    if (storage.getCustomer(customerId) == null ||
-        storage.getInvoiceList(customerId: customerId).isEmpty) {
-      await refreshCustomerInvoiceData(customerId: customerId);
-    }
-
-    isLoading(false);
   }
 
   // Fetch invoice data from server
@@ -83,5 +77,18 @@ class CustomerDetailController extends GetxController
         storage.deleteCustomer(customerId);
       },
     );
+  }
+
+  void _watchBoxes() {
+    storage.customersListenable().addListener(_updateCustomer);
+    storage.invoicesListenable().addListener(_updateInvoices);
+  }
+
+  void _updateCustomer() {
+    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
+  }
+
+  void _updateInvoices() {
+    invoices.value = storage.getInvoiceList(customerId: customerId);
   }
 }

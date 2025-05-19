@@ -23,10 +23,15 @@ class DocumentType {
   static const String typeCreditNote = "2";
 }
 
-class DocumentStatus {
+class ValidationStatus {
   //Invoice Status
-  static const String unpaid = "1";
-  static const String draft = "2";
-  static const String paid = "0";
-  static const String cancelled = "";
+  static const String draft = "0"; ////"statut": "0"
+  static const String validated = "1"; //"statut": "1"
+  static const String creditAvalable = "2"; //"statut": "2"
+}
+
+class PaidStatus {
+//Payment state
+  static const String unpaid = "0"; //"paye": "0"
+  static const String paid = "1"; //"paye": "1"
 }

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
-import 'package:dolirest/infrastructure/dal/models/credit_available_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
@@ -14,6 +13,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/i
 
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,7 +21,7 @@ import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final StorageService storage = Get.find<StorageService>();
+  final StorageService storage = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
@@ -29,10 +29,11 @@ class InvoiceDetailController extends GetxController
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
   ];
-  RxInt tabIndex = 0.obs;
 
-  Rx<CustomerModel> customer = CustomerModel().obs;
-  Rx<InvoiceModel> document = InvoiceModel().obs;
+  var tabIndex = 0.obs;
+  var customer = CustomerModel().obs;
+  var document = InvoiceModel().obs;
+  var payments = <PaymentModel>[].obs;
 
   RxBool isLoading = false.obs;
 
@@ -53,7 +54,10 @@ class InvoiceDetailController extends GetxController
       platform = TargetPlatform.iOS;
     }
     tabController = TabController(length: invoiceTabs.length, vsync: this);
-
+    _watchBoxes();
+    _updateCustomer();
+    _updateDocument();
+    _updatePayments();
     tabController.addListener(() {
       tabIndex(tabController.index);
     });
@@ -82,7 +86,7 @@ class InvoiceDetailController extends GetxController
       _refreshInvoiceData()
           .then((value) => document.value = storage.getInvoice(documentId)!);
     } else {
-      customer.value = storage.getCustomer(documentId)!;
+      document.value = storage.getInvoice(documentId)!;
     }
   }
 
@@ -228,44 +232,23 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  validateDraft(invoiceId) async {
-    DialogHelper.showLoading('Validating invoice...');
-    String body = '''{
-      "idwarehouse": 1,
-      "notrigger": 0
-      }''';
-
-    final result = await invoiceRepository.validateInvoice(
-        body: body, documentId: invoiceId);
-    result.fold((failure) {
-      DialogHelper.hideLoading();
-      SnackBarHelper.errorSnackbar(message: 'Invoice validation failed');
-    }, (v) async {
-      await _refreshInvoiceData().then((value) {
-        DialogHelper.hideLoading();
-
-        SnackBarHelper.successSnackbar(message: 'Invoce validated');
-      });
-    });
-  }
-
-  void deleteDocument({required String invoiceId}) async {
+  void deleteDocument({required String documentId}) async {
     DialogHelper.showLoading('Deleting Invoice');
-    final result = await invoiceRepository.deleteInvoice(documentId: invoiceId);
+    final result =
+        await invoiceRepository.deleteInvoice(documentId: documentId);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
     }, (deleted) {
-      storage.deleteInvoice(invoiceId);
-
       DialogHelper.hideLoading();
       Get.back();
       SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+      storage.deleteInvoice(documentId);
     });
   }
 
   creditNote({required bool productReturned}) async {
-    DialogHelper.showLoading('Returning Item');
+    DialogHelper.showLoading('Returning item');
     var invoice = storage.getInvoice(documentId)!;
 
     /// Generate product line
@@ -302,37 +285,50 @@ class InvoiceDetailController extends GetxController
 
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackBarHelper.errorSnackbar(message: 'Create Draft: ${failure.message}');
+      SnackBarHelper.errorSnackbar(message: 'create draft: ${failure.message}');
     }, (id) async {
-      await _validateDocument(documentId: id);
+      await validateDocument(id: id, invoiceValidation: false)
+          .then((validatedId) async {
+        await _markAsCreditAvailable(creditNoteId: validatedId)
+            .then((availableId) async {
+          await _fetchDiscount(creditNoteId: availableId)
+              .then((discount) async {
+            await _applyDiscount(
+                    invoiceId: document.value.id, discountId: discount)
+                .then((v) async {
+              await _classifyPaid(invoiceId: document.value.id);
+            });
+          });
+        });
+      });
     });
   }
 
   ///
   /// Invoice validation
   /// Validate draft
-  Future<void> _validateDocument({required String documentId}) async {
+  validateDocument(
+      {required String id, required bool invoiceValidation}) async {
     String body = '''{
       "idwarehouse": 1,
       "notrigger": 0
       }''';
 
-    final result = await invoiceRepository.validateInvoice(
-        body: body, documentId: documentId);
+    final result =
+        await invoiceRepository.validateInvoice(body: body, docId: id);
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackBarHelper.errorSnackbar(
-          message: 'Vaidate Credit Note: ${failure.message}');
-    }, (v) async {
-      await _markAsCreditAvailable(creditNoteId: documentId)
-          .then((credit) async {
-        await _fetchDiscount(credit: credit).then((discountId) async {
-          await _applyDiscount(discountId: discountId).then(() async {
-            await _classifyPaid();
-          });
+      SnackBarHelper.errorSnackbar(message: 'Validation: ${failure.message}');
+    }, (validated) async {
+      if (invoiceValidation) {
+        await _refreshInvoiceData().then((value) {
+          DialogHelper.hideLoading();
+
+          SnackBarHelper.successSnackbar(message: 'Invioce validated');
         });
-      });
+      }
     });
+    return id;
   }
 
   _markAsCreditAvailable({required String creditNoteId}) async {
@@ -344,27 +340,29 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Credit Available: ${failure.message}');
-    }, (credit) {
-      return credit;
-    });
+    }, (credit) {});
+    return creditNoteId;
   }
 
-  _fetchDiscount({required CreditAvailableModel credit}) async {
+  _fetchDiscount({required String creditNoteId}) async {
+    String discountId = '';
     final result =
-        await invoiceRepository.fetchDiscount(creditNoteId: credit.id!);
+        await invoiceRepository.fetchDiscount(creditNoteId: creditNoteId);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Fetch Discount: ${failure.message}');
     }, (discount) {
-      return discount.id;
+      discountId = discount;
     });
+    return discountId;
   }
 
-  _applyDiscount({required String discountId}) async {
+  _applyDiscount(
+      {required String invoiceId, required String discountId}) async {
     final result = await invoiceRepository.useCreditNote(
-        invoiceId: documentId, discountId: discountId);
+        invoiceId: invoiceId, discountId: discountId);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
@@ -374,7 +372,7 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  _classifyPaid() async {
+  _classifyPaid({required String invoiceId}) async {
     final result = await invoiceRepository.classifyPaid(invoiceId: documentId);
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -389,5 +387,47 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  closeCreditNote({required String creditNoteId}) {}
+  closeCreditNote() async {
+    if (document.value.paye == PaidStatus.paid) {
+      await _fetchDiscount(creditNoteId: document.value.id)
+          .then((discountId) async {
+        await _applyDiscount(
+                invoiceId: document.value.fkFactureSource,
+                discountId: discountId)
+            .then((v) async {
+          await _classifyPaid(invoiceId: document.value.fkFactureSource);
+        });
+      });
+    } else {
+      await _markAsCreditAvailable(creditNoteId: document.value.id)
+          .then((v) async {
+        await _fetchDiscount(creditNoteId: document.value.id)
+            .then((discountId) async {
+          await _applyDiscount(
+                  invoiceId: document.value.id, discountId: discountId)
+              .then((v) async {
+            await _classifyPaid(invoiceId: document.value.fkFactureSource);
+          });
+        });
+      });
+    }
+  }
+
+  void _watchBoxes() {
+    storage.customersListenable().addListener(_updateCustomer);
+    storage.invoicesListenable().addListener(_updateDocument);
+    storage.paymentsListenable().addListener(_updatePayments);
+  }
+
+  void _updateCustomer() {
+    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
+  }
+
+  void _updateDocument() {
+    document.value = storage.getInvoice(documentId) ?? InvoiceModel();
+  }
+
+  void _updatePayments() {
+    payments.value = storage.getPaymentList(invoiceId: documentId);
+  }
 }

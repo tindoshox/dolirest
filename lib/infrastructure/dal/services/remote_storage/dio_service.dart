@@ -30,7 +30,7 @@ class DioService extends GetxController {
     // Set default configs
     dio.options.baseUrl = '$url$apiStub';
     dio.options.connectTimeout = Duration(seconds: 10);
-    dio.options.receiveTimeout = Duration(seconds: 30);
+    dio.options.receiveTimeout = Duration(seconds: 60);
     dio.options.headers.addAll(auth);
     dio.interceptors.add(CacheInterceptor());
 

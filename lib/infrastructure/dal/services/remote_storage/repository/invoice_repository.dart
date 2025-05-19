@@ -28,7 +28,7 @@ class InvoiceRepository extends DioService {
       sqlfilters += "(t.tms:>:'1970-01-01')";
     }
 
-    if (status != null) {
+    if (type != null) {
       sqlfilters += "and (t.type:=:'$type')";
     }
 
@@ -111,14 +111,16 @@ class InvoiceRepository extends DioService {
   //
   /// Validate Invoice
   Future<Either<Failure, String>> validateInvoice(
-      {required String body, required String documentId}) async {
+      {required String body, required String docId}) async {
     try {
       var response = await dio.post(
-        '${ApiPath.invoices}/$documentId/validate',
+        '${ApiPath.invoices}/$docId/validate',
         data: body,
       );
 
-      return right(response.data.toString().replaceAll('"', ''));
+      Map<String, dynamic> s = response.data;
+      String id = s['id'];
+      return right(id);
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
@@ -169,13 +171,14 @@ class InvoiceRepository extends DioService {
   }
 
 //Get discount
-  Future<Either<Failure, DiscountModel>> fetchDiscount(
+  Future<Either<Failure, String>> fetchDiscount(
       {required String creditNoteId}) async {
     try {
       var response = await dio
           .get('${ApiPath.invoices}/$creditNoteId/${ApiPath.discount}');
       final discount = discountModelFromJson(json.encode(response.data));
-      return right(discount);
+
+      return right(discount.id);
     } catch (error) {
       if (!kReleaseMode) {
         log('Error: $error');
