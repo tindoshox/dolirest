@@ -16,7 +16,7 @@ class CashflowScreen extends GetView<CashflowController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Obx(() => _buildCashflow(controller, context)),
+      body: Obx(() => _buildCashflow(context)),
     );
   }
 
@@ -27,7 +27,7 @@ class CashflowScreen extends GetView<CashflowController> {
     );
   }
 
-  _buildCashflow(CashflowController controller, BuildContext context) {
+  DataTable2 _buildCashflow(BuildContext context) {
     final StorageService storage = controller.storage;
 
     //Day Cashflow

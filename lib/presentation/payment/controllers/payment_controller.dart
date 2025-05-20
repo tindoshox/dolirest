@@ -23,8 +23,9 @@ class PaymentController extends GetxController {
   TextEditingController amountController = TextEditingController();
   TextEditingController invoiceController = TextEditingController();
 
-  final String invoiceId = Get.arguments['invoiceId'];
-  final String socid = Get.arguments['socid'];
+  final String invoiceId = Get.arguments['invoiceId'] ?? '';
+  final String socid = Get.arguments['socid'] ?? '';
+  final bool batch = Get.arguments['batch'] ?? false;
 
   GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
   GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
@@ -169,19 +170,14 @@ class PaymentController extends GetxController {
       await _refreshPayments(invoice.value.id);
       await _refreshInvoice(invoice.value.id);
 
-      if (invoiceId.isNotEmpty) {
+      if (batch) {
         DialogHelper.hideLoading();
 
-        Get.snackbar(
-            'Payment', '${amount.value} for ${customer.value.name} received.',
-            icon: const Icon(Icons.money_sharp),
-            shouldIconPulse: true,
-            backgroundColor: const Color.fromARGB(255, 186, 255, 97),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP);
+        SnackBarHelper.successSnackbar(
+            title: 'Payment',
+            message: '${amount.value} for ${customer.value.name} received.');
         paymentFormKey.currentState?.reset();
         dropdownKey.currentState?.clear();
-
         clearInvoice();
       } else {
         DialogHelper.hideLoading();

@@ -11,15 +11,13 @@ import 'package:fpdart/fpdart.dart';
 
 class CustomerRepository extends DioService {
   /// CustomerList
-  Future<Either<Failure, List<CustomerModel>>> fetchCustomerList(
-      {String dateModified = '1970-01-01'}) async {
+  Future<Either<Failure, List<CustomerModel>>> fetchCustomerList() async {
     final Map<String, String> queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
       "mode": "1",
       "limit": "0",
       "page": "1",
-      "sqlfilters": "(t.tms:>:'$dateModified')",
     };
     try {
       var response = await dio.get(

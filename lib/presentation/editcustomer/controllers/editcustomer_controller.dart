@@ -27,7 +27,7 @@ class EditCustomerController extends GetxController {
   RxBool isLoading = false.obs;
 
   Rx<CustomerModel> customerToEdit = CustomerModel().obs;
-  String customerId = Get.arguments['customerId'];
+  String customerId = Get.arguments['customerId'] ?? '';
 
   Rx<GroupModel> selectedGroup = GroupModel().obs;
   RxList<GroupModel> groups = List<GroupModel>.empty().obs;

@@ -30,6 +30,10 @@ class StorageService extends GetxController {
     return _user.isOpen ? _user.get(StorageKey.user) : null;
   }
 
+  ValueListenable<Box<UserModel>> userListenable() {
+    return _user.listenable();
+  }
+
   void storeAddresses(String key, AddressModel value) async {
     await _addresses.put(key, value);
   }
@@ -44,6 +48,10 @@ class StorageService extends GetxController {
 
   CompanyModel? getCompany() {
     return _company.isOpen ? _company.get(StorageKey.company) : null;
+  }
+
+  ValueListenable<Box<CompanyModel>> companyListenable() {
+    return _company.listenable();
   }
 
   void storePayment(String key, PaymentModel value) async {
@@ -173,6 +181,10 @@ class StorageService extends GetxController {
                 _settings.get(StorageKey.enabledModules).map((x) => x))
             : <String>[]
         : <String>[];
+  }
+
+  ValueListenable<Box> settingsListenable() {
+    return _settings.listenable();
   }
 
   void clearAll() {

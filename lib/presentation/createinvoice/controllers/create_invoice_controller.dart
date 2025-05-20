@@ -13,13 +13,13 @@ import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class CreateinvoiceController extends GetxController {
-  final String invoiceId = '';
-  final _customerId = Get.arguments['customerId'];
+  final String customerId = Get.arguments['customerId'] ?? '';
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   final ProductRepository products = Get.find();
@@ -50,6 +50,8 @@ class CreateinvoiceController extends GetxController {
         storage.getEnabledModules().contains('product');
     invoiceDateController.text = Utils.dateTimeToString(invoiceDate.value);
     dueDateController.text = Utils.dateTimeToString(dueDate.value);
+    _watchBoxes();
+    _updateCustomer();
 
     super.onInit();
   }
@@ -81,8 +83,8 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _fetchData() async {
-    if (_customerId != null) {
-      await fetchCustomerById(_customerId);
+    if (customerId.isEmpty) {
+      await fetchCustomerById(customerId);
     }
   }
 
@@ -300,5 +302,17 @@ class CreateinvoiceController extends GetxController {
 
   void clearProduct() {
     selectedProduct(ProductModel());
+  }
+
+  void _watchBoxes() {
+    storage.customersListenable().addListener(_updateCustomer);
+  }
+
+  void _updateCustomer() {
+    customer.value = storage.getCustomer(customerId)!;
+    if (!kReleaseMode) {
+      debugPrint('CustomerId: $customerId');
+      debugPrint('Customer: ${customer.value.name}');
+    }
   }
 }

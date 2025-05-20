@@ -1,5 +1,5 @@
-import 'package:data_table_2/data_table_2.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,61 +23,83 @@ class DueTodayScreen extends GetView<DueTodayController> {
     );
   }
 
-  DataColumn2 buildHeading(
-          {required String label,
-          void Function(int, bool)? onSort,
-          ColumnSize size = ColumnSize.M}) =>
-      DataColumn2(
-        size: size,
-        onSort: onSort,
-        label: Text(label),
-      );
+  buildDueToday(BuildContext context) {
+    ScrollController scrollController = ScrollController();
+    return Obx(() {
+      var invoices = controller.dueToday;
+      invoices.removeWhere((d) => DateUtils.isSameMonth(
+          Utils.intToDateTime(d.dateLimReglement!),
+          DateTime.now().add(Duration(days: 30))));
 
-  DataCell buildCell(String data, {bool softWrap = true}) => DataCell(
-        Text(
-          data,
-          maxLines: 2,
-          softWrap: softWrap,
-          overflow: TextOverflow.ellipsis,
-        ),
-      );
-
-  List<DataRow2> buildDataRow() {
-    List<DataRow2> rows = <DataRow2>[];
-    for (DueTodayModel invoice in controller.dueList) {
-      rows.add(DataRow2(
-        onSelectChanged: (value) => Get.toNamed(Routes.INVOICEDETAIL,
-            arguments: {
-              'invoiceId': invoice.invoiceId,
-              'customerId': invoice.customerId
-            }),
-        cells: [
-          buildCell(invoice.name),
-          buildCell(invoice.dueDate, softWrap: false),
-          buildCell(invoice.town),
-          buildCell(invoice.address),
-        ],
-      ));
-    }
-    return rows;
+      if (invoices.isEmpty) {
+        return Center(
+          child: Text('Nothing to see here'),
+        );
+      } else {
+        return ListView.builder(
+          controller: scrollController,
+          itemCount: invoices.length + 1,
+          itemBuilder: (context, index) {
+            if (index < invoices.length) {
+              var invoice = invoices[index];
+              var customer = controller.storage.getCustomer(invoice.socid);
+              return Card(
+                child: InkWell(
+                  onTap: () {
+                    Get.toNamed(Routes.INVOICEDETAIL, arguments: {
+                      'documentId': invoice.id,
+                      'customerId': invoice.socid,
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        textBox(context, customer?.name ?? '', flex: 2),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        textBox(
+                            context, Utils.intToDMY(invoice.dateLimReglement),
+                            textAlign: TextAlign.center),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        textBox(
+                          context,
+                          customer?.town ?? '',
+                        ),
+                        SizedBox(
+                          width: 3,
+                        ),
+                        textBox(context, customer?.address ?? ''),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32.0),
+                child: Center(child: Text('End of list!')),
+              );
+            }
+          },
+        );
+      }
+    });
   }
 
-  buildDueToday(BuildContext context) {
-    return DataTable2(
-        headingTextStyle: Theme.of(context).textTheme.titleSmall,
-        dataTextStyle: Theme.of(context).textTheme.bodySmall,
-        showCheckboxColumn: false,
-        sortColumnIndex: 2,
-        columnSpacing: 3,
-        empty: Center(
-          child: Text('No invoices due today'),
-        ),
-        columns: [
-          buildHeading(label: 'Customer', size: ColumnSize.M),
-          buildHeading(label: 'Due Date', size: ColumnSize.M),
-          buildHeading(label: 'Town', size: ColumnSize.S),
-          buildHeading(label: 'Address', size: ColumnSize.S),
-        ],
-        rows: buildDataRow());
+  Widget textBox(BuildContext context, String text,
+      {int flex = 1, TextAlign textAlign = TextAlign.left}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall,
+        overflow: TextOverflow.ellipsis,
+        textAlign: textAlign,
+      ),
+    );
   }
 }

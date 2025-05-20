@@ -18,13 +18,13 @@ String companyModelToJson(CompanyModel data) => json.encode(data.toJson());
 class CompanyModel {
   @HiveField(1)
   @JsonKey(name: "module")
-  String? module;
+  dynamic module;
   @HiveField(3)
   @JsonKey(name: "entity")
-  int? entity;
+  dynamic entity;
   @HiveField(5)
   @JsonKey(name: "name")
-  String? name;
+  dynamic name;
   @HiveField(7)
   @JsonKey(name: "name_alias")
   dynamic nameAlias;
@@ -33,16 +33,16 @@ class CompanyModel {
   dynamic particulier;
   @HiveField(11)
   @JsonKey(name: "status")
-  int? status;
+  dynamic status;
   @HiveField(13)
   @JsonKey(name: "phone")
-  String? phone;
+  dynamic phone;
   @HiveField(15)
   @JsonKey(name: "fax")
-  String? fax;
+  dynamic fax;
   @HiveField(17)
   @JsonKey(name: "email")
-  String? email;
+  dynamic email;
   @HiveField(19)
   @JsonKey(name: "no_email")
   dynamic noEmail;
@@ -60,70 +60,70 @@ class CompanyModel {
   dynamic linkedin;
   @HiveField(29)
   @JsonKey(name: "url")
-  String? url;
+  dynamic url;
   @HiveField(31)
   @JsonKey(name: "barcode")
   dynamic barcode;
   @HiveField(33)
   @JsonKey(name: "idprof1")
-  String? idprof1;
+  dynamic idprof1;
   @HiveField(35)
   @JsonKey(name: "siren")
   dynamic siren;
   @HiveField(37)
   @JsonKey(name: "idprof2")
-  String? idprof2;
+  dynamic idprof2;
   @HiveField(39)
   @JsonKey(name: "siret")
   dynamic siret;
   @HiveField(41)
   @JsonKey(name: "idprof3")
-  String? idprof3;
+  dynamic idprof3;
   @HiveField(43)
   @JsonKey(name: "ape")
   dynamic ape;
   @HiveField(45)
   @JsonKey(name: "idprof4")
-  String? idprof4;
+  dynamic idprof4;
   @HiveField(47)
   @JsonKey(name: "idprof5")
-  String? idprof5;
+  dynamic idprof5;
   @HiveField(49)
   @JsonKey(name: "idprof6")
-  String? idprof6;
+  dynamic idprof6;
   @HiveField(51)
   @JsonKey(name: "socialobject")
-  String? socialobject;
+  dynamic socialobject;
   @HiveField(53)
   @JsonKey(name: "tva_assuj")
-  String? tvaAssuj;
+  dynamic tvaAssuj;
   @HiveField(55)
   @JsonKey(name: "tva_intra")
-  String? tvaIntra;
+  dynamic tvaIntra;
   @HiveField(57)
   @JsonKey(name: "vat_reverse_charge")
-  int? vatReverseCharge;
+  dynamic vatReverseCharge;
   @HiveField(59)
   @JsonKey(name: "localtax1_assuj")
-  int? localtax1Assuj;
+  dynamic localtax1Assuj;
   @HiveField(61)
   @JsonKey(name: "localtax1_value")
   dynamic localtax1Value;
   @HiveField(63)
   @JsonKey(name: "localtax2_assuj")
-  int? localtax2Assuj;
+  dynamic localtax2Assuj;
   @HiveField(65)
   @JsonKey(name: "localtax2_value")
   dynamic localtax2Value;
   @HiveField(67)
   @JsonKey(name: "managers")
-  String? managers;
+  dynamic managers;
   @HiveField(69)
   @JsonKey(name: "capital")
-  String? capital;
+  dynamic capital;
   @HiveField(71)
   @JsonKey(name: "typent_id")
-  int? typentId;
+  dynamic typentId;
   @HiveField(73)
   @JsonKey(name: "typent_code")
   dynamic typentCode;
@@ -180,7 +180,7 @@ class CompanyModel {
   dynamic codeComptaProduct;
   @HiveField(109)
   @JsonKey(name: "note_private")
-  String? notePrivate;
+  dynamic notePrivate;
   @HiveField(111)
   @JsonKey(name: "note_public")
   dynamic notePublic;
@@ -213,7 +213,7 @@ class CompanyModel {
   dynamic parent;
   @HiveField(131)
   @JsonKey(name: "default_lang")
-  String? defaultLang;
+  dynamic defaultLang;
   @HiveField(133)
   @JsonKey(name: "ref")
   dynamic ref;
@@ -231,22 +231,22 @@ class CompanyModel {
   dynamic webservicesKey;
   @HiveField(143)
   @JsonKey(name: "logo")
-  String? logo;
+  dynamic logo;
   @HiveField(145)
   @JsonKey(name: "logo_small")
-  String? logoSmall;
+  dynamic logoSmall;
   @HiveField(147)
   @JsonKey(name: "logo_mini")
-  String? logoMini;
+  dynamic logoMini;
   @HiveField(149)
   @JsonKey(name: "logo_squarred")
-  String? logoSquarred;
+  dynamic logoSquarred;
   @HiveField(151)
   @JsonKey(name: "logo_squarred_small")
-  String? logoSquarredSmall;
+  dynamic logoSquarredSmall;
   @HiveField(153)
   @JsonKey(name: "logo_squarred_mini")
-  String? logoSquarredMini;
+  dynamic logoSquarredMini;
   @HiveField(155)
   @JsonKey(name: "accountancy_code_sell")
   dynamic accountancyCodeSell;
@@ -267,7 +267,7 @@ class CompanyModel {
   dynamic bankAccount;
   @HiveField(167)
   @JsonKey(name: "id")
-  int? id;
+  dynamic id;
   @HiveField(169)
   @JsonKey(name: "array_languages")
   dynamic arrayLanguages;
@@ -303,13 +303,13 @@ class CompanyModel {
   dynamic statut;
   @HiveField(191)
   @JsonKey(name: "country_id")
-  String? countryId;
+  dynamic countryId;
   @HiveField(193)
   @JsonKey(name: "country_code")
-  String? countryCode;
+  dynamic countryCode;
   @HiveField(195)
   @JsonKey(name: "state_id")
-  int? stateId;
+  dynamic stateId;
   @HiveField(197)
   @JsonKey(name: "region_id")
   dynamic regionId;
@@ -378,7 +378,7 @@ class CompanyModel {
   dynamic userModificationId;
   @HiveField(241)
   @JsonKey(name: "specimen")
-  int? specimen;
+  dynamic specimen;
   @HiveField(243)
   @JsonKey(name: "labelStatus")
   dynamic labelStatus;
@@ -390,13 +390,13 @@ class CompanyModel {
   dynamic output;
   @HiveField(249)
   @JsonKey(name: "address")
-  String? address;
+  dynamic address;
   @HiveField(251)
   @JsonKey(name: "zip")
-  String? zip;
+  dynamic zip;
   @HiveField(253)
   @JsonKey(name: "town")
-  String? town;
+  dynamic town;
 
   CompanyModel({
     this.module,

@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_info_widget.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_invoice_list_widget.dart';
@@ -16,11 +15,8 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   @override
   Widget build(BuildContext context) {
-    final StorageService storage = Get.find();
     return Scaffold(
-      floatingActionButton: storage
-              .getInvoiceList(customerId: controller.customerId)
-              .isNotEmpty
+      floatingActionButton: controller.invoices.isNotEmpty
           ? null
           : FloatingActionButton(
               backgroundColor: Colors.redAccent,
@@ -42,9 +38,11 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   List<Widget> _buildFooterButtons() {
     return [
-      _actionButton('Edit', Routes.EDITCUSTOMER),
-      _actionButton('New Invoice', Routes.CREATEINVOICE,
-          additionalArgs: {'invoiceId': ''}),
+      _actionButton(
+        'Edit',
+        Routes.EDITCUSTOMER,
+      ),
+      _actionButton('New Invoice', Routes.CREATEINVOICE),
     ];
   }
 

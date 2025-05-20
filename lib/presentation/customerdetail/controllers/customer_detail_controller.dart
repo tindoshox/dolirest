@@ -85,7 +85,7 @@ class CustomerDetailController extends GetxController
   }
 
   void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
+    customer.value = storage.getCustomer(customerId)!;
   }
 
   void _updateInvoices() {

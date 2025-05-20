@@ -59,9 +59,16 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
   }
 
   _buildAppBar() {
+    final document = controller.document.value;
     return AppBar(
       title: const Text('Invoice Detail'),
-      actions: [getStatusIcon(), _getMenu()],
+      actions: [
+        getStatusIcon(),
+        if (document.type == DocumentType.invoice &&
+            document.paye == PaidStatus.unpaid &&
+            document.remaintopay != '0')
+          _getMenu()
+      ],
       bottom: TabBar(
           controller: controller.tabController, tabs: controller.invoiceTabs),
     );
@@ -121,7 +128,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                       ? Get.toNamed(
                           Routes.PAYMENT,
                           arguments: {
-                            'documentId': controller.documentId,
+                            'invoiceId': controller.documentId,
                             'socid': controller.customerId,
                           },
                         )

@@ -32,6 +32,7 @@ class DioService extends GetxController {
     dio.options.connectTimeout = Duration(seconds: 10);
     dio.options.receiveTimeout = Duration(seconds: 60);
     dio.options.headers.addAll(auth);
+    dio.options.responseType = ResponseType.json;
     dio.interceptors.add(CacheInterceptor());
 
     if (!kReleaseMode) {

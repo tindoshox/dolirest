@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dolirest/infrastructure/dal/models/company_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
@@ -13,9 +12,9 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:get/get.dart';
 
@@ -28,9 +27,9 @@ class HomeController extends GetxController {
   final UserRepository userRepository = Get.find();
   final ModuleRepository moduleRepository = Get.find();
   final DataRefreshContoller dataRefreshContoller = Get.find();
-  var moduleReportsEnabled = false.obs;
+
   var user = UserModel().obs;
-  var company = CompanyModel().obs;
+  var company = ''.obs;
 
   var noInvoiceCustomers = <CustomerModel>[].obs;
   var dayCashflow = <PaymentModel>[].obs;
@@ -39,73 +38,74 @@ class HomeController extends GetxController {
   var overDues = 0.obs;
   var sales = 0.obs;
   var dueToday = <InvoiceModel>[].obs;
+  var enabledModules = <String>[].obs;
 
   @override
-  void onInit() async {
-    await _fetchUser();
-    await _fetchEnabledModules();
+  void onInit() {
     _watchBoxes();
     _updateNoInvoiceCustomers();
     _updateDayCashflow();
     _updateInvoiceStats();
-    moduleReportsEnabled.value =
-        storage.getEnabledModules().contains('reports');
+    _updateUser();
+    _updateModules();
+    _updateCompany();
+
     super.onInit();
   }
 
   @override
-  void onReady() async {
-    await _fetchCompany();
-    var invoices = storage.getInvoiceList().length;
-    if (invoices == 0) {
-      await forceRefresh();
+  void onReady() {
+    if (openInvoices.value == 0) {
+      forceRefresh();
     }
 
     super.onReady();
   }
 
-  _fetchCompany() {
+  _updateCompany() async {
     if (storage.getCompany() == null) {
-      _refreshCompanyData();
-    } else {
-      company.value = storage.getCompany()!;
+      await _refreshCompanyData();
     }
+    company.value = storage.getCompany()?.name ?? '';
   }
 
   Future _refreshCompanyData() async {
     final result = await companyRepository.fetchCompany();
-    result.fold((failure) {}, (entity) {
+    result.fold((failure) {
+      // if (!kReleaseMode) {
+      //   debugPrint(failure.message);
+      // }
+    }, (entity) {
       storage.storeCompany(entity);
-      company.value = entity;
     });
   }
 
-  _fetchUser() async {
+  _updateUser() async {
     if (storage.getUser() == null) {
       await _refreshUserData();
-    } else {
-      user.value = storage.getUser()!;
     }
+    user.value = storage.getUser()!;
   }
 
-  Future<void> _refreshUserData() async {
-    final result = await userRepository.login();
-    result.fold(
-        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (u) {
-      storage.storeUser(u);
-      user.value = u;
-    });
-  }
+  Future<void> _refreshUserData() async {}
 
   forceRefresh() async {
     await dataRefreshContoller.forceRefresh();
   }
 
-  _fetchEnabledModules() async {
-    final result = await moduleRepository.fetchEnabledModules();
-    result.fold((failure) => storage.storeEnabledModules([]),
-        (modules) => storage.storeEnabledModules(modules));
+  _updateModules() async {
+    if (storage.getEnabledModules().isEmpty) {
+      final result = await moduleRepository.fetchEnabledModules();
+      result.fold((failure) {
+        if (!kReleaseMode) {
+          debugPrint(failure.toString());
+        }
+        storage.storeEnabledModules([]);
+      }, (modules) {
+        storage.storeEnabledModules(modules);
+        enabledModules.value = modules;
+      });
+    }
   }
 
   void _watchBoxes() {
@@ -113,6 +113,9 @@ class HomeController extends GetxController {
     storage.invoicesListenable().addListener(_updateNoInvoiceCustomers);
     storage.paymentsListenable().addListener(_updateDayCashflow);
     storage.invoicesListenable().addListener(_updateInvoiceStats);
+    storage.settingsListenable().addListener(_updateModules);
+    storage.userListenable().addListener(_updateUser);
+    storage.companyListenable().addListener(_updateCompany);
   }
 
   void _updateNoInvoiceCustomers() {
@@ -154,16 +157,20 @@ class HomeController extends GetxController {
 
     dueToday.value = invoices
         .where((invoice) =>
+            invoice.type == DocumentType.invoice &&
             invoice.remaintopay != "0" &&
             Utils.intToDateTime(invoice.dateLimReglement!).day ==
                 DateTime.now().day)
         .toList();
     sales.value = invoices
-        .where((invoice) => DateUtils.isSameMonth(
-            Utils.intToDateTime(invoice.date!), DateTime.now()))
+        .where((invoice) =>
+            DateUtils.isSameMonth(
+                Utils.intToDateTime(invoice.date!), DateTime.now()) &&
+            invoice.type == DocumentType.invoice)
         .length;
     overDues.value = invoices
         .where((invoice) =>
+            invoice.type == DocumentType.invoice &&
             invoice.remaintopay != "0" &&
             Utils.intToDateTime(invoice.dateLimReglement!)
                 .isBefore(DateTime.now().subtract(Duration(days: 31))))

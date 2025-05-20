@@ -57,7 +57,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         () => Card(
           child: ListView(
             children: [
-              if (controller.invoiceId.isEmpty) _customerDropdown(context),
+              if (controller.customerId.isEmpty) _customerDropdown(context),
               _invoiceDateField(),
               _dueDateField(),
               _deliveryNoteField(),
