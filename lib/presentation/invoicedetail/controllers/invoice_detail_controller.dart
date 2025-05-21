@@ -62,9 +62,15 @@ class InvoiceDetailController extends GetxController
       tabIndex(tabController.index);
     });
 
-    await _fetchData();
-
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    if (payments.isEmpty) {
+      _loadPayments();
+    }
+    super.onReady();
   }
 
   @override
@@ -72,45 +78,48 @@ class InvoiceDetailController extends GetxController
     tabController.dispose();
   }
 
-  Future _fetchData() async {
-    isLoading(true);
-    await _fetchPayments();
-    await _fetchCustomer();
-    await _fetchDocument();
-
-    isLoading(false);
+  void _watchBoxes() {
+    storage.customersListenable().addListener(_updateCustomer);
+    storage.invoicesListenable().addListener(_updateDocument);
+    storage.paymentsListenable().addListener(_updatePayments);
   }
 
-  _fetchDocument() async {
-    if (storage.getInvoice(documentId) == null) {
-      _refreshInvoiceData()
-          .then((value) => document.value = storage.getInvoice(documentId)!);
-    } else {
-      document.value = storage.getInvoice(documentId)!;
+  void _updateCustomer() {
+    final c = storage.getCustomer(customerId);
+    if (c != null) {
+      customer.value = c;
     }
   }
 
-  Future _fetchPayments() async {
-    InvoiceModel invoice = storage.getInvoice(documentId)!;
-    List<PaymentModel> list = storage
-        .getPaymentList()
-        .where((p) => p.invoiceId == documentId)
-        .toList();
+  void _updateDocument() {
+    final d = storage.getInvoice(documentId);
+    if (d != null) {
+      document.value = d;
+    }
+  }
 
+  void _updatePayments() {
+    payments.value = storage.getPaymentList(invoiceId: documentId);
+  }
+
+  _loadPayments() async {
+    //Calculate total amount in payment list
     List<int> amounts =
-        list.map((payment) => Utils.intAmounts(payment.amount)).toList();
+        payments.map((payment) => Utils.intAmounts(payment.amount)).toList();
     int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
-    int sumpayed = Utils.intAmounts(invoice.sumpayed);
 
-    // Fetch payment list from storage
+    //Compare total to invoice outstanding and refresh if neccessary
+    int sumpayed = Utils.intAmounts(document.value.sumpayed);
 
     if (sumpayed != total) {
-      // If storage has empty list but sumpayed is not null fetch from server
       await _refreshPaymentData();
     }
+
+    // payments.value = storage.getPaymentList(invoiceId: documentId);
   }
 
   Future _refreshPaymentData() async {
+    isLoading.value = true;
     final result =
         await (invoiceRepository.fetchPaymentsByInvoice(invoiceId: documentId));
 
@@ -131,15 +140,7 @@ class InvoiceDetailController extends GetxController
         storage.storePayment(payment.ref, p);
       }
     });
-  }
-
-  _fetchCustomer() {
-    if (storage.getCustomer(customerId) == null) {
-      _refreshCustomerData()
-          .then((value) => customer.value = storage.getCustomer(customerId)!);
-    } else {
-      customer.value = storage.getCustomer(customerId)!;
-    }
+    isLoading.value = false;
   }
 
   Future _refreshInvoiceData() async {
@@ -154,13 +155,6 @@ class InvoiceDetailController extends GetxController
         storage.storeInvoice(invoice.id, invoice);
       }
     });
-  }
-
-  Future _refreshCustomerData() async {
-    final result = await customerRepository.fetchCustomerById(customerId);
-    result.fold(
-        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (c) => storage.storeCustomer(c.id, c));
   }
 
   Future generateDocument() async {
@@ -238,12 +232,18 @@ class InvoiceDetailController extends GetxController
         await invoiceRepository.deleteInvoice(documentId: documentId);
     result.fold((failure) {
       DialogHelper.hideLoading();
-      SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
+      if (failure.code == 404) {
+        storage.deleteInvoice(documentId);
+        Get.back();
+        SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+      } else {
+        SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
+      }
     }, (deleted) {
       DialogHelper.hideLoading();
+      storage.deleteInvoice(documentId);
       Get.back();
       SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
-      storage.deleteInvoice(documentId);
     });
   }
 
@@ -411,23 +411,5 @@ class InvoiceDetailController extends GetxController
         });
       });
     }
-  }
-
-  void _watchBoxes() {
-    storage.customersListenable().addListener(_updateCustomer);
-    storage.invoicesListenable().addListener(_updateDocument);
-    storage.paymentsListenable().addListener(_updatePayments);
-  }
-
-  void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
-  }
-
-  void _updateDocument() {
-    document.value = storage.getInvoice(documentId) ?? InvoiceModel();
-  }
-
-  void _updatePayments() {
-    payments.value = storage.getPaymentList(invoiceId: documentId);
   }
 }

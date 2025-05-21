@@ -5,6 +5,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -40,43 +41,16 @@ class CustomerDetailController extends GetxController
   }
 
   @override
+  void onReady() {
+    if (invoices.isEmpty) {
+      refreshCustomerInvoiceData();
+    }
+    super.onReady();
+  }
+
+  @override
   void onClose() {
     tabController.dispose();
-  }
-
-  // Fetch invoice data from server
-  Future refreshCustomerInvoiceData({String? customerId}) async {
-    final result =
-        await invoiceRepository.fetchInvoiceList(customerId: customerId);
-
-    result.fold((failure) {
-      DialogHelper.hideLoading();
-      SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (invoices) {
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
-    });
-  }
-
-  Future deleteCustomer(String customerId) async {
-    DialogHelper.showLoading('Deleting customer...');
-    final result = await customerRepository.deleteCustomer(customerId);
-    result.fold(
-      (failure) {
-        DialogHelper.hideLoading();
-        SnackBarHelper.errorSnackbar(
-            message: 'Error deleting customer: ${failure.message}');
-      },
-      (res) {
-        DialogHelper.hideLoading();
-        Get.back();
-        SnackBarHelper.successSnackbar(message: 'Customer deleted');
-        storage.deleteCustomer(customerId);
-      },
-    );
   }
 
   void _watchBoxes() {
@@ -85,10 +59,58 @@ class CustomerDetailController extends GetxController
   }
 
   void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId)!;
+    final c = storage.getCustomer(customerId);
+    if (c != null) {
+      customer.value = c;
+    }
   }
 
   void _updateInvoices() {
     invoices.value = storage.getInvoiceList(customerId: customerId);
+  }
+
+  // Fetch invoice data from server
+  Future<void> refreshCustomerInvoiceData() async {
+    isLoading.value = true;
+    final result =
+        await invoiceRepository.fetchInvoiceList(customerId: customerId);
+
+    result.fold((failure) {
+      isLoading.value = false;
+      SnackBarHelper.errorSnackbar(message: failure.message);
+    }, (invoices) {
+      for (InvoiceModel invoice in invoices) {
+        final customer = storage.getCustomer(invoice.socid);
+        invoice.name = customer!.name;
+        storage.storeInvoice(invoice.id, invoice);
+      }
+      isLoading.value = false;
+    });
+  }
+
+  Future<void> deleteCustomer() async {
+    DialogHelper.showLoading('Deleting customer...');
+    final result = await customerRepository.deleteCustomer(customerId);
+    result.fold(
+      (failure) {
+        if (!kReleaseMode) {
+          debugPrint(failure.message);
+        }
+        DialogHelper.hideLoading();
+        if (failure.code == 404) {
+          storage.deleteCustomer(customerId);
+          Get.back();
+          SnackBarHelper.successSnackbar(message: 'Customer deleted');
+        } else {
+          SnackBarHelper.errorSnackbar(message: failure.message);
+        }
+      },
+      (res) {
+        DialogHelper.hideLoading();
+        storage.deleteCustomer(customerId);
+        Get.back();
+        SnackBarHelper.successSnackbar(message: 'Customer deleted');
+      },
+    );
   }
 }

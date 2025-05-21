@@ -22,31 +22,37 @@ class DataRefreshContoller extends GetxController {
   final InvoiceRepository _invoiceRepository = Get.find();
   final NetworkController _networkController = Get.find();
   var refreshing = false.obs;
+  bool _isRefreshing = false;
 
   @override
-  void onInit() async {
-    if (kReleaseMode) {
-      await _dataRefreshSchedule();
-    }
+  void onInit() {
+    _dataRefreshSchedule();
+
     super.onInit();
   }
 
-  Future _dataRefreshSchedule() async {
-    refreshing.value = true;
+  void _dataRefreshSchedule() {
     Timer.periodic(const Duration(minutes: 5), (Timer timer) async {
       await forceRefresh();
-
-      refreshing.value = false;
     });
   }
 
-  forceRefresh() async {
+  Future<void> forceRefresh() async {
+    if (_isRefreshing) {
+      if (!kReleaseMode) {
+        debugPrint('Data refresh already in progress. Skipping this cycle.');
+      }
+      return;
+    }
+    _isRefreshing = true;
     refreshing.value = true;
+
     if (_networkController.connected.value) {
       await _syncCustomersWithApi()
           .then((v) async => await _syncInvoicesWithApi());
     }
-    refreshing.value = true;
+    refreshing.value = false;
+    _isRefreshing = false;
   }
 
   Future<void> _syncCustomersWithApi() async {

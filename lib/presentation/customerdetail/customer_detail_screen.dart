@@ -16,18 +16,22 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: controller.invoices.isNotEmpty
-          ? null
+      floatingActionButton: Obx(() => controller.invoices.isNotEmpty
+          ? SizedBox()
           : FloatingActionButton(
               backgroundColor: Colors.redAccent,
-              onPressed: () => controller.deleteCustomer(controller.customerId),
+              onPressed: () => controller.deleteCustomer(),
               child: const Icon(Icons.delete),
-            ),
+            )),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(
         title: Text('Customer Details'),
-        actions: [getStatusIcon()],
+        actions: [
+          getStatusIcon(
+            onPressed: () => controller.refreshCustomerInvoiceData(),
+          )
+        ],
         bottom: TabBar(
             controller: controller.tabController,
             tabs: controller.customerTabs),

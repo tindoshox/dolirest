@@ -85,7 +85,8 @@ class InvoiceListTile extends StatelessWidget {
                   invoice.type == DocumentType.typeCreditNote &&
                           invoice.paye == PaidStatus.paid
                       ? 'CREDITED'
-                      : invoice.remaintopay == "0"
+                      : invoice.remaintopay == "0" &&
+                              invoice.status != ValidationStatus.draft
                           ? "FULLY PAID"
                           : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
                   style: Theme.of(context).textTheme.bodySmall,

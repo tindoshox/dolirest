@@ -97,6 +97,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
         children: [
           Row(
             children: [
+              //Show Edit Draft Button
               //Show button to validate a draft
               if (document.status == ValidationStatus.draft &&
                   document.paye == PaidStatus.unpaid &&
