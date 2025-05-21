@@ -6,15 +6,18 @@ import 'package:dolirest/infrastructure/dal/models/build_document_request_model.
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
@@ -25,10 +28,24 @@ class InvoiceDetailController extends GetxController
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
+  final ProductRepository productRepository = Get.find();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
   ];
+
+  GlobalKey<FormState> addProductKey = GlobalKey<FormState>();
+  GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
+
+  TextEditingController refController = TextEditingController();
+  TextEditingController predefinedController = TextEditingController();
+  TextEditingController freetextController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController customerController = TextEditingController();
+  var moduleProductEnabled = false.obs;
+
+  var selectedProduct = ProductModel().obs;
+  var productType = '1'.obs;
 
   var tabIndex = 0.obs;
   var customer = CustomerModel().obs;
@@ -40,7 +57,6 @@ class InvoiceDetailController extends GetxController
   String documentId = Get.arguments['documentId'];
   String customerId = Get.arguments['customerId'];
   Rx<DateTime> selectedDate = DateTime.now().obs;
-  TextEditingController refController = TextEditingController();
 
   late TabController tabController;
   late TargetPlatform? platform;
@@ -54,6 +70,9 @@ class InvoiceDetailController extends GetxController
       platform = TargetPlatform.iOS;
     }
     tabController = TabController(length: invoiceTabs.length, vsync: this);
+    moduleProductEnabled.value =
+        storage.getEnabledModules().contains('product');
+
     _watchBoxes();
     _updateCustomer();
     _updateDocument();
@@ -76,6 +95,12 @@ class InvoiceDetailController extends GetxController
   @override
   void onClose() {
     tabController.dispose();
+
+    refController.dispose();
+    predefinedController.dispose();
+    freetextController.dispose();
+    priceController.dispose();
+    customerController.dispose();
   }
 
   void _watchBoxes() {
@@ -143,7 +168,8 @@ class InvoiceDetailController extends GetxController
     isLoading.value = false;
   }
 
-  Future _refreshInvoiceData() async {
+  Future refreshInvoiceData() async {
+    DialogHelper.showLoading('Refreshing Invoice');
     final result =
         await invoiceRepository.fetchInvoiceList(customerId: customerId);
     result.fold(
@@ -155,9 +181,10 @@ class InvoiceDetailController extends GetxController
         storage.storeInvoice(invoice.id, invoice);
       }
     });
+    DialogHelper.hideLoading();
   }
 
-  Future generateDocument() async {
+  Future generatePDF() async {
     InvoiceModel invoice = storage.getInvoice(documentId)!;
     permissionReady = await Utils.checkPermission(platform);
 
@@ -222,7 +249,7 @@ class InvoiceDetailController extends GetxController
         (invoice) {
       DialogHelper.hideLoading();
       SnackBarHelper.successSnackbar(message: 'Due date changed');
-      _refreshInvoiceData();
+      refreshInvoiceData();
     });
   }
 
@@ -321,7 +348,7 @@ class InvoiceDetailController extends GetxController
       SnackBarHelper.errorSnackbar(message: 'Validation: ${failure.message}');
     }, (validated) async {
       if (invoiceValidation) {
-        await _refreshInvoiceData().then((value) {
+        await refreshInvoiceData().then((value) {
           DialogHelper.hideLoading();
 
           SnackBarHelper.successSnackbar(message: 'Invioce validated');
@@ -379,7 +406,7 @@ class InvoiceDetailController extends GetxController
       SnackBarHelper.errorSnackbar(
           message: 'Classify Paid: ${failure.message}');
     }, (code) async {
-      await _refreshInvoiceData().then((r) {
+      await refreshInvoiceData().then((r) {
         DialogHelper.hideLoading();
         Get.back();
         SnackBarHelper.successSnackbar(message: 'Successful');
@@ -411,5 +438,84 @@ class InvoiceDetailController extends GetxController
         });
       });
     }
+  }
+
+  void setStockType(String value) {
+    productType.value = value;
+  }
+
+  void clearProduct() {
+    selectedProduct(ProductModel());
+  }
+
+  ///Product search for DropDown
+  searchProduct({String searchString = ""}) {
+    List<ProductModel> products = [];
+
+    if (searchString == "") {
+      products = storage.getProductList();
+      products.sort((a, b) => a.label!.compareTo(b.label!));
+    } else {
+      products = storage
+          .getProductList()
+          .where((product) => product.ref!.contains(searchString))
+          .toList();
+      products.sort((a, b) => a.label!.compareTo(b.label!));
+    }
+
+    return products;
+  }
+
+  /// Validation
+  Future<void> validateInputs() async {
+    final FormState form = addProductKey.currentState!;
+    if (form.validate()) {
+      Get.back();
+      DialogHelper.showLoading('Adding product...');
+      // If stock type is free text.
+      if (productType.value != '0') {
+        await _addProduct();
+      } else {
+        /// if not free text: Check if product has stock above zero
+        final result =
+            await productRepository.checkStock(selectedProduct.value.id!);
+
+        result.fold((failure) {
+          DialogHelper.hideLoading();
+          SnackBarHelper.errorSnackbar(message: 'Product has no stock');
+        }, (stock) {
+          _addProduct();
+        });
+      }
+    }
+    // DialogHelper.hideLoading();
+  }
+
+  Future<void> _addProduct() async {
+    var line = Line(
+            qty: '1',
+            subprice: priceController.text,
+            fkProduct: selectedProduct.value.id,
+            desc: freetextController.text,
+            description: freetextController.text,
+            productType: productType.value,
+            fkProductType:
+                productType.value == '0' ? int.parse(productType.value) : null)
+        .toJson();
+
+    line.removeWhere((key, value) => value == null);
+
+    String body = jsonEncode(line);
+
+    final response =
+        await invoiceRepository.addProduct(invoiceId: documentId, body: body);
+
+    response.fold((failure) {
+      Get.back();
+      SnackBarHelper.errorSnackbar(message: failure.message);
+    }, (value) {
+      Get.back();
+      refreshInvoiceData();
+    });
   }
 }

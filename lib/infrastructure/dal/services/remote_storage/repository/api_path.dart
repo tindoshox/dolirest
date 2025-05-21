@@ -13,4 +13,6 @@ class ApiPath {
   static final discount = "discount";
   static final usecreditnote = "usecreditnote";
   static final settopaid = "settopaid";
+  static final lines = "lines";
+  static final statment = "customerstatement/builddoc";
 }

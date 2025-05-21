@@ -8,7 +8,6 @@ import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
@@ -353,11 +352,6 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 241, 205, 192)),
             shortcutItem(
                 onTap: () {
-                  if (!kReleaseMode) {
-                    debugPrint(
-                        "Module: ${controller.enabledModules.contains('reports')}");
-                    debugPrint("Modules: ${controller.enabledModules}");
-                  }
                   if (Get.find<NetworkController>().connected.value &&
                       controller.enabledModules.contains('reports')) {
                     Get.toNamed(Routes.REPORTS);

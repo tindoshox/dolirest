@@ -13,7 +13,6 @@ import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -21,10 +20,10 @@ import 'package:intl/intl.dart';
 class CreateinvoiceController extends GetxController {
   final String customerId = Get.arguments['customerId'] ?? '';
   final StorageService storage = Get.find();
-  final InvoiceRepository repository = Get.find();
-  final ProductRepository products = Get.find();
-  Rx<bool> moduleProductEnabled = false.obs;
-  Rx<CustomerModel> customer = CustomerModel().obs;
+  final InvoiceRepository invoiceRepository = Get.find();
+  final ProductRepository productRepository = Get.find();
+  var moduleProductEnabled = false.obs;
+  var customer = CustomerModel().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
   GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
@@ -38,7 +37,7 @@ class CreateinvoiceController extends GetxController {
   TextEditingController customerController = TextEditingController();
 
   Rx<ProductModel> selectedProduct = ProductModel().obs;
-  RxString stockType = '1'.obs;
+  RxString productType = '1'.obs;
 
   Rx<DateTime> invoiceDate = DateTime.now().obs;
 
@@ -52,7 +51,6 @@ class CreateinvoiceController extends GetxController {
     dueDateController.text = Utils.dateTimeToString(dueDate.value);
     _watchBoxes();
     _updateCustomer();
-
     super.onInit();
   }
 
@@ -78,8 +76,16 @@ class CreateinvoiceController extends GetxController {
     super.onClose();
   }
 
+  void _watchBoxes() {
+    storage.customersListenable().addListener(_updateCustomer);
+  }
+
+  void _updateCustomer() {
+    customer.value = storage.getCustomer(customerId)!;
+  }
+
   void setStockType(String value) {
-    stockType.value = value;
+    productType.value = value;
   }
 
   void _fetchData() async {
@@ -93,7 +99,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   _refreshProducts() async {
-    final result = await products.fetchProducts();
+    final result = await productRepository.fetchProducts();
     result.fold((failure) {
       log(failure.message);
       SnackBarHelper.errorSnackbar(message: 'Unable to load products');
@@ -111,14 +117,14 @@ class CreateinvoiceController extends GetxController {
   ///
   ///Set values for invoice date
   void setInvoiceDate() async {
-    DateTime? pickedDate = await showDatePicker(
+    DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
         initialDate: invoiceDate.value,
         firstDate: DateTime(2021),
         lastDate: DateTime(2050));
 
-    invoiceDate.value = pickedDate!;
-    invoiceDateController.text = DateFormat('dd-MM-yyyy').format(pickedDate);
+    invoiceDate.value = selectedDate!;
+    invoiceDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
   }
 
   ///
@@ -141,11 +147,12 @@ class CreateinvoiceController extends GetxController {
     if (form.validate()) {
       DialogHelper.showLoading('Creating Invoice...');
       // If stock type is free text.
-      if (stockType.value != '0') {
+      if (productType.value != '0') {
         await _createInvoice();
       } else {
         /// if not free text: Check if product has stock above zero
-        final result = await products.checkStock(selectedProduct.value.id!);
+        final result =
+            await productRepository.checkStock(selectedProduct.value.id!);
 
         result.fold((failure) {
           DialogHelper.hideLoading();
@@ -168,8 +175,9 @@ class CreateinvoiceController extends GetxController {
             fkProduct: selectedProduct.value.id,
             desc: freetextController.text,
             description: freetextController.text,
+            productType: productType.value,
             fkProductType:
-                stockType.value == '0' ? int.parse(stockType.value) : null)
+                productType.value == '0' ? int.parse(productType.value) : null)
         .toJson();
 
     ln.removeWhere((key, value) => value == null);
@@ -193,7 +201,7 @@ class CreateinvoiceController extends GetxController {
 
     // Submit for draft creation
 
-    final result = await repository.createInvoice(body: body);
+    final result = await invoiceRepository.createInvoice(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -213,7 +221,7 @@ class CreateinvoiceController extends GetxController {
       }''';
 
     final result =
-        await repository.validateInvoice(body: body, docId: invoiceId);
+        await invoiceRepository.validateInvoice(body: body, docId: invoiceId);
     result.fold((failure) {
       _deleteInvoice(invoiceId);
       DialogHelper.hideLoading();
@@ -232,7 +240,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _deleteInvoice(String invoiceId) async {
-    final result = await repository.deleteInvoice(documentId: invoiceId);
+    final result = await invoiceRepository.deleteInvoice(documentId: invoiceId);
     result.fold((failure) {}, (deleted) {
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
@@ -244,7 +252,7 @@ class CreateinvoiceController extends GetxController {
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
     final result =
-        await repository.fetchInvoiceList(customerId: customer.value.id);
+        await invoiceRepository.fetchInvoiceList(customerId: customer.value.id);
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
@@ -295,24 +303,11 @@ class CreateinvoiceController extends GetxController {
           .toList();
       products.sort((a, b) => a.label!.compareTo(b.label!));
     }
-    debugPrint(products.toString());
 
     return products;
   }
 
   void clearProduct() {
     selectedProduct(ProductModel());
-  }
-
-  void _watchBoxes() {
-    storage.customersListenable().addListener(_updateCustomer);
-  }
-
-  void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId)!;
-    if (!kReleaseMode) {
-      debugPrint('CustomerId: $customerId');
-      debugPrint('Customer: ${customer.value.name}');
-    }
   }
 }

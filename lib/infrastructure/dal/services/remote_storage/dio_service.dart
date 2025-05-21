@@ -37,10 +37,7 @@ class DioService extends GetxController {
 
     if (!kReleaseMode) {
       dio.interceptors.add(
-        PrettyDioLogger(
-          error: true,
-          responseBody: false,
-        ),
+        PrettyDioLogger(error: true, responseBody: false, requestBody: true),
       );
     }
   }

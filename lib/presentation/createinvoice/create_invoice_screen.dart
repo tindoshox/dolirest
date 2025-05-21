@@ -62,7 +62,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               _dueDateField(),
               _deliveryNoteField(),
               _productTypeSection(),
-              if (controller.stockType.value == '1')
+              if (controller.productType.value == '1')
                 _freeTextField()
               else
                 _productListDropdown(context),
@@ -207,7 +207,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                 contentPadding: const EdgeInsets.all(0),
                 leading: Radio(
                     value: '1',
-                    groupValue: controller.stockType.value,
+                    groupValue: controller.productType.value,
                     onChanged: (value) {
                       controller.setStockType(value.toString());
                     }),
@@ -220,7 +220,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
                   contentPadding: const EdgeInsets.all(0),
                   leading: Radio(
                       value: '0',
-                      groupValue: controller.stockType.value,
+                      groupValue: controller.productType.value,
                       onChanged: (value) {
                         controller.setStockType(value.toString());
                       }),

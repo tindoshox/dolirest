@@ -1,22 +1,35 @@
+import 'dart:io' show Platform;
+
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/loading_overlay.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:open_filex/open_filex.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final StorageService storage = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
+  final DocumentRepository documentRepository = Get.find();
   final String customerId = Get.arguments['customerId'];
   var customer = CustomerModel().obs;
   var invoices = <InvoiceModel>[].obs;
+  var moduleEnabledStatement = false.obs;
+  var startDate = DateTime(DateTime.now().year, DateTime.now().month, 1).obs;
+  var endDate = DateTime.now().obs;
+
+  GlobalKey<FormState> dateFormkey = GlobalKey<FormState>();
+  TextEditingController startDateController = TextEditingController();
+  TextEditingController endDateController = TextEditingController();
 
   final List<Tab> customerTabs = [
     const Tab(text: 'Details'),
@@ -24,12 +37,22 @@ class CustomerDetailController extends GetxController
   ];
   RxInt tabIndex = 0.obs;
   late TabController tabController;
-
+  late TargetPlatform? platform;
+  late bool permissionReady;
   RxBool isLoading = false.obs;
 
   @override
   void onInit() async {
+    if (Platform.isAndroid) {
+      platform = TargetPlatform.android;
+    } else {
+      platform = TargetPlatform.iOS;
+    }
     tabController = TabController(length: customerTabs.length, vsync: this);
+    startDateController.text = Utils.dateTimeToString(startDate.value);
+    endDateController.text = Utils.dateTimeToString(endDate.value);
+    moduleEnabledStatement.value =
+        storage.getEnabledModules().contains('statement');
     _watchBoxes();
     _updateCustomer();
     _updateInvoices();
@@ -51,6 +74,8 @@ class CustomerDetailController extends GetxController
   @override
   void onClose() {
     tabController.dispose();
+    startDateController.dispose();
+    endDateController.dispose();
   }
 
   void _watchBoxes() {
@@ -93,9 +118,6 @@ class CustomerDetailController extends GetxController
     final result = await customerRepository.deleteCustomer(customerId);
     result.fold(
       (failure) {
-        if (!kReleaseMode) {
-          debugPrint(failure.message);
-        }
         DialogHelper.hideLoading();
         if (failure.code == 404) {
           storage.deleteCustomer(customerId);
@@ -112,5 +134,59 @@ class CustomerDetailController extends GetxController
         SnackBarHelper.successSnackbar(message: 'Customer deleted');
       },
     );
+  }
+
+  Future generateStatement() async {
+    permissionReady = await Utils.checkPermission(platform);
+    Get.back();
+    DialogHelper.showLoading('Downloading document...');
+    String body =
+        '{"socid": $customerId, "startdate": ${DateFormat('yyyy-MM-dd').format(startDate.value)}, "enddate": ${DateFormat('yyy-MM-dd').format(endDate.value)}}';
+
+    if (permissionReady) {
+      final result = await documentRepository.buildStatement(body);
+      result.fold((failure) {
+        DialogHelper.hideLoading();
+        SnackBarHelper.errorSnackbar(message: failure.message);
+      }, (document) {
+        Utils.createFileFromString(
+                document.content, '${customer.value.name}_statement.pdf')
+            .then((value) {
+          DialogHelper.hideLoading();
+          OpenFilex.open(value);
+        });
+      });
+    } else {
+      DialogHelper.hideLoading();
+      Get.snackbar('Permission Error', 'Download Failed');
+    }
+
+    DialogHelper.hideLoading();
+  }
+
+  ///Set values for invoice date
+  void setStartDate() async {
+    DateTime? selectedDate = await showDatePicker(
+        context: Get.context!,
+        initialDate: startDate.value,
+        firstDate: DateTime(2021),
+        lastDate: DateTime(2050));
+
+    startDate.value = selectedDate!;
+    startDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+  }
+
+  ///
+  ///
+  ///Set values Due date
+  void setEndDate() async {
+    DateTime? selectedDate = await showDatePicker(
+        context: Get.context!,
+        initialDate: endDate.value,
+        firstDate: DateTime(2021),
+        lastDate: DateTime(2050));
+
+    endDate.value = selectedDate!;
+    endDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
   }
 }

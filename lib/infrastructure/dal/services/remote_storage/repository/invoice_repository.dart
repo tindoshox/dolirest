@@ -217,4 +217,22 @@ class InvoiceRepository extends DioService {
       return Left(ErrorHandler.handle(error).failure);
     }
   }
+
+  //Add product line
+  Future<Either<Failure, String>> addProduct(
+      {required String invoiceId, required String body}) async {
+    try {
+      var response = await dio.post(
+        '${ApiPath.invoices}/$invoiceId/${ApiPath.lines}',
+        data: body,
+      );
+      if (response.statusCode == 200) {
+        return right(response.data.toString());
+      } else {
+        return Left(Failure(response.statusCode!, response.statusMessage!));
+      }
+    } catch (error) {
+      return Left(ErrorHandler.handle(error).failure);
+    }
+  }
 }

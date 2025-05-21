@@ -26,22 +26,20 @@ class DataRefreshContoller extends GetxController {
 
   @override
   void onInit() {
-    _dataRefreshSchedule();
-
+    if (!kDebugMode) {
+      _dataRefreshSchedule();
+    }
     super.onInit();
   }
 
   void _dataRefreshSchedule() {
-    Timer.periodic(const Duration(minutes: 5), (Timer timer) async {
+    Timer.periodic(const Duration(minutes: 10), (Timer timer) async {
       await forceRefresh();
     });
   }
 
   Future<void> forceRefresh() async {
     if (_isRefreshing) {
-      if (!kReleaseMode) {
-        debugPrint('Data refresh already in progress. Skipping this cycle.');
-      }
       return;
     }
     _isRefreshing = true;
@@ -57,11 +55,7 @@ class DataRefreshContoller extends GetxController {
 
   Future<void> _syncCustomersWithApi() async {
     final result = await _customerRepository.fetchCustomerList();
-    result.fold((f) {
-      if (!kReleaseMode) {
-        debugPrint('Customers: ${f.message}');
-      }
-    }, (customers) {
+    result.fold((failure) {}, (customers) {
       for (CustomerModel customer in customers) {
         _storage.storeCustomer(customer.id, customer);
         if (customer.address != null && customer.town != null) {
@@ -102,11 +96,7 @@ class DataRefreshContoller extends GetxController {
 
   Future<void> _syncInvoicesWithApi() async {
     final result = await _invoiceRepository.fetchInvoiceList();
-    result.fold((f) {
-      if (!kReleaseMode) {
-        debugPrint('Invoices: ${f.message}');
-      }
-    }, (invoices) {
+    result.fold((failure) {}, (invoices) {
       for (InvoiceModel invoice in invoices) {
         final customer = _storage.getCustomer(invoice.socid);
         invoice.name = customer!.name;

@@ -14,7 +14,6 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/m
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:get/get.dart';
 
@@ -59,53 +58,44 @@ class HomeController extends GetxController {
       forceRefresh();
     }
 
+    if (enabledModules.isEmpty) {
+      _refreshModules();
+    }
+
     super.onReady();
   }
 
-  _updateCompany() async {
+  void _updateCompany() {
     if (storage.getCompany() == null) {
-      await _refreshCompanyData();
+      _refreshCompanyData();
     }
     company.value = storage.getCompany()?.name ?? '';
   }
 
   Future _refreshCompanyData() async {
     final result = await companyRepository.fetchCompany();
-    result.fold((failure) {
-      // if (!kReleaseMode) {
-      //   debugPrint(failure.message);
-      // }
-    }, (entity) {
+    result.fold((failure) {}, (entity) {
       storage.storeCompany(entity);
     });
   }
 
-  _updateUser() async {
-    if (storage.getUser() == null) {
-      await _refreshUserData();
-    }
+  void _updateUser() {
     user.value = storage.getUser()!;
   }
 
-  Future<void> _refreshUserData() async {}
-
-  forceRefresh() async {
-    await dataRefreshContoller.forceRefresh();
+  void forceRefresh() {
+    dataRefreshContoller.forceRefresh();
   }
 
-  _updateModules() async {
-    if (storage.getEnabledModules().isEmpty) {
-      final result = await moduleRepository.fetchEnabledModules();
-      result.fold((failure) {
-        if (!kReleaseMode) {
-          debugPrint(failure.toString());
-        }
-        storage.storeEnabledModules([]);
-      }, (modules) {
-        storage.storeEnabledModules(modules);
-        enabledModules.value = modules;
-      });
-    }
+  void _updateModules() {
+    enabledModules.value = storage.getEnabledModules();
+  }
+
+  Future<void> _refreshModules() async {
+    final result = await moduleRepository.fetchEnabledModules();
+    result.fold((failure) {}, (modules) {
+      storage.storeEnabledModules(modules);
+    });
   }
 
   void _watchBoxes() {

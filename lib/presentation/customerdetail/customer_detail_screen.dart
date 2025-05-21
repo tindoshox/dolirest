@@ -4,6 +4,7 @@ import 'package:dolirest/presentation/customerdetail/components/customer_info_wi
 import 'package:dolirest/presentation/customerdetail/components/customer_invoice_list_widget.dart';
 import 'package:dolirest/presentation/customerdetail/controllers/customer_detail_controller.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
+import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -30,13 +31,26 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
         actions: [
           getStatusIcon(
             onPressed: () => controller.refreshCustomerInvoiceData(),
-          )
+          ),
+          _getMenu()
         ],
         bottom: TabBar(
             controller: controller.tabController,
             tabs: controller.customerTabs),
       ),
       body: _buildBody(),
+    );
+  }
+
+  _getMenu() {
+    return PopupMenuButton(
+      onSelected: (item) {},
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          child: Text('Statement'),
+          onTap: () => _buildDateForm(context),
+        ),
+      ],
     );
   }
 
@@ -99,5 +113,92 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
             invoices: invoices,
             controller: controller,
           );
+  }
+
+  _buildDateForm(BuildContext context) {
+    return Get.defaultDialog(
+      title: 'Customer Statement',
+      content: Form(
+        key: controller.dateFormkey,
+        child: Column(
+          children: [
+            _startDateField(),
+            _endDateField(),
+            _submitButtons(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _startDateField() {
+    return CustomFormField(
+      name: 'start_date',
+      prefixIcon: const Icon(
+        Icons.date_range,
+        color: Colors.orangeAccent,
+      ),
+      validator: (startDate) =>
+          controller.startDate.value.isAfter(DateTime.now())
+              ? 'Date cannot be in the future'
+              : null,
+      controller: controller.startDateController,
+      labelText: 'Start Date',
+      suffix: IconButton(
+          icon: const Icon(
+            Icons.calendar_today,
+            color: Colors.orangeAccent,
+          ),
+          onPressed: () => controller.setStartDate()),
+    );
+  }
+
+  Widget _endDateField() {
+    return CustomFormField(
+      name: 'end_date',
+      prefixIcon: const Icon(
+        Icons.date_range,
+        color: Colors.redAccent,
+      ),
+      validator: (endDate) =>
+          controller.endDate.value.isBefore(controller.startDate.value)
+              ? 'End Date must be after start date'
+              : null,
+      controller: controller.endDateController,
+      labelText: 'End Date',
+      suffix: IconButton(
+          icon: const Icon(
+            Icons.calendar_today,
+            color: Colors.redAccent,
+          ),
+          onPressed: () => controller.setEndDate()),
+    );
+  }
+
+  Widget _submitButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          CustomActionButton(
+              controller: controller,
+              buttonText: 'Download',
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                controller.generateStatement();
+              }),
+          SizedBox(width: 3),
+          CustomActionButton(
+              controller: controller,
+              buttonText: 'Cancel',
+              isCancel: true,
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Get.back();
+              }),
+        ],
+      ),
+    );
   }
 }

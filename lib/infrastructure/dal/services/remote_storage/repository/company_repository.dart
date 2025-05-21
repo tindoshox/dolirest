@@ -5,7 +5,6 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/error_handler.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/failure.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 
 class CompanyRepository extends DioService {
@@ -17,9 +16,6 @@ class CompanyRepository extends DioService {
 
       return right(companyModelFromJson(jsonEncode(response.data)));
     } catch (error) {
-      if (!kReleaseMode) {
-        debugPrint(error.toString());
-      }
       return Left(ErrorHandler.handle(error).failure);
     }
   }
