@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:dolirest/infrastructure/dal/models/build_statement_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
@@ -140,8 +142,13 @@ class CustomerDetailController extends GetxController
     permissionReady = await Utils.checkPermission(platform);
     Get.back();
     DialogHelper.showLoading('Downloading document...');
-    String body =
-        '{"socid": $customerId, "startdate": ${DateFormat('yyyy-MM-dd').format(startDate.value)}, "enddate": ${DateFormat('yyy-MM-dd').format(endDate.value)}}';
+    final params = BuildStatementRequestModel(
+      socid: customerId,
+      startdate: DateFormat('yyyy-MM-dd').format(startDate.value),
+      enddate: DateFormat('yyy-MM-dd').format(endDate.value),
+    );
+
+    String body = jsonEncode(params);
 
     if (permissionReady) {
       final result = await documentRepository.buildStatement(body);

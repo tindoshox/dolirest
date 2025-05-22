@@ -8,6 +8,13 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 
 part 'customer_model.g.dart';
 
+List<CustomerModel> listCustomerModelFromJson(String str) =>
+    List<CustomerModel>.from(
+        json.decode(str).map((x) => CustomerModel.fromJson(x)));
+
+String listCustomerModelToJson(List<CustomerModel> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
 CustomerModel customerModelFromJson(String str) =>
     CustomerModel.fromJson(json.decode(str));
 

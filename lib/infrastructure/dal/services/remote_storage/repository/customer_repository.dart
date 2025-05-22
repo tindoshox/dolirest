@@ -25,8 +25,7 @@ class CustomerRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      List<dynamic> l = response.data;
-      return right(l.map((c) => CustomerModel.fromJson(c)).toList());
+      return right(listCustomerModelFromJson(jsonEncode(response.data)));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }

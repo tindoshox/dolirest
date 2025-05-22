@@ -49,15 +49,7 @@ class InvoiceRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      if (response.data is List) {
-        List<dynamic> l = response.data;
-        return right(l.map((i) => InvoiceModel.fromJson(i)).toList());
-      } else {
-        return left(Failure(
-          response.statusCode!,
-          "Unexpected response format: Expected a List but got ${response.data.runtimeType}",
-        ));
-      }
+      return right(listInvoiceModelFromJson(jsonEncode(response.data)));
     } catch (error) {
       return Left(ErrorHandler.handle(error).failure);
     }
