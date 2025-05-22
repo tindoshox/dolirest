@@ -81,7 +81,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId)!;
+    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
   }
 
   void setStockType(String value) {
@@ -111,7 +111,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   fetchCustomerById(String customerId) {
-    customer.value = storage.getCustomer(customerId)!;
+    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
   }
 
   ///

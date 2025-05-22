@@ -32,7 +32,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
           getStatusIcon(
             onPressed: () => controller.refreshCustomerInvoiceData(),
           ),
-          _getMenu()
+          if (controller.moduleEnabledStatement.value) _getMenu()
         ],
         bottom: TabBar(
             controller: controller.tabController,

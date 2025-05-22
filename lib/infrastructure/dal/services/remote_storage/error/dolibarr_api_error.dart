@@ -11,9 +11,17 @@ class DolibarrApiError {
 
   factory DolibarrApiError.fromJson(Map<String, dynamic> json) {
     return DolibarrApiError(
-      code: json['error']['code'],
-      message: json['error']['message'],
-      source: json['debug']['source'],
+      code: json['error']?['code'] ?? -1,
+      message: json['error']?['message'] ?? 'Unknown error',
+      source: json['debug']?['source'] ?? 'Unknown source',
+    );
+  }
+
+  factory DolibarrApiError.generic(dynamic error, [String source = 'Unknown']) {
+    return DolibarrApiError(
+      code: -1,
+      message: error.toString(),
+      source: source,
     );
   }
 

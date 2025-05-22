@@ -160,7 +160,7 @@ class PaymentController extends GetxController {
 
   /// Processes the payment using the given payment data.
   _processPayment(body) async {
-    final result = await repository.addpayment(body: body);
+    final result = await repository.addPayment(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();

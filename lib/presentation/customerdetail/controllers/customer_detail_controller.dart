@@ -54,7 +54,7 @@ class CustomerDetailController extends GetxController
     startDateController.text = Utils.dateTimeToString(startDate.value);
     endDateController.text = Utils.dateTimeToString(endDate.value);
     moduleEnabledStatement.value =
-        storage.getEnabledModules().contains('statement');
+        storage.getEnabledModules().contains('customerstatement');
     _watchBoxes();
     _updateCustomer();
     _updateInvoices();
@@ -144,9 +144,9 @@ class CustomerDetailController extends GetxController
     DialogHelper.showLoading('Downloading document...');
     final params = BuildStatementRequestModel(
       socid: customerId,
-      startdate: DateFormat('yyyy-MM-dd').format(startDate.value),
-      enddate: DateFormat('yyy-MM-dd').format(endDate.value),
-    );
+      startdate: startDate.value,
+      enddate: endDate.value,
+    ).toJson();
 
     String body = jsonEncode(params);
 
