@@ -46,8 +46,8 @@ class PaymentController extends GetxController {
     if (invoiceId.isNotEmpty) {
       fetchData(socid, invoiceId);
     }
-    payDateController.text = Utils.dateTimeToString(payDate.value);
-    dueDateController.text = Utils.dateTimeToString(dueDate.value);
+    payDateController.text = Utils.dateTimeToDMY(payDate.value);
+    dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
 
     super.onInit();
   }
@@ -65,8 +65,8 @@ class PaymentController extends GetxController {
   void clearInvoice() {
     customer(CustomerModel());
     invoice(InvoiceModel());
-    payDateController.text = Utils.dateTimeToString(payDate.value);
-    dueDateController.text = Utils.dateTimeToString(dueDate.value);
+    payDateController.text = Utils.dateTimeToDMY(payDate.value);
+    dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
   }
 
   /// Fetches customer and invoice data based on the given customer and invoice IDs.
@@ -86,9 +86,8 @@ class PaymentController extends GetxController {
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
 
-    paymentDates.value = list
-        .map((payment) => DateFormat('dd-MM-yyyy').format(payment.date!))
-        .toList();
+    paymentDates.value =
+        list.map((payment) => Utils.dateTimeToDMY(payment.date!)).toList();
   }
 
   _fetchCustomerById(String customerId) {
@@ -106,9 +105,9 @@ class PaymentController extends GetxController {
     /// If a date is selected, updates the payment date and due date values and displays the selected date in the text fields.
     if (selectedDate != null) {
       payDate.value = selectedDate;
-      payDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+      payDateController.text = Utils.dateTimeToDMY(selectedDate);
       dueDate.value = selectedDate.add(const Duration(days: 30));
-      dueDateController.text = Utils.dateTimeToString(dueDate.value);
+      dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
     }
   }
 
@@ -123,7 +122,7 @@ class PaymentController extends GetxController {
     /// If a date is selected, updates the due date value and displays the selected date in the text field.
     if (selectedDate != null) {
       dueDate.value = selectedDate;
-      dueDateController.text = Utils.dateTimeToString(selectedDate);
+      dueDateController.text = Utils.dateTimeToDMY(selectedDate);
     }
   }
 

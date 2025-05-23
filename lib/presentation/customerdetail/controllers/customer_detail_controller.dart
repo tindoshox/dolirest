@@ -53,8 +53,8 @@ class CustomerDetailController extends GetxController
       platform = TargetPlatform.iOS;
     }
     tabController = TabController(length: customerTabs.length, vsync: this);
-    startDateController.text = Utils.dateTimeToString(startDate.value);
-    endDateController.text = Utils.dateTimeToString(endDate.value);
+    startDateController.text = Utils.dateTimeToDMY(startDate.value);
+    endDateController.text = Utils.dateTimeToDMY(endDate.value);
     moduleEnabledStatement.value =
         storage.getEnabledModules().contains('customerstatement');
     _watchBoxes();
@@ -170,7 +170,7 @@ class CustomerDetailController extends GetxController
         lastDate: DateTime(2050));
 
     startDate.value = selectedDate!;
-    startDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+    startDateController.text = Utils.dateTimeToDMY(selectedDate);
   }
 
   ///
@@ -184,6 +184,6 @@ class CustomerDetailController extends GetxController
         lastDate: DateTime(2050));
 
     endDate.value = selectedDate!;
-    endDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+    endDateController.text = Utils.dateTimeToDMY(selectedDate);
   }
 }

@@ -65,13 +65,18 @@ class Utils {
   }
 
   /// Returns a formatted date string from a [DateTime] object.
-  static String dateTimeToString(DateTime date) {
+  static String dateTimeToDMY(DateTime date) {
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
   /// Returns a formatted date string from a [DateTime] object.
   static String dateMonth(DateTime date) {
     return DateFormat('yyyy-MM').format(date);
+  }
+
+  /// Returns a formatted date string from a [DateTime] object.
+  static String dateTimeToYMD(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 
   /// Launches the default phone app and dials the specified phone number.

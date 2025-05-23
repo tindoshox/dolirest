@@ -120,8 +120,8 @@ class ReportsController extends GetxController {
     } else {
       groups.value = list;
     }
-    endDateController.text = Utils.dateTimeToString(DateTime.now());
-    toEndController.text = Utils.dateTimeToString(DateTime.now());
+    endDateController.text = Utils.dateTimeToDMY(DateTime.now());
+    toEndController.text = Utils.dateTimeToDMY(DateTime.now());
     super.onInit();
   }
 
@@ -161,10 +161,10 @@ class ReportsController extends GetxController {
         salesperson:
             selectedReport.value.hasSalesParam ? salesperson.value : '',
         startdate: selectedReport.value.hasStartDateParam
-            ? DateFormat('yyyy-MM-dd').format(startdate.value)
+            ? Utils.dateTimeToYMD(startdate.value)
             : '',
         enddate: selectedReport.value.hasEndDateParam
-            ? DateFormat('yyyy-MM-dd').format(enddate.value)
+            ? Utils.dateTimeToYMD(enddate.value)
             : '',
         startreceipt: selectedReport.value.hasStartReceiptParam
             ? startReceiptController.text.trim()
@@ -220,7 +220,7 @@ class ReportsController extends GetxController {
 
     if (selectedDate != null) {
       startdate.value = selectedDate;
-      endDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+      endDateController.text = Utils.dateTimeToDMY(selectedDate);
     }
   }
 
@@ -234,7 +234,7 @@ class ReportsController extends GetxController {
     if (selectedDate != null) {
       enddate.value = selectedDate;
       enddate.value = selectedDate;
-      toEndController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+      toEndController.text = Utils.dateTimeToDMY(selectedDate);
     }
   }
 

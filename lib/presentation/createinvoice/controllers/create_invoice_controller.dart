@@ -46,8 +46,8 @@ class CreateinvoiceController extends GetxController {
   onInit() {
     moduleProductEnabled.value =
         storage.getEnabledModules().contains('product');
-    invoiceDateController.text = Utils.dateTimeToString(invoiceDate.value);
-    dueDateController.text = Utils.dateTimeToString(dueDate.value);
+    invoiceDateController.text = Utils.dateTimeToDMY(invoiceDate.value);
+    dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
     _watchBoxes();
     _updateCustomer();
     super.onInit();
@@ -122,7 +122,7 @@ class CreateinvoiceController extends GetxController {
         lastDate: DateTime(2050));
 
     invoiceDate.value = selectedDate!;
-    invoiceDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+    invoiceDateController.text = Utils.dateTimeToDMY(selectedDate);
   }
 
   ///
@@ -136,7 +136,7 @@ class CreateinvoiceController extends GetxController {
         lastDate: DateTime(2050));
 
     dueDate.value = selectedDate!;
-    dueDateController.text = DateFormat('dd-MM-yyyy').format(selectedDate);
+    dueDateController.text = Utils.dateTimeToDMY(selectedDate);
   }
 
   /// Validation

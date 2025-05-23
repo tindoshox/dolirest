@@ -156,7 +156,7 @@ class PaymentScreen extends GetView<PaymentController> {
   Obx _buildDueDateField() {
     return Obx(() => CustomFormField(
           name: 'due_date',
-          hintText: Utils.dateTimeToString(controller.payDate.value),
+          hintText: Utils.dateTimeToDMY(controller.payDate.value),
           prefixIcon: const Icon(
             Icons.date_range,
             color: Colors.redAccent,
@@ -179,7 +179,7 @@ class PaymentScreen extends GetView<PaymentController> {
   Obx _buildPayDateField() {
     return Obx(() => CustomFormField(
           name: 'pay_date',
-          hintText: Utils.dateTimeToString(controller.payDate.value),
+          hintText: Utils.dateTimeToDMY(controller.payDate.value),
           prefixIcon: const Icon(
             Icons.date_range,
             color: Colors.orangeAccent,
