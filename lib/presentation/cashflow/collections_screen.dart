@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../infrastructure/dal/services/local_storage/local_storage.dart';
+import '../../infrastructure/dal/services/local_storage/storage_service.dart';
 import '../../utils/utils.dart';
 import 'controllers/collections_controller.dart';
 

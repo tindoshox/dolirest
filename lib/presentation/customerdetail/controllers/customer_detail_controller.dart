@@ -4,11 +4,12 @@ import 'dart:io' show Platform;
 import 'package:dolirest/infrastructure/dal/models/build_statement_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class CustomerDetailController extends GetxController
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
+  final DataRefreshContoller _dataRefreshContoller = Get.find();
   final String customerId = Get.arguments['customerId'];
   var customer = CustomerModel().obs;
   var invoices = <InvoiceModel>[].obs;
@@ -99,20 +101,8 @@ class CustomerDetailController extends GetxController
   // Fetch invoice data from server
   Future<void> refreshCustomerInvoiceData() async {
     isLoading.value = true;
-    final result =
-        await invoiceRepository.fetchInvoiceList(customerId: customerId);
-
-    result.fold((failure) {
-      isLoading.value = false;
-      SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (invoices) {
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
-      isLoading.value = false;
-    });
+    await _dataRefreshContoller.syncInvoices(customerId: customerId);
+    isLoading.value = false;
   }
 
   Future<void> deleteCustomer() async {

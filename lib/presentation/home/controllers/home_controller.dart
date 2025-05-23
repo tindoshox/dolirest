@@ -6,7 +6,7 @@ import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
@@ -27,9 +27,9 @@ class HomeController extends GetxController {
   final ModuleRepository moduleRepository = Get.find();
   final DataRefreshContoller dataRefreshContoller = Get.find();
 
+  var isLoading = false.obs;
   var user = UserModel().obs;
   var company = ''.obs;
-
   var noInvoiceCustomers = <CustomerModel>[].obs;
   var dayCashflow = <PaymentModel>[].obs;
   var drafts = 0.obs;
@@ -80,11 +80,11 @@ class HomeController extends GetxController {
   }
 
   void _updateUser() {
-    user.value = storage.getUser()!;
+    user.value = storage.getUser() ?? UserModel();
   }
 
-  void forceRefresh() {
-    dataRefreshContoller.forceRefresh();
+  void forceRefresh() async {
+    await dataRefreshContoller.forceRefresh();
   }
 
   void _updateModules() {

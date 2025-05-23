@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';

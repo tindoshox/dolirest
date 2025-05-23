@@ -1,7 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
-import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
@@ -30,12 +29,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
           Obx(() => _buildSearchActionButton()),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: Obx(() => controller.isLoading.isTrue
-            ? const LoadingIndicator(message: Text('Refreshing customer data'))
-            : _buildCustomerList()),
-      ),
+      body: Padding(padding: EdgeInsets.all(10), child: _buildCustomerList()),
     );
   }
 
@@ -99,29 +93,30 @@ class CustomerListScreen extends GetView<CustomerListController> {
 
     return RefreshIndicator(
       onRefresh: () => controller.refreshCustomerList(),
-      child: customers.isEmpty
-          ? ListTile(
+      child: ListView.builder(
+        controller: controller.scrollController,
+        itemCount: customers.length + 1,
+        itemBuilder: (context, index) {
+          if (customers.isEmpty) {
+            return ListTile(
               title:
                   const Text('No customers found', textAlign: TextAlign.center),
               trailing: ElevatedButton(
                   onPressed: () => controller.refreshCustomerList(),
                   child: const Text('Refresh')),
-            )
-          : ListView.builder(
-              controller: controller.scrollController,
-              itemCount: customers.length + 1,
-              itemBuilder: (context, index) {
-                if (index < customers.length) {
-                  CustomerModel customer = customers[index];
-                  return buildCustomerListTile(customer, context);
-                } else {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
-                    child: Center(child: Text('nothing more to load!')),
-                  );
-                }
-              },
-            ),
+            );
+          }
+          if (index < customers.length) {
+            CustomerModel customer = customers[index];
+            return buildCustomerListTile(customer, context);
+          } else {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32.0),
+              child: Center(child: Text('nothing more to load!')),
+            );
+          }
+        },
+      ),
     );
   }
 }

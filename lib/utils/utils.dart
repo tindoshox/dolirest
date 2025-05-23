@@ -17,13 +17,13 @@ class Utils {
     return DateFormat('dd-MM-yyyy').format(dateTime);
   }
 
-  static intToYMD(int intDate) {
+  static String intToYMD(int intDate) {
     final DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
-  static intToDd(int intDate) {
+  static String intToDd(int intDate) {
     final DateTime dateTime =
         DateTime.fromMillisecondsSinceEpoch(intDate * 1000);
     return DateFormat('dd').format(dateTime);

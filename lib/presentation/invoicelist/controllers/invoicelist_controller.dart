@@ -1,7 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
-import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,10 +9,7 @@ import 'package:get/get.dart';
 class InvoicelistController extends GetxController {
   int drafts = Get.arguments['drafts'] ?? 0;
   final StorageService storage = Get.find();
-  final InvoiceRepository _invoiceRepository = Get.find();
-  var isLoading = false.obs;
-
-  bool isLastPage = false;
+  final DataRefreshContoller _dataRefreshContoller = Get.find();
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
@@ -40,33 +37,10 @@ class InvoicelistController extends GetxController {
     searchString.value = searchText;
   }
 
-  refreshInvoiceList({bool all = true}) async {
-    isLoading(true);
-
-    final result = await _invoiceRepository.fetchInvoiceList(status: "unpaid");
-    result.fold((failure) {
-      isLoading(false);
-      SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (invoices) {
-      isLoading(false);
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
-
-      final apiIds = invoices.map((invoice) => invoice.id).toSet();
-      List<InvoiceModel> localInvoices = storage.getInvoiceList();
-      final keysToDelete = <dynamic>[];
-      for (var localInvoice in localInvoices) {
-        if (!apiIds.contains(localInvoice.id)) {
-          keysToDelete.add(localInvoice.id);
-        }
-      }
-
-      storage.deleteAllInvoices(keysToDelete);
-      storage.deleteAllPayments(keysToDelete);
-    });
+  refreshInvoiceList() async {
+    DialogHelper.showLoading('Syncing invoices');
+    await _dataRefreshContoller.syncInvoices();
+    DialogHelper.hideLoading();
   }
 
   toggleSearch() {
@@ -85,8 +59,8 @@ class InvoicelistController extends GetxController {
 
   void _updateInvoices() {
     final list = storage.getInvoiceList();
+    list.removeWhere((i) => i.name == null);
     list.sort((a, b) => a.name.compareTo(b.name));
-
     if (drafts != 0) {
       invoices.value = list
           .where((invoice) => invoice.status == ValidationStatus.draft)

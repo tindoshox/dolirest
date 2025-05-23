@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -7,7 +7,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioService extends GetxController {
   final StorageService storage = Get.find();
-  final dio = Dio(); // With default `Options`.
+  final dio = Dio();
   final String apiStub = "/api/index.php/";
 
   @override
@@ -35,7 +35,7 @@ class DioService extends GetxController {
 
     if (!kReleaseMode) {
       dio.interceptors.add(
-        PrettyDioLogger(error: true, responseBody: false, requestBody: true),
+        PrettyDioLogger(error: true, responseBody: false, requestBody: false),
       );
     }
   }

@@ -136,8 +136,9 @@ class HomeScreen extends GetView<HomeController> {
         confirm: CustomActionButton(
             onTap: () {
               Get.back();
-              controller.storage.clearAll();
+
               Get.offAllNamed(Routes.LOGIN);
+              controller.storage.clearAll();
             },
             buttonText: 'Yes'),
         cancel: CustomActionButton(

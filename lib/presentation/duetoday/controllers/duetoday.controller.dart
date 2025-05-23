@@ -1,5 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/utils/string_manager.dart' show DocumentType;
 import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';

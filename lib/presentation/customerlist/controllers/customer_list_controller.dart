@@ -1,19 +1,19 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../infrastructure/dal/models/address_model.dart';
-import '../../../utils/snackbar_helper.dart';
-
 class CustomerListController extends GetxController {
   bool noInvoiceCustomers = Get.arguments['noInvoiceCustomers'] ?? false;
-  var isLoading = false.obs;
+
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
   StorageService storage = Get.find();
   CustomerRepository repository = Get.find();
+  final DataRefreshContoller _dataRefreshContoller = Get.find();
   var searchIconVisible = true.obs;
   var searchString = ''.obs;
 
@@ -38,37 +38,9 @@ class CustomerListController extends GetxController {
   }
 
   refreshCustomerList() async {
-    isLoading(true);
-    final result = await repository.fetchCustomerList();
-
-    result.fold((failure) {
-      isLoading(false);
-      SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (customers) {
-      for (CustomerModel customer in customers) {
-        storage.storeCustomer(customer.id, customer);
-        if (customer.address != null && customer.town != null) {
-          storage.storeAddresses(
-            '${customer.town}-${customer.address}',
-            AddressModel(
-              town: customer.town,
-              address: customer.address,
-            ),
-          );
-        }
-      }
-      final apiIds = customers.map((customer) => customer.id).toSet();
-      List<CustomerModel> localCustomers = storage.getCustomerList();
-      final keysToDelete = <dynamic>[];
-      for (var localCustomer in localCustomers) {
-        if (!apiIds.contains(localCustomer.id)) {
-          keysToDelete.add(localCustomer.id);
-        }
-      }
-
-      storage.deleteAllCustomer(keysToDelete);
-      isLoading(false);
-    });
+    DialogHelper.showLoading('Syncing customers');
+    await _dataRefreshContoller.syncCustomers();
+    DialogHelper.hideLoading();
   }
 
   void _watchBoxes() {

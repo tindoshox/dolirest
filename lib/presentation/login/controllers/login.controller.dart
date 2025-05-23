@@ -1,15 +1,17 @@
 import 'dart:io';
 
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:restart_app/restart_app.dart';
+import 'package:dolirest/config_dev.dart';
 
 class LoginController extends GetxController {
   final StorageService storage = Get.find();
@@ -19,6 +21,14 @@ class LoginController extends GetxController {
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
   TextEditingController urlController = TextEditingController();
   TextEditingController apiController = TextEditingController();
+  @override
+  void onInit() {
+    if (kDebugMode) {
+      urlController.text = ConfigDev.url;
+      apiController.text = ConfigDev.apiKey;
+    }
+    super.onInit();
+  }
 
   @override
   void onClose() {

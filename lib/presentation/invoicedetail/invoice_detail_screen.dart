@@ -100,6 +100,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Obx(() {
+            var connected = Get.find<NetworkController>().connected.value;
             var document = controller.document.value;
             return Row(
               children: [
@@ -114,7 +115,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     document.lines!.isNotEmpty)
                   CustomActionButton(
                     buttonText: 'Validate',
-                    onTap: () => (Get.find<NetworkController>().connected.value)
+                    onTap: () => connected
                         ? controller.validateDocument(
                             id: document.id,
                             invoiceValidation:
@@ -135,7 +136,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     document.remaintopay != "0")
                   CustomActionButton(
                     buttonText: 'Payment',
-                    onTap: () => (Get.find<NetworkController>().connected.value)
+                    onTap: () => connected
                         ? Get.toNamed(
                             Routes.PAYMENT,
                             arguments: {
@@ -151,10 +152,11 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                 if (document.status == ValidationStatus.draft &&
                     document.paye == PaidStatus.unpaid)
                   CustomActionButton(
+                    isCancel: true,
                     buttonText: 'Delete',
-                    onTap: () {
-                      controller.deleteDocument(documentId: document.id);
-                    },
+                    onTap: () => connected
+                        ? controller.deleteDocument(documentId: document.id)
+                        : SnackBarHelper.networkSnackbar(),
                   ),
                 if (document.type == DocumentType.invoice &&
                     document.status == ValidationStatus.validated)

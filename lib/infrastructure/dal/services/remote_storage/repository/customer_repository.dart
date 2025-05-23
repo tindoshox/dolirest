@@ -8,18 +8,23 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:fpdart/fpdart.dart';
 
 class CustomerRepository extends DioService {
-  Future<Either<DolibarrApiError, List<CustomerModel>>> fetchCustomerList() {
-    final queryParams = {
+  Future<Either<DolibarrApiError, List<CustomerModel>>> fetchCustomerList(
+      {int page = 1, int limit = 0, String? dateModified}) {
+    var queryParameters = {
       "sortfield": "t.nom",
       "sortorder": "ASC",
       "mode": "1",
-      "limit": "0",
-      "page": "1",
+      "limit": limit,
+      "page": page,
     };
+
+    if (dateModified != null) {
+      queryParameters["sqlfilters"] = "(t.tms:>:'$dateModified')";
+    }
 
     return dio.safeRequest(() async {
       final response =
-          await dio.get(ApiPath.customers, queryParameters: queryParams);
+          await dio.get(ApiPath.customers, queryParameters: queryParameters);
       return listCustomerModelFromJson(jsonEncode(response.data));
     });
   }

@@ -15,27 +15,60 @@ extension DioSafeRequest on Dio {
 
   DolibarrApiError _mapToDolibarrError(dynamic error) {
     if (error is DioException) {
+      final statusCode = error.response?.statusCode ?? -1;
       final data = error.response?.data;
 
-      if (data is Map<String, dynamic>) {
-        try {
-          return DolibarrApiError.fromJson(data);
-        } catch (_) {
+      switch (error.type) {
+        case DioExceptionType.connectionError:
+        case DioExceptionType.unknown:
           return DolibarrApiError(
-            code: error.response?.statusCode ?? -1,
-            message: 'Error response could not be parsed',
-            source: 'Parsing',
+            code: -1,
+            message: 'No internet connection or server unreachable.',
+            source: 'Network',
           );
-        }
-      }
 
-      return DolibarrApiError(
-        code: error.response?.statusCode ?? -1,
-        message: error.message ?? 'Unknown Dio error',
-        source: 'Dio',
-      );
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          return DolibarrApiError(
+            code: -1,
+            message: 'Request timed out. Please try again.',
+            source: 'Timeout',
+          );
+
+        case DioExceptionType.badResponse:
+          if (data is Map<String, dynamic>) {
+            try {
+              return DolibarrApiError.fromJson(data);
+            } catch (_) {
+              return DolibarrApiError(
+                code: statusCode,
+                message: 'Invalid error response from server.',
+                source: 'Parsing',
+              );
+            }
+          } else {
+            return DolibarrApiError(
+              code: statusCode,
+              message: 'Unexpected server error.',
+              source: 'Server',
+            );
+          }
+
+        default:
+          return DolibarrApiError(
+            code: statusCode,
+            message: 'An unexpected error occurred.',
+            source: 'Unknown',
+          );
+      }
     }
 
-    return DolibarrApiError.generic(error);
+    // Non-Dio exceptions
+    return DolibarrApiError(
+      code: -1,
+      message: error.toString(),
+      source: 'Unhandled',
+    );
   }
 }

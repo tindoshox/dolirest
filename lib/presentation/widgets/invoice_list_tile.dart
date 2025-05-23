@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -23,7 +23,7 @@ class InvoiceListTile extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Initicon(
-          text: customer!.name,
+          text: customer?.name ?? 'Please refresh customers',
           size: 30,
         ),
         isThreeLine: true,
@@ -52,7 +52,7 @@ class InvoiceListTile extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    customer.name ??
+                    customer?.name ??
                         'Please refresh customer list', // Handle potential null
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium,
@@ -67,7 +67,7 @@ class InvoiceListTile extends StatelessWidget {
               ],
             ),
             Text(
-              '${customer.town} ${customer.address}'.trim(),
+              '${customer?.town} ${customer?.address}'.trim(),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Row(

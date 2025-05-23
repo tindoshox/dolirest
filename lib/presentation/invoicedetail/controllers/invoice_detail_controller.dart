@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/build_document_request_model.dart';
@@ -7,13 +6,14 @@ import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -29,6 +29,7 @@ class InvoiceDetailController extends GetxController
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
   final ProductRepository productRepository = Get.find();
+  final DataRefreshContoller _dataRefreshContoller = Get.find();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -109,10 +110,18 @@ class InvoiceDetailController extends GetxController
     storage.paymentsListenable().addListener(_updatePayments);
   }
 
-  void _updateCustomer() {
+  Future<void> _updateCustomer() async {
     final c = storage.getCustomer(customerId);
     if (c != null) {
       customer.value = c;
+    } else {
+      final result = await customerRepository.fetchCustomerById(customerId);
+
+      result.fold((failure) {
+        SnackBarHelper.errorSnackbar(message: failure.message);
+      }, (customer) {
+        storage.storeCustomer(customer.id, customer);
+      });
     }
   }
 
@@ -145,42 +154,13 @@ class InvoiceDetailController extends GetxController
 
   Future _refreshPaymentData() async {
     isLoading.value = true;
-    final result =
-        await (invoiceRepository.fetchPaymentsByInvoice(invoiceId: documentId));
-
-    result.fold(
-        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (payments) {
-      for (var payment in payments) {
-        PaymentModel p = PaymentModel(
-          amount: payment.amount,
-          type: payment.type,
-          date: payment.date,
-          num: payment.num,
-          fkBankLine: payment.fkBankLine,
-          ref: payment.ref,
-          invoiceId: documentId,
-          refExt: payment.refExt,
-        );
-        storage.storePayment(payment.ref, p);
-      }
-    });
+    await _dataRefreshContoller.fetchPayment(documentId: documentId);
     isLoading.value = false;
   }
 
   Future refreshInvoiceData() async {
     DialogHelper.showLoading('Refreshing Invoice');
-    final result =
-        await invoiceRepository.fetchInvoiceList(customerId: customerId);
-    result.fold(
-        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (invoices) {
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
-    });
+    await _dataRefreshContoller.syncInvoices(customerId: customerId);
     DialogHelper.hideLoading();
   }
 
@@ -246,10 +226,10 @@ class InvoiceDetailController extends GetxController
         invoiceId: documentId, body: body);
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (invoice) {
+        (invoice) async {
+      await refreshInvoiceData();
       DialogHelper.hideLoading();
       SnackBarHelper.successSnackbar(message: 'Due date changed');
-      refreshInvoiceData();
     });
   }
 
@@ -276,32 +256,31 @@ class InvoiceDetailController extends GetxController
 
   creditNote({required bool productReturned}) async {
     DialogHelper.showLoading('Returning item');
+
     var invoice = storage.getInvoice(documentId)!;
 
-    /// Generate product line
+    DialogHelper.updateMessage('Preparing line item...');
     var ln = Line(
-            qty: '1',
-            subprice: invoice.remaintopay,
-            fkProduct: productReturned ? invoice.lines![0].fkProduct : null,
-            desc: productReturned
-                ? invoice.lines![0].desc
-                : 'Balance Written Off',
-            description: productReturned
-                ? invoice.lines![0].description
-                : 'Balance Written Off',
-            fkProductType:
-                productReturned ? invoice.lines![0].fkProductType : null)
-        .toJson();
+      qty: '1',
+      subprice: invoice.remaintopay,
+      fkProduct: productReturned ? invoice.lines![0].fkProduct : null,
+      desc: productReturned ? invoice.lines![0].desc : 'Balance Written Off',
+      description: productReturned
+          ? invoice.lines![0].description
+          : 'Balance Written Off',
+      fkProductType: productReturned ? invoice.lines![0].fkProductType : null,
+    ).toJson();
     ln.removeWhere((key, value) => value == null);
     var lines = [ln];
 
-    /// Generate main draft
+    DialogHelper.updateMessage('Creating draft credit note...');
     var credit = InvoiceModel(
-        fkFactureSource: invoice.id,
-        socid: invoice.socid,
-        refClient: refController.text,
-        type: '2',
-        lines: []).toJson();
+      fkFactureSource: invoice.id,
+      socid: invoice.socid,
+      refClient: refController.text,
+      type: '2',
+      lines: [],
+    ).toJson();
 
     credit.removeWhere((key, value) => value == null);
     credit['lines'] = lines;
@@ -314,16 +293,22 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'create draft: ${failure.message}');
     }, (id) async {
+      DialogHelper.updateMessage('Validating credit note...');
       await validateDocument(id: id, invoiceValidation: false)
           .then((validatedId) async {
+        DialogHelper.updateMessage('Marking credit available...');
         await _markAsCreditAvailable(creditNoteId: validatedId)
             .then((availableId) async {
+          DialogHelper.updateMessage('Fetching discount...');
           await _fetchDiscount(creditNoteId: availableId)
               .then((discount) async {
+            DialogHelper.updateMessage('Applying discount...');
             await _applyDiscount(
                     invoiceId: document.value.id, discountId: discount)
                 .then((v) async {
+              DialogHelper.updateMessage('Classifying as paid...');
               await _classifyPaid(invoiceId: document.value.id);
+              DialogHelper.hideLoading();
             });
           });
         });
@@ -363,7 +348,6 @@ class InvoiceDetailController extends GetxController
         creditNoteId: creditNoteId);
 
     result.fold((failure) {
-      log(failure.code.toString());
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Credit Available: ${failure.message}');
@@ -513,9 +497,9 @@ class InvoiceDetailController extends GetxController
     response.fold((failure) {
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (value) {
+    }, (value) async {
+      await refreshInvoiceData();
       Get.back();
-      refreshInvoiceData();
     });
   }
 }

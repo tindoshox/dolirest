@@ -16,22 +16,26 @@ class InvoiceRepository extends DioService {
     String? dateModified,
     String? status,
     String? type,
+    int limit = 0,
+    int page = 1,
   }) {
-    final modified = dateModified ?? '1970-01-01';
-    String sqlfilters = "(t.tms:>:'$modified')";
-    if (type != null) {
-      sqlfilters += "and (t.type:=:'$type')";
-    }
+    // final sqlfilters = {"sqlfilters": "(t.tms:>:'$dateModified')"};
 
-    final queryParameters = {
+    var queryParameters = {
       "sortfield": "t.date_lim_reglement",
       "sortorder": "ASC",
-      "page": "1",
-      "limit": "0",
+      "page": page,
+      "limit": limit,
       "status": status ?? '',
-      "thirdparty_ids": customerId ?? '',
-      "sqlfilters": sqlfilters,
     };
+
+    if (customerId != null) {
+      queryParameters["thirdparty_ids"] = customerId;
+    }
+
+    if (dateModified != null) {
+      queryParameters["sqlfilters"] = "(t.tms:>:'$dateModified')";
+    }
 
     return dio.safeRequest(() async {
       final res =

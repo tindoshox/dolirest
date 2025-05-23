@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -133,7 +133,7 @@ class PaymentController extends GetxController {
 
     /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
-      DialogHelper.showLoading('Processing Payment...');
+      DialogHelper.showLoading('Processing payment...');
       String body = jsonEncode({
         "arrayofamounts": {
           "${invoice.value.id}": {
@@ -166,8 +166,11 @@ class PaymentController extends GetxController {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }, (p) async {
+      DialogHelper.updateMessage('Updating due date ..');
       await _updateDueDate(invoice.value.id);
+      DialogHelper.updateMessage('Reloading data ..');
       await _refreshPayments(invoice.value.id);
+
       await _refreshInvoice(invoice.value.id);
 
       if (batch) {
@@ -224,12 +227,16 @@ class PaymentController extends GetxController {
     final result =
         await repository.fetchInvoiceList(customerId: customer.value.id);
 
-    result.fold(
-        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (invoices) {
+    result.fold((failure) {
+      if (Get.isDialogOpen == true) {
+        DialogHelper.hideLoading();
+      }
+      Get.back();
+      SnackBarHelper.errorSnackbar(message: failure.message);
+    }, (invoices) {
       for (InvoiceModel invoice in invoices) {
         final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
+        invoice.name = customer?.name;
         storage.storeInvoice(invoice.id, invoice);
       }
     });

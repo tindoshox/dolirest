@@ -17,13 +17,16 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Obx(() => controller.invoices.isNotEmpty
-          ? SizedBox()
-          : FloatingActionButton(
-              backgroundColor: Colors.redAccent,
-              onPressed: () => controller.deleteCustomer(),
-              child: const Icon(Icons.delete),
-            )),
+      floatingActionButton:
+          Obx(() => controller.invoices.isEmpty && !controller.isLoading.value
+              ? FloatingActionButton(
+                  backgroundColor: Colors.redAccent,
+                  onPressed: () => Get.find<NetworkController>().connected.value
+                      ? controller.deleteCustomer()
+                      : SnackBarHelper.networkSnackbar(),
+                  child: const Icon(Icons.delete),
+                )
+              : SizedBox()),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(

@@ -12,8 +12,8 @@ import 'package:get/get.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 class StorageService extends GetxController {
-  final Box<InvoiceModel> _invoices = Hive.box('invoices');
-  final Box<CustomerModel> _customers = Hive.box('customers');
+  final Box<InvoiceModel> invoices = Hive.box('invoices');
+  final Box<CustomerModel> customers = Hive.box('customers');
   final Box<PaymentModel> _payments = Hive.box('payments');
   final Box<ProductModel> _products = Hive.box('products');
   final Box<GroupModel> _groups = Hive.box('groups');
@@ -71,61 +71,61 @@ class StorageService extends GetxController {
   }
 
   void storeInvoice(String key, InvoiceModel value) async {
-    if (_invoices.isOpen) await _invoices.put(key, value);
+    if (invoices.isOpen) await invoices.put(key, value);
   }
 
   InvoiceModel? getInvoice(String key) {
-    return _invoices.get(key);
+    return invoices.get(key);
   }
 
   List<InvoiceModel> getInvoiceList({String? customerId}) {
     if (customerId == null) {
-      return _invoices.toMap().values.toList();
+      return invoices.toMap().values.toList();
     } else {
-      return _invoices.values.where((i) => i.socid == customerId).toList();
+      return invoices.values.where((i) => i.socid == customerId).toList();
     }
   }
 
   ValueListenable<Box<InvoiceModel>> invoicesListenable() {
-    return _invoices.listenable();
+    return invoices.listenable();
   }
 
   void deleteInvoice(String key) {
-    if (_invoices.isOpen) _invoices.delete(key);
+    if (invoices.isOpen) invoices.delete(key);
   }
 
   void deleteAllInvoices(keys) {
-    if (_invoices.isOpen) _invoices.deleteAll(keys);
+    if (invoices.isOpen) invoices.deleteAll(keys);
   }
 
   void deleteAllPayments(keys) {
-    if (_invoices.isOpen) _payments.deleteAll(keys);
+    if (invoices.isOpen) _payments.deleteAll(keys);
   }
 
   void storeCustomer(String key, CustomerModel value) async {
-    if (_customers.isOpen) await _customers.put(key, value);
+    if (customers.isOpen) await customers.put(key, value);
   }
 
   CustomerModel? getCustomer(String key) {
-    return _customers.isOpen ? _customers.get(key) : null;
+    return customers.isOpen ? customers.get(key) : null;
   }
 
   List<CustomerModel> getCustomerList() {
-    return _customers.isOpen
-        ? _customers.toMap().values.toList()
+    return customers.isOpen
+        ? customers.toMap().values.toList()
         : <CustomerModel>[];
   }
 
   void deleteCustomer(String key) {
-    if (_customers.isOpen) _customers.delete(key);
+    if (customers.isOpen) customers.delete(key);
   }
 
   void deleteAllCustomer(keys) {
-    if (_invoices.isOpen) _customers.deleteAll(keys);
+    if (invoices.isOpen) customers.deleteAll(keys);
   }
 
   ValueListenable<Box<CustomerModel>> customersListenable() {
-    return _customers.listenable();
+    return customers.listenable();
   }
 
   void storeSetting(String key, dynamic value) async {
@@ -188,9 +188,9 @@ class StorageService extends GetxController {
   }
 
   void clearAll() {
-    _customers.clear();
+    customers.clear();
     _groups.clear();
-    _invoices.clear();
+    invoices.clear();
     _payments.clear();
     _products.clear();
     _settings.clear();

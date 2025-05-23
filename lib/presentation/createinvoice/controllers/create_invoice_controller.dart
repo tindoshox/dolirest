@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -101,7 +100,6 @@ class CreateinvoiceController extends GetxController {
   _refreshProducts() async {
     final result = await productRepository.fetchProducts();
     result.fold((failure) {
-      log(failure.message);
       SnackBarHelper.errorSnackbar(message: 'Unable to load products');
     }, (products) {
       for (ProductModel product in products) {
@@ -145,11 +143,13 @@ class CreateinvoiceController extends GetxController {
   Future<void> validateInputs() async {
     final FormState form = createInvoiceKey.currentState!;
     if (form.validate()) {
-      DialogHelper.showLoading('Creating Invoice...');
+      DialogHelper.showLoading('Validating inputs...');
       // If stock type is free text.
       if (productType.value != '0') {
         await _createInvoice();
       } else {
+        DialogHelper.updateMessage('Checking stock..');
+
         /// if not free text: Check if product has stock above zero
         final result =
             await productRepository.checkStock(selectedProduct.value.id!);
@@ -167,6 +167,8 @@ class CreateinvoiceController extends GetxController {
 
   /// Attempt draft creation
   Future _createInvoice() async {
+    DialogHelper.updateMessage('Creating darft ..');
+
     /// Generate product line
 
     var ln = Line(
@@ -208,13 +210,17 @@ class CreateinvoiceController extends GetxController {
       SnackBarHelper.errorSnackbar(
         message: failure.message,
       );
-    }, (id) async => await _validateInvoice(id));
+    }, (id) async {
+      DialogHelper.updateMessage('Draft created ...');
+      await _validateInvoice(id);
+    });
   }
 
   ///
   /// Invoice validation
   /// Happens if invoice creation is succesfull
   Future<void> _validateInvoice(invoiceId) async {
+    DialogHelper.updateMessage('Validating invoice ..');
     String body = '''{
       "idwarehouse": 1,
       "notrigger": 0
@@ -228,6 +234,7 @@ class CreateinvoiceController extends GetxController {
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
           arguments: {'customerId': customer.value.id});
     }, (v) async {
+      DialogHelper.updateMessage('Loading new invoice ...');
       await _getNewInvoice(invoiceId).then((value) {
         DialogHelper.hideLoading();
 

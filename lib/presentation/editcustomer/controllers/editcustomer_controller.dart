@@ -6,11 +6,11 @@ import 'package:get/get.dart';
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/local_storage.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/utils/loading_overlay.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 
 class EditCustomerController extends GetxController {
@@ -86,6 +86,7 @@ class EditCustomerController extends GetxController {
   }
 
   void validateAndSave() async {
+    DialogHelper.showLoading('Validating inputs ...');
     final FormState form = customerFormKey.currentState!;
     if (form.validate()) {
       var customer = CustomerModel(
@@ -101,16 +102,16 @@ class EditCustomerController extends GetxController {
       customer.removeWhere((key, value) => value == null);
 
       if (customerId.isEmpty) {
+        DialogHelper.updateMessage('Creating customer ...');
         _createCustomer(jsonEncode(customer));
       } else {
+        DialogHelper.updateMessage('Updating customer ...');
         _updateCustomer(jsonEncode(customer), customerId);
       }
     }
   }
 
   Future _createCustomer(String body) async {
-    DialogHelper.showLoading('Saving Customer...');
-
     final result = await customerRepository.createCustomer(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -140,7 +141,6 @@ class EditCustomerController extends GetxController {
   }
 
   Future _updateCustomer(String body, String id) async {
-    DialogHelper.showLoading('Updating Customer...');
     final result = await customerRepository.updateCustomer(body, id);
 
     result.fold((failure) {

@@ -1,7 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
-import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
@@ -69,11 +68,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          Expanded(
-            child: Obx(() => controller.isLoading.value
-                ? const LoadingIndicator()
-                : buildInvoiceList()),
-          ),
+          Expanded(child: buildInvoiceList()),
         ],
       ),
     );
@@ -99,25 +94,29 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
             .toList()
         : list;
     return RefreshIndicator(
-      onRefresh: () => controller.refreshInvoiceList(),
-      child: invoices.isEmpty
-          ? ListTile(
-              title:
-                  const Text('No invoices found', textAlign: TextAlign.center),
-              trailing: ElevatedButton(
-                  onPressed: () => controller.refreshInvoiceList(),
-                  child: const Text('Refresh')),
-            )
-          : ListView.builder(
-              controller: controller.scrollController,
-              itemCount: invoices.length + 1,
-              itemBuilder: (context, index) => index < invoices.length
-                  ? InvoiceListTile(invoice: invoices[index])
-                  : const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32.0),
-                      child: Center(child: Text('End of list!')),
-                    ),
-            ),
-    );
+        onRefresh: () => controller.refreshInvoiceList(),
+        child: ListView.builder(
+            controller: controller.scrollController,
+            itemCount: invoices.length + 1,
+            itemBuilder: (context, index) {
+              if (invoices.isEmpty) {
+                return ListTile(
+                  title: const Text('No invoices found',
+                      textAlign: TextAlign.center),
+                  trailing: ElevatedButton(
+                      onPressed: () => controller.refreshInvoiceList(),
+                      child: const Text('Refresh')),
+                );
+              }
+
+              if (index < invoices.length) {
+                return InvoiceListTile(invoice: invoices[index]);
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32.0),
+                  child: Center(child: Text('End of list!')),
+                );
+              }
+            }));
   }
 }
