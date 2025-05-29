@@ -1,17 +1,18 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 
-Card buildCustomerListTile(CustomerModel customer, BuildContext context) {
+Card buildCustomerListTile(CustomerEntity customer, BuildContext context) {
   return Card(
     child: ListTile(
       onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-        'customerId': customer.id.toString(),
+        'customerId': customer.customerId,
+        'customerEntityId': customer.id,
       }),
       leading: Initicon(
-        text: customer.name,
+        text: customer.name!,
         size: 30,
       ),
       title: Row(

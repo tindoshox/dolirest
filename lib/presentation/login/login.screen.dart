@@ -106,11 +106,11 @@ class LoginScreen extends GetView<LoginController> {
         maxLines: 5,
         enableInteractiveSelection: true,
         keyboardType: TextInputType.multiline,
-        onChanged: (p0) => controller.apiKey.value = p0!.trim(),
+        onChanged: (p0) => controller.token.value = p0!.trim(),
 
         /// Returns an error message if the API key is empty.
-        validator: (apiKey) =>
-            GetUtils.isLengthEqualTo(apiKey, 0) ? 'API Key is required' : null,
+        validator: (token) =>
+            GetUtils.isLengthEqualTo(token, 0) ? 'API Key is required' : null,
       ),
     );
   }

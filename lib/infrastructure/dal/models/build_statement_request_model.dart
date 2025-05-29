@@ -11,7 +11,7 @@ String buildStatementRequestModelToJson(BuildStatementRequestModel data) =>
     json.encode(data.toJson());
 
 class BuildStatementRequestModel {
-  String socid;
+  int socid;
   DateTime startdate;
   DateTime enddate;
 

@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +68,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
   }
 
   Widget _buildCustomerList() {
-    var customers = <CustomerModel>[];
+    var customers = <CustomerEntity>[];
     var list = controller.customers;
     String search = controller.searchString.value;
     customers = search.length > 2
@@ -107,7 +107,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
             );
           }
           if (index < customers.length) {
-            CustomerModel customer = customers[index];
+            CustomerEntity customer = customers[index];
             return buildCustomerListTile(customer, context);
           } else {
             return const Padding(

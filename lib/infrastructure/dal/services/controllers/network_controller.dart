@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:get/get.dart';
 
-class NetworkController extends GetxController {
+class NetworkController extends GetxService {
   final ServerReachability reachablility = Get.put(ServerReachability());
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> subscription;
@@ -30,11 +30,11 @@ class NetworkController extends GetxController {
     super.onReady();
   }
 
-  @override
-  dispose() {
-    subscription.cancel();
-    super.dispose();
-  }
+  // @override
+  // dispose() {
+  //   subscription.cancel();
+  //   super.dispose();
+  // }
 
   Future<void> _updateConnectionStatus(
       List<ConnectivityResult> connectivityResult) async {

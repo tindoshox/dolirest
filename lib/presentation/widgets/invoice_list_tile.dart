@@ -1,6 +1,5 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -9,21 +8,17 @@ import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 
 class InvoiceListTile extends StatelessWidget {
-  const InvoiceListTile({
-    super.key,
-    required this.invoice,
-  });
+  const InvoiceListTile(
+      {super.key, required this.invoice, required this.customer});
 
-  final InvoiceModel invoice;
-
+  final InvoiceEntity invoice;
+  final CustomerEntity customer;
   @override
   Widget build(BuildContext context) {
-    final storage = Get.find<StorageService>();
-    final CustomerModel? customer = storage.getCustomer(invoice.socid);
     return Card(
       child: ListTile(
         leading: Initicon(
-          text: customer?.name ?? 'Please refresh customers',
+          text: customer.name ?? 'Please refresh customers',
           size: 30,
         ),
         isThreeLine: true,
@@ -32,7 +27,7 @@ class InvoiceListTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              invoice.ref ?? 'N/A', // Handle potential null
+              invoice.ref ?? '', // Handle potential null
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
@@ -52,7 +47,7 @@ class InvoiceListTile extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    customer?.name ??
+                    customer.name ??
                         'Please refresh customer list', // Handle potential null
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium,
@@ -60,23 +55,23 @@ class InvoiceListTile extends StatelessWidget {
                 ),
                 Text(
                   Utils.intToDMY(
-                      invoice.dateLimReglement ?? ''), // Handle potential null
+                      invoice.dateLimReglement!), // Handle potential null
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Utils.overDueStyle(invoice.dateLimReglement)),
+                      color: Utils.overDueStyle(invoice.dateLimReglement!)),
                 )
               ],
             ),
             Text(
-              '${customer?.town} ${customer?.address}'.trim(),
+              '${customer.town} ${customer.address}'.trim(),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  invoice.lines?.isNotEmpty ?? false
-                      ? invoice.lines![0].productLabel ??
-                          invoice.lines![0].description ??
+                  invoice.lines.isNotEmpty
+                      ? invoice.lines[0].productLabel ??
+                          invoice.lines[0].description ??
                           'N/A'
                       : 'N/A',
                   style: Theme.of(context).textTheme.bodySmall,
@@ -88,7 +83,7 @@ class InvoiceListTile extends StatelessWidget {
                       : invoice.remaintopay == "0" &&
                               invoice.status != ValidationStatus.draft
                           ? "FULLY PAID"
-                          : (invoice.sumpayed == null ? 'UNPAID' : 'STARTED'),
+                          : (invoice.totalpaid == 0 ? 'UNPAID' : 'STARTED'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -104,7 +99,7 @@ class InvoiceListTile extends StatelessWidget {
       Routes.INVOICEDETAIL,
       arguments: {
         'customerId': invoice.socid,
-        'documentId': invoice.id,
+        'documentId': invoice.documentId,
       },
     );
   }

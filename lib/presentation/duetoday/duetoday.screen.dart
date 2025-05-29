@@ -42,7 +42,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
           itemBuilder: (context, index) {
             if (index < invoices.length) {
               var invoice = invoices[index];
-              var customer = controller.storage.getCustomer(invoice.socid);
+              var customer = controller.storage.getCustomer(invoice.socid!);
               return Card(
                 child: InkWell(
                   onTap: () {
@@ -60,7 +60,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
                           width: 2,
                         ),
                         textBox(
-                            context, Utils.intToDMY(invoice.dateLimReglement),
+                            context, Utils.intToDMY(invoice.dateLimReglement!),
                             textAlign: TextAlign.center),
                         SizedBox(
                           width: 2,

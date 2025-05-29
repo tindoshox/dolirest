@@ -1,15 +1,32 @@
-import 'package:hive_ce_flutter/hive_flutter.dart';
+// To parse this JSON data, do
+//
+//     final addressModel = addressModelFromJson(jsonString);
 
-part 'address_model.g.dart';
+import 'package:objectbox/objectbox.dart';
 
-@HiveType(typeId: 12)
+@Entity()
 class AddressModel {
-  @HiveField(1)
-  final String town;
-  @HiveField(2)
-  final String address;
-  const AddressModel({
-    required this.town,
-    required this.address,
+  @Id()
+  int id;
+
+  String? town;
+  String? address;
+
+  AddressModel({
+    this.id = 0,
+    this.town,
+    this.address,
   });
+
+  factory AddressModel.fromJson(Map<String, dynamic> json) => AddressModel(
+        id: json['id'] as int? ?? 0,
+        town: json['town'] as String?,
+        address: json['address'] as String?,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'town': town,
+        'address': address,
+      };
 }

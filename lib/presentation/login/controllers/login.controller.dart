@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +19,7 @@ class LoginController extends GetxController {
   final StorageService storage = Get.find();
   final UserRepository userRepositoty = Get.find();
   var serverUrl = ''.obs;
-  var apiKey = ''.obs;
+  var token = ''.obs;
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
   TextEditingController urlController = TextEditingController();
   TextEditingController apiController = TextEditingController();
@@ -25,7 +27,7 @@ class LoginController extends GetxController {
   void onInit() {
     if (kDebugMode) {
       urlController.text = ConfigDev.url;
-      apiController.text = ConfigDev.apiKey;
+      apiController.text = ConfigDev.token;
     }
     super.onInit();
   }
@@ -44,10 +46,10 @@ class LoginController extends GetxController {
     if (form.validate()) {
       DialogHelper.showLoading('Verifying Server Info...');
       serverUrl('https://${urlController.text.trim()}');
-      apiKey(apiController.text.trim());
+      token(apiController.text.trim());
 
-      final result = await userRepositoty.login(
-          url: serverUrl.value, apiKey: apiKey.value);
+      final result =
+          await userRepositoty.login(url: serverUrl.value, token: token.value);
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);
@@ -67,8 +69,14 @@ class LoginController extends GetxController {
 
   /// Writes the server info to the local storage.
   void _writeStore() {
-    storage.storeSetting(StorageKey.url, serverUrl.value);
-    storage.storeSetting(StorageKey.apiKey, apiKey.value);
+    storage.storeSetting(SettingsModel(
+        id: SettingId.urlSettingId,
+        name: StorageKey.url,
+        strValue: serverUrl.value));
+    storage.storeSetting(SettingsModel(
+        id: SettingId.tokenSettingId,
+        name: StorageKey.token,
+        strValue: token.value));
   }
 
   void _clearStorage() {

@@ -1,13 +1,13 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
-import 'package:dolirest/presentation/widgets/status_icon.dart';
-import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:get/get.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'controllers/payment_controller.dart';
 
@@ -15,8 +15,8 @@ class PaymentScreen extends GetView<PaymentController> {
   const PaymentScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    Rx<InvoiceModel> invoice = controller.invoice;
-    Rx<CustomerModel> customer = controller.customer;
+    Rx<InvoiceEntity> invoice = controller.invoice;
+    Rx<CustomerEntity> customer = controller.customer;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,15 +34,15 @@ class PaymentScreen extends GetView<PaymentController> {
     );
   }
 
-  Expanded _buidForm(BuildContext context, Rx<InvoiceModel> invoice,
-      Rx<CustomerModel> customer) {
+  Expanded _buidForm(BuildContext context, Rx<InvoiceEntity> invoice,
+      Rx<CustomerEntity> customer) {
     return Expanded(
       child: Form(
         key: controller.paymentFormKey,
         child: Card(
           child: ListView(
             children: [
-              if (controller.invoiceId.isEmpty) _buildSearchField(context),
+              if (controller.invoiceId == null) _buildSearchField(context),
               _buildPayDateField(),
               _buildDueDateField(),
               _buildReceiptNumberField(),
@@ -55,7 +55,7 @@ class PaymentScreen extends GetView<PaymentController> {
     );
   }
 
-  Padding _buildSaveButton(Rx<CustomerModel> customer) {
+  Padding _buildSaveButton(Rx<CustomerEntity> customer) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
@@ -101,7 +101,7 @@ class PaymentScreen extends GetView<PaymentController> {
     );
   }
 
-  CustomFormField _buildAmountField(Rx<InvoiceModel> invoice) {
+  CustomFormField _buildAmountField(Rx<InvoiceEntity> invoice) {
     return CustomFormField(
       name: 'amount',
       onChanged: (value) => controller.amount.value = value!,
@@ -209,18 +209,18 @@ class PaymentScreen extends GetView<PaymentController> {
   Padding _buildSearchField(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: DropdownSearch<InvoiceModel>(
+      child: DropdownSearch<InvoiceEntity>(
         key: controller.dropdownKey,
         compareFn: (item1, item2) => item1.name == item2.name,
         onChanged: (invoice) {
           if (invoice != null) {
-            controller.fetchData(invoice.socid!, invoice.id!);
+            controller.fetchData(invoice.socid!, invoice.documentId!);
           } else {
             controller.clearInvoice();
           }
         },
         validator: (value) => value == null ? 'Invoice is required' : null,
-        itemAsString: (InvoiceModel? invoice) => invoice!.ref!,
+        itemAsString: (InvoiceEntity? invoice) => invoice!.ref!,
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
             labelText: 'Invoice',
@@ -245,7 +245,10 @@ class PaymentScreen extends GetView<PaymentController> {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             itemBuilder: (context, invoice, isSelected, l) {
-              return InvoiceListTile(invoice: invoice);
+              return InvoiceListTile(
+                invoice: invoice,
+                customer: controller.customer.value,
+              );
             },
             emptyBuilder: ((context, searchEntry) =>
                 const Center(child: Text('Invoice not found'))),
@@ -254,12 +257,12 @@ class PaymentScreen extends GetView<PaymentController> {
           return await controller.fetchInvoices();
         },
         filterFn: (invoice, filter) =>
-            invoice.name.contains(filter) || invoice.ref.contains(filter),
+            invoice.name!.contains(filter) || invoice.ref!.contains(filter),
       ),
     );
   }
 
-  Card _buildInvoiceInfo(Rx<CustomerModel> customer, Rx<InvoiceModel> invoice,
+  Card _buildInvoiceInfo(Rx<CustomerEntity> customer, Rx<InvoiceEntity> invoice,
       BuildContext context) {
     return Card(
       child: Obx(() => ListTile(
@@ -282,7 +285,7 @@ class PaymentScreen extends GetView<PaymentController> {
               children: [
                 Flexible(
                   child: Text(
-                    controller.customer.value.ref == null
+                    controller.customer.value.customerId == null
                         ? ''
                         : '${customer.value.town}: ${customer.value.address}',
                     overflow: TextOverflow.ellipsis,
@@ -290,7 +293,7 @@ class PaymentScreen extends GetView<PaymentController> {
                   ),
                 ),
                 Text(
-                  controller.customer.value.ref == null
+                  controller.customer.value.customerId == null
                       ? ''
                       : 'BALANCE: ${invoice.value.remaintopay ?? '0'}',
                   textAlign: TextAlign.start,

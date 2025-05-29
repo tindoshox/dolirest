@@ -1,8 +1,9 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,11 +18,10 @@ class CustomerListController extends GetxController {
   var searchIconVisible = true.obs;
   var searchString = ''.obs;
 
-  var customers = <CustomerModel>[].obs;
+  var customers = <CustomerEntity>[].obs;
 
   @override
   void onInit() {
-    _watchBoxes();
     _updateCustomers();
     super.onInit();
   }
@@ -39,31 +39,32 @@ class CustomerListController extends GetxController {
 
   refreshCustomerList() async {
     DialogHelper.showLoading('Syncing customers');
-    await _dataRefreshContoller.syncCustomers();
-    DialogHelper.hideLoading();
-  }
-
-  void _watchBoxes() {
-    storage.invoicesListenable().addListener(_updateCustomers);
+    if (!_dataRefreshContoller.refreshing.value) {
+      await _dataRefreshContoller
+          .syncCustomers()
+          .then((v) => DialogHelper.hideLoading());
+    } else {
+      SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
+    }
   }
 
   void _updateCustomers() {
     final list = storage.getCustomerList();
-    var nic = <CustomerModel>[];
+    var nic = <CustomerEntity>[];
     if (noInvoiceCustomers) {
       for (var customer in list) {
         var invoices = storage
             .getInvoiceList()
-            .where((invoice) => invoice.socid == customer.id)
+            .where((invoice) => invoice.socid == customer.customerId)
             .toList();
         if (invoices.isEmpty) {
           nic.add(customer);
         }
       }
-      nic.sort((a, b) => a.name.compareTo(b.name));
+      nic.sort((a, b) => a.name!.compareTo(b.name!));
       customers.value = nic;
     } else {
-      list.sort((a, b) => a.name.compareTo(b.name));
+      list.sort((a, b) => a.name!.compareTo(b.name!));
       customers.value = list;
     }
   }

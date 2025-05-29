@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
@@ -10,19 +10,19 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/p
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart' show SettingId;
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class CreateinvoiceController extends GetxController {
-  final String customerId = Get.arguments['customerId'] ?? '';
+  final String? customerId = Get.arguments['customerId'];
   final StorageService storage = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final ProductRepository productRepository = Get.find();
   var moduleProductEnabled = false.obs;
-  var customer = CustomerModel().obs;
+  var customer = CustomerEntity().obs;
 
   GlobalKey<FormState> createInvoiceKey = GlobalKey<FormState>();
   GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
@@ -44,8 +44,10 @@ class CreateinvoiceController extends GetxController {
 
   @override
   onInit() {
-    moduleProductEnabled.value =
-        storage.getEnabledModules().contains('product');
+    moduleProductEnabled.value = storage
+        .getEnabledModules(SettingId.moduleSettingId)!
+        .listValue!
+        .contains('product');
     invoiceDateController.text = Utils.dateTimeToDMY(invoiceDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
     _watchBoxes();
@@ -80,7 +82,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _updateCustomer() {
-    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
+    customer.value = storage.getCustomer(customerId!) ?? CustomerEntity();
   }
 
   void setStockType(String value) {
@@ -88,13 +90,13 @@ class CreateinvoiceController extends GetxController {
   }
 
   void _fetchData() async {
-    if (customerId.isEmpty) {
-      await fetchCustomerById(customerId);
+    if (customerId != null) {
+      await fetchCustomerById(customerId!);
     }
   }
 
   void clearCustomer() {
-    customer(CustomerModel());
+    customer(CustomerEntity());
   }
 
   _refreshProducts() async {
@@ -103,13 +105,13 @@ class CreateinvoiceController extends GetxController {
       SnackBarHelper.errorSnackbar(message: 'Unable to load products');
     }, (products) {
       for (ProductModel product in products) {
-        storage.storeProduct(product.id!, product);
+        storage.storeProduct(product);
       }
     });
   }
 
   fetchCustomerById(String customerId) {
-    customer.value = storage.getCustomer(customerId) ?? CustomerModel();
+    customer.value = storage.getCustomer(customerId) ?? CustomerEntity();
   }
 
   ///
@@ -151,8 +153,8 @@ class CreateinvoiceController extends GetxController {
         DialogHelper.updateMessage('Checking stock..');
 
         /// if not free text: Check if product has stock above zero
-        final result =
-            await productRepository.checkStock(selectedProduct.value.id!);
+        final result = await productRepository
+            .checkStock(selectedProduct.value.id.toString());
 
         result.fold((failure) {
           DialogHelper.hideLoading();
@@ -174,12 +176,11 @@ class CreateinvoiceController extends GetxController {
     var ln = Line(
             qty: '1',
             subprice: priceController.text,
-            fkProduct: selectedProduct.value.id,
+            fkProduct: selectedProduct.value.id.toString(),
             desc: freetextController.text,
             description: freetextController.text,
             productType: productType.value,
-            fkProductType:
-                productType.value == '0' ? int.parse(productType.value) : null)
+            fkProductType: productType.value == '0' ? productType.value : null)
         .toJson();
 
     ln.removeWhere((key, value) => value == null);
@@ -187,14 +188,14 @@ class CreateinvoiceController extends GetxController {
 
     /// Generate main draft
     var invoice = InvoiceModel(
-        socid: customer.value.id,
-        date: Utils.dateTimeToInt(invoiceDate.value),
-        refClient: refController.text,
-        type: '0',
-        dateLimReglement: Utils.dateTimeToInt(dueDate.value),
-        condReglementCode: 'RECEP',
-        modeReglementCode: 'LIQ',
-        lines: []).toJson();
+      socid: customer.value.id,
+      date: Utils.dateTimeToInt(invoiceDate.value),
+      refCustomer: refController.text,
+      type: '0',
+      dateLimReglement: Utils.dateTimeToInt(dueDate.value),
+      condReglementCode: 'RECEP',
+      modeReglementCode: 'LIQ',
+    ).toJson();
 
     invoice.removeWhere((key, value) => value == null);
     invoice['lines'] = lines;
@@ -212,14 +213,14 @@ class CreateinvoiceController extends GetxController {
       );
     }, (id) async {
       DialogHelper.updateMessage('Draft created ...');
-      await _validateInvoice(id);
+      await _validateInvoice(id.toString());
     });
   }
 
   ///
   /// Invoice validation
   /// Happens if invoice creation is succesfull
-  Future<void> _validateInvoice(invoiceId) async {
+  Future<void> _validateInvoice(String invoiceId) async {
     DialogHelper.updateMessage('Validating invoice ..');
     String body = '''{
       "idwarehouse": 1,
@@ -258,24 +259,20 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future _getNewInvoice(invoiceId) async {
-    final result =
-        await invoiceRepository.fetchInvoiceList(customerId: customer.value.id);
+    final result = await invoiceRepository.fetchInvoiceList(
+        customerId: customer.value.customerId);
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoices) {
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer!.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
+      storage.storeInvoices(invoices);
     });
   }
 
   ///
   ///Customer search for DropDown
   searchCustomer({String searchString = ""}) {
-    List<CustomerModel> customers = [];
+    List<CustomerEntity> customers = [];
 
     if (searchString == "") {
       customers = storage.getCustomerList();

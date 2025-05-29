@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:dolirest/infrastructure/dal/models/credit_available_model.dart';
 import 'package:dolirest/infrastructure/dal/models/discount_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dio_safe_request.dart';
@@ -11,7 +12,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/a
 import 'package:fpdart/fpdart.dart';
 
 class InvoiceRepository extends DioService {
-  Future<Either<DolibarrApiError, List<InvoiceModel>>> fetchInvoiceList({
+  Future<Either<DolibarrApiError, List<InvoiceEntity>>> fetchInvoiceList({
     String? customerId,
     String? dateModified,
     String? status,
@@ -19,14 +20,16 @@ class InvoiceRepository extends DioService {
     int limit = 0,
     int page = 1,
   }) {
-    // final sqlfilters = {"sqlfilters": "(t.tms:>:'$dateModified')"};
+    final properties =
+        "id,ref,status,total_ht,total_tva,total_ttc,lines,name,date_modification,totalpaid,type,socid,paye,date,dateLimReglement,totaldeposits,totalcreditnotes,sumpayed,sumdeposit,sumcreditnote,remaintopay,datem,ref_customer,fk_facture_source,mode_reglement_code,cond_reglement_code,date_lim_reglement";
 
     var queryParameters = {
-      "sortfield": "t.date_lim_reglement",
+      "sortfield": "t.rowid",
       "sortorder": "ASC",
       "page": page,
       "limit": limit,
       "status": status ?? '',
+      "properties": properties
     };
 
     if (customerId != null) {
@@ -38,9 +41,10 @@ class InvoiceRepository extends DioService {
     }
 
     return dio.safeRequest(() async {
-      final res =
+      final response =
           await dio.get(ApiPath.invoices, queryParameters: queryParameters);
-      return listInvoiceModelFromJson(jsonEncode(res.data));
+      //  debugPrint(response.data.toString());
+      return parseInvoicesFromJson(response.data);
     });
   }
 
@@ -64,11 +68,10 @@ class InvoiceRepository extends DioService {
     });
   }
 
-  Future<Either<DolibarrApiError, String>> createInvoice(
-      {required String body}) {
+  Future<Either<DolibarrApiError, int>> createInvoice({required String body}) {
     return dio.safeRequest(() async {
       final res = await dio.post(ApiPath.invoices, data: body);
-      return res.data.toString().replaceAll('"', '');
+      return int.parse(res.data.toString().replaceAll('"', ''));
     });
   }
 

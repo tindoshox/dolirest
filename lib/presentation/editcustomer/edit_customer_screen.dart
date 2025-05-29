@@ -17,7 +17,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            controller.customerId.isEmpty ? 'New Customer' : 'Edit Customer'),
+            controller.customerId == null ? 'New Customer' : 'Edit Customer'),
         actions: [Obx(() => getStatusIcon())],
       ),
       body: Center(
@@ -38,7 +38,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             _buildNameField(),
             _buildCityAutocomplete(),
             _buildAddressAutocomplete(),
-            if (controller.customerId.isEmpty) _buildGroupDropdown(context),
+            if (controller.customerId == null) _buildGroupDropdown(context),
             _buildPhoneField(),
             _buildFaxField(),
             _buildActionButtons(),
@@ -67,7 +67,8 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
 
   Widget _buildCityAutocomplete() {
     return Obx(() {
-      final addresses = controller.addresses.map((a) => a.town.toUpperCase());
+      final addresses =
+          controller.addresses.map((a) => a.town.toString().toUpperCase());
       final towns = addresses.toSet().toList();
       return Autocomplete<String>(
         optionsBuilder: (TextEditingValue textEditingValue) {
@@ -97,7 +98,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
               }
             },
             name: 'customer_city',
-            controller: controller.customerId == ''
+            controller: controller.customerId == null
                 ? townController
                 : controller.townController,
             focusNode: focusNode,
@@ -115,7 +116,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
       var list = controller.addresses
           .where((a) => a.town == controller.selectedTown.value)
           .toList();
-      var filteredList = list.map((l) => l.address.toUpperCase()).toList();
+      var filteredList = list.map((l) => l.address!.toUpperCase()).toList();
       var addresses = filteredList.toSet().toList();
 
       return Autocomplete<String>(
@@ -143,7 +144,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             onChanged: (address) => controller.addressController.text =
                 address!.trim().toUpperCase(),
             name: 'customer_address',
-            controller: controller.customerId == ''
+            controller: controller.customerId == null
                 ? addressController
                 : controller.addressController,
             focusNode: focusNode,
@@ -179,7 +180,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             ),
           ),
         ),
-        itemAsString: (GroupModel group) => group.name,
+        itemAsString: (GroupModel group) => group.name!,
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -192,7 +193,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           itemBuilder: (context, group, isSelected, l) {
             return ListTile(
-              title: Text(group.name),
+              title: Text(group.name!),
             );
           },
           emptyBuilder: (context, searchEntry) =>

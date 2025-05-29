@@ -12,7 +12,6 @@ import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
@@ -129,7 +128,7 @@ class ReportsController extends GetxController {
     if (search.isNotEmpty) {
       groups.value = storage
           .getGroupList()
-          .where((group) => group.name.contains(search))
+          .where((group) => group.name!.contains(search))
           .toList();
     } else {
       groups.value = storage.getGroupList();
@@ -156,8 +155,9 @@ class ReportsController extends GetxController {
     if (form.validate()) {
       var requestModel = BuildReportRequestModel(
         reportid: selectedReport.value.reportid,
-        groupid:
-            selectedReport.value.hasGroupParam ? selectedGroup.value.id : '',
+        groupid: selectedReport.value.hasGroupParam
+            ? selectedGroup.value.id.toString()
+            : '',
         salesperson:
             selectedReport.value.hasSalesParam ? salesperson.value : '',
         startdate: selectedReport.value.hasStartDateParam

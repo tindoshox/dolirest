@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
@@ -11,7 +12,6 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class PaymentController extends GetxController {
   final StorageService storage = Get.find();
@@ -23,8 +23,8 @@ class PaymentController extends GetxController {
   TextEditingController amountController = TextEditingController();
   TextEditingController invoiceController = TextEditingController();
 
-  final String invoiceId = Get.arguments['invoiceId'] ?? '';
-  final String socid = Get.arguments['socid'] ?? '';
+  final String? invoiceId = Get.arguments['invoiceId'];
+  final String? socid = Get.arguments['socid'];
   final bool batch = Get.arguments['batch'] ?? false;
 
   GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
@@ -33,8 +33,8 @@ class PaymentController extends GetxController {
   Rx<DateTime> payDate = DateTime.now().obs;
   Rx<DateTime> dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
-  Rx<InvoiceModel> invoice = InvoiceModel().obs;
-  Rx<CustomerModel> customer = CustomerModel().obs;
+  Rx<InvoiceEntity> invoice = InvoiceEntity().obs;
+  Rx<CustomerEntity> customer = CustomerEntity().obs;
 
   RxString amount = ''.obs;
   RxString receipt = ''.obs;
@@ -43,8 +43,8 @@ class PaymentController extends GetxController {
 
   @override
   void onInit() {
-    if (invoiceId.isNotEmpty) {
-      fetchData(socid, invoiceId);
+    if (invoiceId != null) {
+      fetchData(socid!, invoiceId!);
     }
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
@@ -63,8 +63,8 @@ class PaymentController extends GetxController {
   }
 
   void clearInvoice() {
-    customer(CustomerModel());
-    invoice(InvoiceModel());
+    customer(CustomerEntity());
+    invoice(InvoiceEntity());
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
   }
@@ -87,7 +87,7 @@ class PaymentController extends GetxController {
         list.map((payment) => payment.num.toString()).toList();
 
     paymentDates.value =
-        list.map((payment) => Utils.dateTimeToDMY(payment.date!)).toList();
+        list.map((payment) => Utils.dateTimeToDMY(payment.date)).toList();
   }
 
   _fetchCustomerById(String customerId) {
@@ -166,7 +166,7 @@ class PaymentController extends GetxController {
       SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }, (p) async {
       DialogHelper.updateMessage('Updating due date ..');
-      await _updateDueDate(invoice.value.id);
+      await _updateDueDate(invoice.value.documentId!);
       DialogHelper.updateMessage('Reloading data ..');
       await _refreshPayments(invoice.value.id);
 
@@ -217,14 +217,14 @@ class PaymentController extends GetxController {
           invoiceId: invoiceId,
           refExt: payment.refExt,
         );
-        storage.storePayment(payment.ref, p);
+        storage.storePayment(p);
       }
     });
   }
 
   _refreshInvoice(invoiceId) async {
-    final result =
-        await repository.fetchInvoiceList(customerId: customer.value.id);
+    final result = await repository.fetchInvoiceList(
+        customerId: customer.value.customerId);
 
     result.fold((failure) {
       if (Get.isDialogOpen == true) {
@@ -233,18 +233,13 @@ class PaymentController extends GetxController {
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (invoices) {
-      for (InvoiceModel invoice in invoices) {
-        final customer = storage.getCustomer(invoice.socid);
-        invoice.name = customer?.name;
-        storage.storeInvoice(invoice.id, invoice);
-      }
+      storage.storeInvoices(invoices);
     });
   }
 
   fetchInvoices() {
-    return storage
-        .getInvoiceList()
-        .where((invoice) => invoice.remaintopay != "0")
-        .toList();
+    return storage.getInvoiceList();
+    // .where((invoice) => invoice.remaintopay != "0")
+    // .toList();
   }
 }

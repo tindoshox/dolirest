@@ -2,10 +2,7 @@
 //
 //     final buildReportRequestModel = buildReportRequestModelFromJson(jsonString);
 
-import 'package:json_annotation/json_annotation.dart';
 import 'dart:convert';
-
-part 'build_report_request_model.g.dart';
 
 BuildReportRequestModel buildReportRequestModelFromJson(String str) =>
     BuildReportRequestModel.fromJson(json.decode(str));
@@ -13,25 +10,15 @@ BuildReportRequestModel buildReportRequestModelFromJson(String str) =>
 String buildReportRequestModelToJson(BuildReportRequestModel data) =>
     json.encode(data.toJson());
 
-@JsonSerializable()
 class BuildReportRequestModel {
-  @JsonKey(name: "reportid")
   String? reportid;
-  @JsonKey(name: "groupid")
   String? groupid;
-  @JsonKey(name: "salesperson")
   String? salesperson;
-  @JsonKey(name: "startdate")
   String? startdate;
-  @JsonKey(name: "enddate")
   String? enddate;
-  @JsonKey(name: "startperiod")
   String? startperiod;
-  @JsonKey(name: "endperiod")
   String? endperiod;
-  @JsonKey(name: "startreceipt")
   String? startreceipt;
-  @JsonKey(name: "endreceipt")
   String? endreceipt;
 
   BuildReportRequestModel({
@@ -47,7 +34,27 @@ class BuildReportRequestModel {
   });
 
   factory BuildReportRequestModel.fromJson(Map<String, dynamic> json) =>
-      _$BuildReportRequestModelFromJson(json);
+      BuildReportRequestModel(
+        reportid: json["reportid"] as String?,
+        groupid: json["groupid"] as String?,
+        salesperson: json["salesperson"] as String?,
+        startdate: json["startdate"] as String?,
+        enddate: json["enddate"] as String?,
+        startperiod: json["startperiod"] as String?,
+        endperiod: json["endperiod"] as String?,
+        startreceipt: json["startreceipt"] as String?,
+        endreceipt: json["endreceipt"] as String?,
+      );
 
-  Map<String, dynamic> toJson() => _$BuildReportRequestModelToJson(this);
+  Map<String, dynamic> toJson() => {
+        "reportid": reportid,
+        "groupid": groupid,
+        "salesperson": salesperson,
+        "startdate": startdate,
+        "enddate": enddate,
+        "startperiod": startperiod,
+        "endperiod": endperiod,
+        "startreceipt": startreceipt,
+        "endreceipt": endreceipt,
+      };
 }

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:flutter/material.dart';
 
 class InvoiceDetailWidget extends StatelessWidget {
   const InvoiceDetailWidget({
@@ -11,8 +11,8 @@ class InvoiceDetailWidget extends StatelessWidget {
     required this.invoice,
   });
 
-  final InvoiceModel invoice;
-  final CustomerModel customer;
+  final InvoiceEntity invoice;
+  final CustomerEntity customer;
   final Function() onPressed;
 
   @override
@@ -26,9 +26,9 @@ class InvoiceDetailWidget extends StatelessWidget {
               invoice.ref ?? '',
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            if (invoice.refClient != null)
+            if (invoice.refCustomer != null)
               Text(
-                'Delivery Note: ${invoice.refClient}',
+                'Delivery Note: ${invoice.ref}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
           ],
@@ -43,19 +43,19 @@ class InvoiceDetailWidget extends StatelessWidget {
     Widget buildDueDateTile() {
       return ListTile(
         title: Text(
-          invoice.remaintopay == '0'
+          invoice.remaintopay == "0"
               ? ''
-              : 'Due Date: ${Utils.intToDMY(invoice.dateLimReglement)}',
+              : 'Due Date: ${Utils.intToDMY(invoice.dateLimReglement!)}',
           style: Theme.of(context)
               .textTheme
               .bodySmall
-              ?.copyWith(color: Utils.overDueStyle(invoice.dateLimReglement)),
+              ?.copyWith(color: Utils.overDueStyle(invoice.dateLimReglement!)),
         ),
         subtitle: Text(
-          'Invoice Date ${Utils.intToDMY(invoice.date)}',
+          'Invoice Date ${Utils.intToDMY(invoice.date!)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: invoice.remaintopay == '0'
+        trailing: invoice.remaintopay == "0"
             ? null
             : IconButton(icon: const Icon(Icons.edit), onPressed: onPressed),
       );
@@ -123,7 +123,7 @@ class InvoiceDetailWidget extends StatelessWidget {
       );
     }
 
-    Widget buildInvoiceLine(Line line) {
+    Widget buildInvoiceLine(InvoiceLineEntity line) {
       //2
       return Padding(
         padding: const EdgeInsets.all(10.0),
@@ -166,8 +166,8 @@ class InvoiceDetailWidget extends StatelessWidget {
             ),
           ),
           const Divider(color: Colors.grey),
-          if (invoice.lines != null && invoice.lines!.isNotEmpty)
-            ...invoice.lines!.map((line) => buildInvoiceLine(line)),
+          if (invoice.lines.isNotEmpty)
+            ...invoice.lines.map((line) => buildInvoiceLine(line)),
         ],
       );
     }
@@ -179,7 +179,7 @@ class InvoiceDetailWidget extends StatelessWidget {
       );
     }
 
-    Widget buildTotals(InvoiceModel invoice) {
+    Widget buildTotals(InvoiceEntity invoice) {
       //3
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -216,8 +216,10 @@ class InvoiceDetailWidget extends StatelessWidget {
                           buildTotalsText(
                               text: Utils.amounts(invoice.totalTtc)),
                           buildTotalsText(
-                              text: Utils.amounts(invoice.sumpayed)),
-                          buildTotalsText(text: invoice.remaintopay ?? '0'),
+                              text: (invoice.totalpaid.toString() == '0.0'
+                                  ? '0'
+                                  : invoice.totalpaid.toString())),
+                          buildTotalsText(text: invoice.remaintopay.toString()),
                         ],
                       ),
                     ],

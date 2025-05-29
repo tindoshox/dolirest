@@ -1,13 +1,13 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
-import 'package:dolirest/presentation/widgets/status_icon.dart';
-import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:get/get.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/utils.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'controllers/create_invoice_controller.dart';
 
@@ -57,7 +57,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         () => Card(
           child: ListView(
             children: [
-              if (controller.customerId.isEmpty) _customerDropdown(context),
+              if (controller.customerId == null) _customerDropdown(context),
               _invoiceDateField(),
               _dueDateField(),
               _deliveryNoteField(),
@@ -78,10 +78,10 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _customerDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: DropdownSearch<CustomerModel>(
+      child: DropdownSearch<CustomerEntity>(
         onChanged: (customer) {
           if (customer != null) {
-            controller.fetchCustomerById(customer.id!);
+            controller.fetchCustomerById(customer.customerId!);
           } else {
             controller.clearCustomer();
           }
@@ -96,7 +96,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             ),
           ),
         ),
-        itemAsString: (CustomerModel? customer) => customer!.name!,
+        itemAsString: (CustomerEntity? customer) => customer!.name!,
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -121,7 +121,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<CustomerModel> customers =
+          List<CustomerEntity> customers =
               await controller.searchCustomer(searchString: searchString);
           return customers;
         },

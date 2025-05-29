@@ -1,10 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -12,6 +10,8 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/g
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
   StorageService storage = Get.find();
@@ -26,8 +26,8 @@ class EditCustomerController extends GetxController {
 
   RxBool isLoading = false.obs;
 
-  Rx<CustomerModel> customerToEdit = CustomerModel().obs;
-  String customerId = Get.arguments['customerId'] ?? '';
+  Rx<CustomerEntity> customerToEdit = CustomerEntity().obs;
+  String? customerId = Get.arguments['customerId'];
 
   Rx<GroupModel> selectedGroup = GroupModel().obs;
   RxList<GroupModel> groups = List<GroupModel>.empty().obs;
@@ -39,8 +39,8 @@ class EditCustomerController extends GetxController {
 
   @override
   void onInit() async {
-    if (customerId.isNotEmpty) {
-      await _fetchCustomerById(customerId);
+    if (customerId != null) {
+      await _fetchCustomerById(customerId!);
     }
     addresses.value = storage.getAddressList();
 
@@ -66,7 +66,7 @@ class EditCustomerController extends GetxController {
     if (search.isNotEmpty) {
       groups.value = storage
           .getGroupList()
-          .where((group) => group.name.contains(search))
+          .where((group) => group.name!.contains(search))
           .toList();
     } else {
       groups.value = storage.getGroupList();
@@ -90,23 +90,24 @@ class EditCustomerController extends GetxController {
     final FormState form = customerFormKey.currentState!;
     if (form.validate()) {
       var customer = CustomerModel(
-              client: "1",
-              codeClient: 'auto',
-              name: nameController.text.toUpperCase(),
-              address: addressController.text.toUpperCase(),
-              town: townController.text.toUpperCase(),
-              phone: phoneController.text,
-              fax: faxController.text,
-              stateId: selectedGroup.value.id)
-          .toJson();
+        client: "1",
+        codeClient: 'auto',
+        name: nameController.text.toUpperCase(),
+        address: addressController.text.toUpperCase(),
+        town: townController.text.toUpperCase(),
+        phone: phoneController.text,
+        fax: faxController.text,
+        stateId: selectedGroup.value.groupId,
+        regionId: selectedGroup.value.code,
+      ).toJson();
       customer.removeWhere((key, value) => value == null);
 
-      if (customerId.isEmpty) {
+      if (customerId == null) {
         DialogHelper.updateMessage('Creating customer ...');
         _createCustomer(jsonEncode(customer));
       } else {
         DialogHelper.updateMessage('Updating customer ...');
-        _updateCustomer(jsonEncode(customer), customerId);
+        _updateCustomer(jsonEncode(customer), customerId!);
       }
     }
   }
@@ -128,7 +129,7 @@ class EditCustomerController extends GetxController {
 
     result.fold((failure) {
       SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (customer) => storage.storeCustomer(customer.id, customer));
+    }, (customer) => storage.storeCustomer(customer));
   }
 
   Future _fetchCustomerById(String id) async {
@@ -147,7 +148,7 @@ class EditCustomerController extends GetxController {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) async {
-      storage.storeCustomer(customer.id, customer);
+      storage.storeCustomer(customer);
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
           arguments: {'customerId': customerId});

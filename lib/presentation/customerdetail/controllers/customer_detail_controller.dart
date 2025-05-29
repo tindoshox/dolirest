@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:dolirest/infrastructure/dal/models/build_statement_request_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -11,10 +11,10 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/d
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:open_filex/open_filex.dart';
 
 class CustomerDetailController extends GetxController
@@ -25,8 +25,9 @@ class CustomerDetailController extends GetxController
   final DocumentRepository documentRepository = Get.find();
   final DataRefreshContoller _dataRefreshContoller = Get.find();
   final String customerId = Get.arguments['customerId'];
-  var customer = CustomerModel().obs;
-  var invoices = <InvoiceModel>[].obs;
+  final int customerEntityId = Get.arguments['customerEntityId'];
+  var customer = CustomerEntity().obs;
+  var invoices = <InvoiceEntity>[].obs;
   var moduleEnabledStatement = false.obs;
   var startDate = DateTime(DateTime.now().year, DateTime.now().month, 1).obs;
   var endDate = DateTime.now().obs;
@@ -55,9 +56,10 @@ class CustomerDetailController extends GetxController
     tabController = TabController(length: customerTabs.length, vsync: this);
     startDateController.text = Utils.dateTimeToDMY(startDate.value);
     endDateController.text = Utils.dateTimeToDMY(endDate.value);
-    moduleEnabledStatement.value =
-        storage.getEnabledModules().contains('customerstatement');
-    _watchBoxes();
+    moduleEnabledStatement.value = storage
+        .getEnabledModules(SettingId.moduleSettingId)!
+        .listValue!
+        .contains('customerstatement');
     _updateCustomer();
     _updateInvoices();
     tabController.addListener(() {
@@ -82,11 +84,6 @@ class CustomerDetailController extends GetxController
     endDateController.dispose();
   }
 
-  void _watchBoxes() {
-    storage.customersListenable().addListener(_updateCustomer);
-    storage.invoicesListenable().addListener(_updateInvoices);
-  }
-
   void _updateCustomer() {
     final c = storage.getCustomer(customerId);
     if (c != null) {
@@ -95,7 +92,8 @@ class CustomerDetailController extends GetxController
   }
 
   void _updateInvoices() {
-    invoices.value = storage.getInvoiceList(customerId: customerId);
+    invoices.value =
+        storage.getInvoiceList(customerId: customer.value.customerId);
   }
 
   // Fetch invoice data from server
@@ -107,12 +105,12 @@ class CustomerDetailController extends GetxController
 
   Future<void> deleteCustomer() async {
     DialogHelper.showLoading('Deleting customer...');
-    final result = await customerRepository.deleteCustomer(customerId);
+    final result = await customerRepository.deleteCustomer(customer.value.id);
     result.fold(
       (failure) {
         DialogHelper.hideLoading();
         if (failure.code == 404) {
-          storage.deleteCustomer(customerId);
+          storage.deleteCustomer(customer.value.id);
           Get.back();
           SnackBarHelper.successSnackbar(message: 'Customer deleted');
         } else {
@@ -121,7 +119,7 @@ class CustomerDetailController extends GetxController
       },
       (res) {
         DialogHelper.hideLoading();
-        storage.deleteCustomer(customerId);
+        storage.deleteCustomer(customer.value.id);
         Get.back();
         SnackBarHelper.successSnackbar(message: 'Customer deleted');
       },
@@ -133,7 +131,7 @@ class CustomerDetailController extends GetxController
     Get.back();
     DialogHelper.showLoading('Downloading document...');
     final params = BuildStatementRequestModel(
-      socid: customerId,
+      socid: customer.value.id,
       startdate: startDate.value,
       enddate: endDate.value,
     ).toJson();

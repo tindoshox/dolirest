@@ -98,7 +98,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   Widget _customerInfoTab() {
     final customer = controller.customer.value;
-    return customer.id == null
+    return customer.customerId == null
         ? Center()
         : CustomerInfoWidget(
             customer: customer,
@@ -107,12 +107,14 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   Widget _invoicesTab() {
     final invoices = controller.invoices
-        .where((invoice) => invoice.socid == controller.customerId)
+        .where(
+            (invoice) => invoice.socid == controller.customer.value.customerId)
         .toList();
     return invoices.isEmpty
         ? const ListTile(
             title: Text('No invoices.', textAlign: TextAlign.center))
         : InvoiceListWidget(
+            customer: controller.customer.value,
             invoices: invoices,
             controller: controller,
           );

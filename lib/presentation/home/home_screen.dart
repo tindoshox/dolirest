@@ -1,11 +1,13 @@
 import 'package:change_case/change_case.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +81,10 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.light);
-            controller.storage.storeSetting(StorageKey.theme, 'light');
+            controller.storage.storeSetting(SettingsModel(
+                id: SettingId.themeModeId,
+                name: StorageKey.theme,
+                strValue: 'light'));
           },
           value: '#',
           child: ListTile(
@@ -90,7 +95,10 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.dark);
-            controller.storage.storeSetting(StorageKey.theme, 'dark');
+            controller.storage.storeSetting(SettingsModel(
+                id: SettingId.themeModeId,
+                name: StorageKey.theme,
+                strValue: 'dark'));
           },
           value: '#',
           child: ListTile(
@@ -101,7 +109,10 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.system);
-            controller.storage.storeSetting(StorageKey.theme, 'system');
+            controller.storage.storeSetting(SettingsModel(
+                id: SettingId.themeModeId,
+                name: StorageKey.theme,
+                strValue: 'system'));
           },
           value: '#',
           child: ListTile(
@@ -272,8 +283,7 @@ class HomeScreen extends GetView<HomeController> {
             shortcutItem(
                 onTap: () {
                   if (Get.find<NetworkController>().connected.value) {
-                    Get.toNamed(Routes.EDITCUSTOMER,
-                        arguments: {'customerId': ''});
+                    Get.toNamed(Routes.EDITCUSTOMER, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
                   }
@@ -450,7 +460,7 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   _buildNoInvoiceCustomer(BuildContext context) {
-    List<CustomerModel> noInvoiceCustomers = controller.noInvoiceCustomers;
+    List<CustomerEntity> noInvoiceCustomers = controller.noInvoiceCustomers;
 
     return Obx(
       () => noInvoiceCustomers.isEmpty

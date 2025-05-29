@@ -2,64 +2,56 @@
 //
 //     final groupModel = groupModelFromJson(jsonString);
 
-import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'dart:convert';
 
-part 'group_model.g.dart';
+import 'package:objectbox/objectbox.dart';
 
 GroupModel groupModelFromJson(String str) =>
     GroupModel.fromJson(json.decode(str));
 
 String groupModelToJson(GroupModel data) => json.encode(data.toJson());
 
-@HiveType(typeId: 6)
+@Entity()
 class GroupModel {
-  @HiveField(1)
-  dynamic id;
-  @HiveField(2)
-  dynamic rowid;
-  @HiveField(3)
-  dynamic codeDepartement;
-  @HiveField(4)
-  dynamic code;
-  @HiveField(5)
-  dynamic name;
-  @HiveField(6)
-  dynamic nom;
-  @HiveField(7)
-  dynamic label;
-  @HiveField(8)
-  dynamic active;
+  @Id(assignable: true)
+  int id = 0;
+  String? groupId;
+  String? name;
+  String? value;
+  int? codeDepartement;
+  String? code;
+  String? label;
+  String? active;
 
   GroupModel({
-    this.id,
-    this.rowid,
+    this.groupId,
+    this.name,
+    this.value,
     this.codeDepartement,
     this.code,
-    this.name,
-    this.nom,
     this.label,
     this.active,
   });
 
   factory GroupModel.fromJson(Map<String, dynamic> json) => GroupModel(
-        id: json["id"],
-        rowid: json["rowid"],
-        codeDepartement: json["code_departement"],
-        code: json["code"],
+        groupId: json["id"],
         name: json["name"],
-        nom: json["nom"],
+        value: json["value"],
+        codeDepartement: json["code_departement"] =
+            json["code_departement"] is int
+                ? json["code_departement"]
+                : int.parse(json["code_departement"]),
+        code: json["code"],
         label: json["label"],
         active: json["active"],
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "rowid": rowid,
+        "name": name,
+        "value": value,
         "code_departement": codeDepartement,
         "code": code,
-        "name": name,
-        "nom": nom,
         "label": label,
         "active": active,
       };

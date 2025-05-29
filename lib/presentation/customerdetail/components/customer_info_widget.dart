@@ -1,24 +1,24 @@
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 
 class CustomerInfoWidget extends StatelessWidget {
   const CustomerInfoWidget({super.key, required this.customer});
-  final CustomerModel customer;
+  final CustomerEntity customer;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [
       _buildCustomerInfoRow(
-        title: customer.name,
+        title: customer.name!,
         leading: Initicon(
-          text: customer.name,
+          text: customer.name!,
           size: 30,
         ),
         style: Theme.of(context).textTheme.titleSmall,
         subtitle: Text(
-          customer.codeClient,
+          customer.codeClient!,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),

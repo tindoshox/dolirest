@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
@@ -12,6 +13,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
+import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart' show DateUtils;
@@ -30,18 +32,17 @@ class HomeController extends GetxController {
   var isLoading = false.obs;
   var user = UserModel().obs;
   var company = ''.obs;
-  var noInvoiceCustomers = <CustomerModel>[].obs;
+  var noInvoiceCustomers = <CustomerEntity>[].obs;
   var dayCashflow = <PaymentModel>[].obs;
   var drafts = 0.obs;
   var openInvoices = 0.obs;
   var overDues = 0.obs;
   var sales = 0.obs;
-  var dueToday = <InvoiceModel>[].obs;
+  var dueToday = <InvoiceEntity>[].obs;
   var enabledModules = <String>[].obs;
 
   @override
   void onInit() {
-    _watchBoxes();
     _updateNoInvoiceCustomers();
     _updateDayCashflow();
     _updateInvoiceStats();
@@ -54,7 +55,7 @@ class HomeController extends GetxController {
 
   @override
   void onReady() {
-    if (openInvoices.value == 0) {
+    if (openInvoices.value == 0 && !dataRefreshContoller.refreshing.value) {
       forceRefresh();
     }
 
@@ -66,10 +67,10 @@ class HomeController extends GetxController {
   }
 
   void _updateCompany() {
-    if (storage.getCompany() == null) {
+    if (storage.getCompany(1) == null) {
       _refreshCompanyData();
     }
-    company.value = storage.getCompany()?.name ?? '';
+    company.value = storage.getCompany(1)?.name ?? '';
   }
 
   Future _refreshCompanyData() async {
@@ -80,40 +81,39 @@ class HomeController extends GetxController {
   }
 
   void _updateUser() {
-    user.value = storage.getUser() ?? UserModel();
+    user.value = storage.getUser(1) ?? UserModel();
   }
 
   void forceRefresh() async {
-    await dataRefreshContoller.forceRefresh();
+    if (!dataRefreshContoller.refreshing.value) {
+      isLoading.value = true;
+      DialogHelper.showLoading();
+      await dataRefreshContoller.forceRefresh().then((v) {
+        DialogHelper.hideLoading();
+        isLoading.value = false;
+      });
+    }
   }
 
   void _updateModules() {
-    enabledModules.value = storage.getEnabledModules();
+    enabledModules.value =
+        storage.getEnabledModules(SettingId.moduleSettingId)?.listValue ?? [];
   }
 
   Future<void> _refreshModules() async {
     final result = await moduleRepository.fetchEnabledModules();
     result.fold((failure) {}, (modules) {
-      storage.storeEnabledModules(modules);
+      storage.storeEnabledModules(SettingsModel(
+          id: SettingId.moduleSettingId, name: 'modules', listValue: modules));
     });
-  }
-
-  void _watchBoxes() {
-    storage.customersListenable().addListener(_updateNoInvoiceCustomers);
-    storage.invoicesListenable().addListener(_updateNoInvoiceCustomers);
-    storage.paymentsListenable().addListener(_updateDayCashflow);
-    storage.invoicesListenable().addListener(_updateInvoiceStats);
-    storage.settingsListenable().addListener(_updateModules);
-    storage.userListenable().addListener(_updateUser);
-    storage.companyListenable().addListener(_updateCompany);
   }
 
   void _updateNoInvoiceCustomers() {
     final customers = storage.getCustomerList(); // or box.values.toList()
-    final result = <CustomerModel>[];
+    final result = <CustomerEntity>[];
 
     for (var customer in customers) {
-      final invoices = storage.getInvoiceList(customerId: customer.id);
+      final invoices = storage.getInvoiceList(customerId: customer.customerId);
       if (invoices.isEmpty) {
         result.add(customer);
       }
@@ -128,7 +128,7 @@ class HomeController extends GetxController {
     //Day Cashflow
     dayCashflow.value = payments
         .where((p) =>
-            DateUtils.dateOnly(p.date!) == DateUtils.dateOnly(DateTime.now()))
+            DateUtils.dateOnly(p.date) == DateUtils.dateOnly(DateTime.now()))
         .toList();
   }
 
@@ -145,19 +145,13 @@ class HomeController extends GetxController {
             invoice.paye == PaidStatus.unpaid)
         .length;
 
-    dueToday.value = invoices
-        .where((invoice) =>
-            invoice.type == DocumentType.invoice &&
-            invoice.remaintopay != "0" &&
-            Utils.intToDateTime(invoice.dateLimReglement!).day ==
-                DateTime.now().day)
-        .toList();
     sales.value = invoices
         .where((invoice) =>
             DateUtils.isSameMonth(
                 Utils.intToDateTime(invoice.date!), DateTime.now()) &&
             invoice.type == DocumentType.invoice)
         .length;
+    invoices.removeWhere((i) => i.dateLimReglement == null);
     overDues.value = invoices
         .where((invoice) =>
             invoice.type == DocumentType.invoice &&
@@ -165,5 +159,13 @@ class HomeController extends GetxController {
             Utils.intToDateTime(invoice.dateLimReglement!)
                 .isBefore(DateTime.now().subtract(Duration(days: 31))))
         .length;
+
+    dueToday.value = invoices
+        .where((invoice) =>
+            invoice.type == DocumentType.invoice &&
+            invoice.remaintopay != "0" &&
+            Utils.intToDateTime(invoice.dateLimReglement!).day ==
+                DateTime.now().day)
+        .toList();
   }
 }

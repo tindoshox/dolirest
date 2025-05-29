@@ -14,8 +14,10 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reach
 import 'package:get/get.dart';
 
 class DependencyInjection {
-  static void init() {
-    Get.put<StorageService>(StorageService(), permanent: true);
+  static void init() async {
+    // Get.put<StorageService>(StorageService(), permanent: true);
+    final storageService = await StorageService.create();
+    Get.put<StorageService>(storageService, permanent: true);
     Get.put<NetworkController>(NetworkController(), permanent: true);
     Get.put(DioService(), permanent: true);
     Get.put<ServerReachability>(ServerReachability(), permanent: true);

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dolibarr_api_error.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:fpdart/fpdart.dart';
 
 extension DioSafeRequest on Dio {
@@ -9,6 +10,7 @@ extension DioSafeRequest on Dio {
       final result = await call();
       return Right(result);
     } catch (error) {
+      debugPrint(error.toString());
       return Left(_mapToDolibarrError(error));
     }
   }

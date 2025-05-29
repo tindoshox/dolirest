@@ -15,3 +15,11 @@ class PaidStatus {
   static const String unpaid = "0"; //"paye": "0"
   static const String paid = "1"; //"paye": "1"
 }
+
+class SettingId {
+  static final themeModeId = 1;
+  static final userSettingId = 2;
+  static final moduleSettingId = 3;
+  static final urlSettingId = 4;
+  static final tokenSettingId = 5;
+}

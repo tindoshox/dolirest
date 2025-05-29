@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/invoice_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -78,7 +78,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
     String search = controller.searchString.value;
     var list = controller.invoices;
 
-    List<InvoiceModel> invoices = search != ""
+    List<InvoiceEntity> invoices = search != ""
         ? list
             .where(
               (invoice) =>
@@ -86,8 +86,8 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                       .toString()
                       .toUpperCase()
                       .contains(controller.searchString.value.toUpperCase()) ||
-                  invoice.ref.contains(controller.searchString.value) ||
-                  invoice.refClient
+                  invoice.ref!.contains(controller.searchString.value) ||
+                  invoice.refCustomer
                       .toString()
                       .contains(controller.searchString.value),
             )
@@ -110,7 +110,13 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
               }
 
               if (index < invoices.length) {
-                return InvoiceListTile(invoice: invoices[index]);
+                final customer = controller.storage
+                    .getCustomerList()
+                    .firstWhere((c) => c.customerId == invoices[index].socid);
+                return InvoiceListTile(
+                  invoice: invoices[index],
+                  customer: customer,
+                );
               } else {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 32.0),

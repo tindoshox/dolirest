@@ -7,12 +7,10 @@ class PaymentsList extends StatelessWidget {
   const PaymentsList({
     super.key,
     required this.totalTtc,
-    required this.invoiceId,
     required this.payments,
   });
 
   final String totalTtc;
-  final String invoiceId;
   final List<PaymentModel> payments;
   @override
   Widget build(BuildContext context) {
@@ -43,9 +41,9 @@ class PaymentsList extends StatelessWidget {
     for (var payment in payments) {
       price -= Utils.intAmounts(payment.amount);
       rows.add(DataRow2(cells: [
-        DataCell(Text(Utils.datePaid(payment.date!))),
+        DataCell(Text(Utils.datePaid(payment.date))),
         DataCell(Text(
-          payment.num,
+          payment.num!,
         )),
         DataCell(Text(
           Utils.amounts(payment.amount),

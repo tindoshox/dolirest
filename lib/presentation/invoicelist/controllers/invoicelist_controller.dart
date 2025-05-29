@@ -1,7 +1,9 @@
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,11 +19,10 @@ class InvoicelistController extends GetxController {
   var searchString = ''.obs;
   var searchIcon = true.obs;
 
-  var invoices = <InvoiceModel>[].obs;
+  var invoices = <InvoiceEntity>[].obs;
 
   @override
   void onInit() {
-    _watchBoxes();
     _updateInvoices();
     super.onInit();
   }
@@ -38,9 +39,14 @@ class InvoicelistController extends GetxController {
   }
 
   refreshInvoiceList() async {
-    DialogHelper.showLoading('Syncing invoices');
-    await _dataRefreshContoller.syncInvoices();
-    DialogHelper.hideLoading();
+    if (!_dataRefreshContoller.refreshing.value) {
+      DialogHelper.showLoading('Syncing invoices');
+      await _dataRefreshContoller
+          .syncInvoices()
+          .then((i) => DialogHelper.hideLoading());
+    } else {
+      SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
+    }
   }
 
   toggleSearch() {
@@ -53,14 +59,16 @@ class InvoicelistController extends GetxController {
     }
   }
 
-  void _watchBoxes() {
-    storage.invoicesListenable().addListener(_updateInvoices);
-  }
-
   void _updateInvoices() {
     final list = storage.getInvoiceList();
+    for (InvoiceEntity l in list) {
+      CustomerEntity? customer = storage.getCustomer(l.socid!);
+      if (customer != null) {
+        l.name = customer.name;
+      }
+    }
     list.removeWhere((i) => i.name == null);
-    list.sort((a, b) => a.name.compareTo(b.name));
+    list.sort((a, b) => a.name!.compareTo(b.name!));
     if (drafts != 0) {
       invoices.value = list
           .where((invoice) => invoice.status == ValidationStatus.draft)

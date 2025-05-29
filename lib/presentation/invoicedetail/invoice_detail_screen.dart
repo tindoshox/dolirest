@@ -49,8 +49,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                       : Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: PaymentsList(
-                            invoiceId: controller.documentId,
-                            totalTtc: controller.document.value.totalTtc,
+                            totalTtc: controller.document.value.totalTtc ?? '0',
                             payments: controller.payments,
                           ),
                         ),
@@ -70,7 +69,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
         ),
         if (document.type == DocumentType.invoice &&
             document.paye == PaidStatus.unpaid &&
-            document.remaintopay != '0')
+            document.remaintopay != "0")
           _getMenu()
       ],
       bottom: TabBar(
@@ -106,18 +105,18 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
               children: [
                 //Show Edit Draft Button
                 if (document.status == ValidationStatus.draft &&
-                    document.lines!.isEmpty)
+                    document.lines.isEmpty)
                   CustomActionButton(
                       buttonText: 'Edit', onTap: () => _addProduct(context)),
                 //Show button to validate a draft
                 if (document.status == ValidationStatus.draft &&
                     document.paye == PaidStatus.unpaid &&
-                    document.lines!.isNotEmpty)
+                    document.lines.isNotEmpty)
                   CustomActionButton(
                     buttonText: 'Validate',
                     onTap: () => connected
                         ? controller.validateDocument(
-                            id: document.id,
+                            id: document.documentId!,
                             invoiceValidation:
                                 document.type == DocumentType.invoice)
                         : SnackBarHelper.networkSnackbar(),
@@ -140,8 +139,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         ? Get.toNamed(
                             Routes.PAYMENT,
                             arguments: {
-                              'invoiceId': controller.documentId,
-                              'socid': controller.customerId,
+                              'invoiceId': controller.document.value.documentId,
+                              'socid': controller.customer.value.customerId,
                             },
                           )
                         : SnackBarHelper.networkSnackbar(),
@@ -155,7 +154,9 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     isCancel: true,
                     buttonText: 'Delete',
                     onTap: () => connected
-                        ? controller.deleteDocument(documentId: document.id)
+                        ? controller.deleteDocument(
+                            documentId: document.documentId!,
+                            entityId: document.id)
                         : SnackBarHelper.networkSnackbar(),
                   ),
                 if (document.type == DocumentType.invoice &&

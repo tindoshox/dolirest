@@ -14,10 +14,10 @@ import 'package:fpdart/fpdart.dart';
 class UserRepository extends DioService {
   /// Fetch User Info
   Future<Either<DolibarrApiError, UserModel>> login(
-      {String? url, String? apiKey}) async {
-    if (url != null && apiKey != null) {
+      {String? url, String? token}) async {
+    if (url != null && token != null) {
       dio.options.baseUrl = '$url$apiStub';
-      final auth = {'DOLAPIKEY': apiKey};
+      final auth = {'DOLAPIKEY': token};
       dio.options.headers.addAll(auth);
     }
     return dio.safeRequest(() async {

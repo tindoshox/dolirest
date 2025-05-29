@@ -1,202 +1,229 @@
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
-import 'package:dolirest/infrastructure/dal/models/customer_model.dart';
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/group_model.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice_model.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:get/get.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
 
-class StorageService extends GetxController {
-  final Box<InvoiceModel> invoices = Hive.box('invoices');
-  final Box<CustomerModel> customers = Hive.box('customers');
-  final Box<PaymentModel> _payments = Hive.box('payments');
-  final Box<ProductModel> _products = Hive.box('products');
-  final Box<GroupModel> _groups = Hive.box('groups');
-  final Box<CompanyModel> _company = Hive.box('company');
-  final Box<UserModel> _user = Hive.box('user');
-  final Box<AddressModel> _addresses = Hive.box('addresses');
-  final Box _settings = Hive.box('settings');
+class StorageService extends GetxService {
+  late final Store store;
 
-  void storeUser(UserModel user) async {
-    await _user.put(StorageKey.user, user);
+  late final Box<CustomerEntity> customerBox;
+  late final Box<InvoiceEntity> invoiceBox;
+  late final Box<InvoiceLineEntity> lineBox;
+  late final Box<PaymentModel> paymentBox;
+  late final Box<ProductModel> productBox;
+  late final Box<GroupModel> groupBox;
+  late final Box<CompanyModel> companyBox;
+  late final Box<UserModel> userBox;
+  late final Box<AddressModel> addressBox;
+  late final Box<SettingsModel> settingsBox;
+  // Add more boxes as needed
+
+  StorageService._create(this.store) {
+    customerBox = Box<CustomerEntity>(store);
+    invoiceBox = Box<InvoiceEntity>(store);
+    lineBox = Box<InvoiceLineEntity>(store);
+    paymentBox = Box<PaymentModel>(store);
+    productBox = Box<ProductModel>(store);
+    groupBox = Box<GroupModel>(store);
+    companyBox = Box<CompanyModel>(store);
+    userBox = Box<UserModel>(store);
+    addressBox = Box<AddressModel>(store);
+    settingsBox = Box<SettingsModel>(store);
   }
 
-  UserModel? getUser() {
-    return _user.isOpen ? _user.get(StorageKey.user) : null;
+  static Future<StorageService> create() async {
+    final store = await openStore(); // generated method
+    return StorageService._create(store);
   }
 
-  ValueListenable<Box<UserModel>> userListenable() {
-    return _user.listenable();
+  void storeUser(UserModel user) {
+    userBox.put(user);
   }
 
-  void storeAddresses(String key, AddressModel value) async {
-    await _addresses.put(key, value);
+  UserModel? getUser(int id) {
+    return userBox.get(id);
+  }
+
+  userListenable() {}
+
+  void storeAddresses(AddressModel address) {
+    addressBox.put(address);
   }
 
   List<AddressModel> getAddressList() {
-    return _addresses.toMap().values.toList();
+    return addressBox.getAll();
   }
 
-  void storeCompany(CompanyModel company) async {
-    await _company.put(StorageKey.company, company);
+  void storeCompany(CompanyModel company) {
+    companyBox.put(company);
   }
 
-  CompanyModel? getCompany() {
-    return _company.isOpen ? _company.get(StorageKey.company) : null;
+  CompanyModel? getCompany(int id) {
+    return companyBox.get(id);
   }
 
-  ValueListenable<Box<CompanyModel>> companyListenable() {
-    return _company.listenable();
-  }
+  companyListenable() {}
 
-  void storePayment(String key, PaymentModel value) async {
-    if (_payments.isOpen) await _payments.put(key, value);
+  void storePayment(PaymentModel payment) async {
+    paymentBox.put(payment);
   }
 
   List<PaymentModel> getPaymentList({String? invoiceId}) {
     if (invoiceId == null) {
-      return _payments.toMap().values.toList();
+      return paymentBox.getAll();
     } else {
-      return _payments.values.where((i) => i.invoiceId == invoiceId).toList();
+      return paymentBox
+          .getAll()
+          .where((p) => p.invoiceId == invoiceId)
+          .toList();
     }
   }
 
-  ValueListenable<Box<PaymentModel>> paymentsListenable() {
-    return _payments.listenable();
+  Stream<Query<PaymentModel>> paymentsStream() {
+    return paymentBox
+        .query()
+        .order(PaymentModel_.date, flags: Order.descending)
+        .watch(triggerImmediately: true);
   }
 
-  void storeInvoice(String key, InvoiceModel value) async {
-    if (invoices.isOpen) await invoices.put(key, value);
+  void storeInvoice(InvoiceEntity invoice) {
+    invoiceBox.put(invoice);
   }
 
-  InvoiceModel? getInvoice(String key) {
-    return invoices.get(key);
+  void storeInvoices(List<InvoiceEntity> invoices) {
+    if (invoices.isNotEmpty) {
+      invoiceBox.putMany(invoices);
+    }
   }
 
-  List<InvoiceModel> getInvoiceList({String? customerId}) {
+  InvoiceEntity? getInvoice(String documentId) {
+    return invoiceBox
+        .getAll()
+        .firstWhereOrNull((i) => i.documentId == documentId);
+  }
+
+  List<InvoiceEntity> getInvoiceList({String? customerId}) {
     if (customerId == null) {
-      return invoices.toMap().values.toList();
+      return invoiceBox.getAll();
     } else {
-      return invoices.values.where((i) => i.socid == customerId).toList();
+      return invoiceBox.getAll().where((i) => i.socid == customerId).toList();
     }
   }
 
-  ValueListenable<Box<InvoiceModel>> invoicesListenable() {
-    return invoices.listenable();
+  Stream<List<InvoiceEntity>> getInvoices() {
+    final builder = invoiceBox.query()
+      ..order(InvoiceEntity_.date, flags: Order.descending);
+    return builder.watch(triggerImmediately: true).map((query) => query.find());
   }
 
-  void deleteInvoice(String key) {
-    if (invoices.isOpen) invoices.delete(key);
+  invoicesListenable() {}
+
+  void deleteInvoice(int id) {
+    invoiceBox.remove(id);
   }
 
-  void deleteAllInvoices(keys) {
-    if (invoices.isOpen) invoices.deleteAll(keys);
+  void deleteAllInvoices(List<int> ids) {
+    invoiceBox.removeMany(ids);
   }
 
-  void deleteAllPayments(keys) {
-    if (invoices.isOpen) _payments.deleteAll(keys);
+  void deleteAllPayments(List<int> ids) {
+    paymentBox.removeMany(ids);
   }
 
-  void storeCustomer(String key, CustomerModel value) async {
-    if (customers.isOpen) await customers.put(key, value);
+  void storeCustomer(CustomerEntity customer) {
+    customerBox.put(customer);
   }
 
-  CustomerModel? getCustomer(String key) {
-    return customers.isOpen ? customers.get(key) : null;
+  void storeCustomers(List<CustomerEntity> customers) {
+    if (customers.isNotEmpty) {
+      customerBox.putMany(customers);
+    }
   }
 
-  List<CustomerModel> getCustomerList() {
-    return customers.isOpen
-        ? customers.toMap().values.toList()
-        : <CustomerModel>[];
+  CustomerEntity? getCustomer(String customerId) {
+    return customerBox.getAll().firstWhere((c) => c.customerId == customerId);
   }
 
-  void deleteCustomer(String key) {
-    if (customers.isOpen) customers.delete(key);
+  List<CustomerEntity> getCustomerList() {
+    return customerBox.getAll();
   }
 
-  void deleteAllCustomer(keys) {
-    if (invoices.isOpen) customers.deleteAll(keys);
+  void deleteCustomer(int id) {
+    customerBox.remove(id);
   }
 
-  ValueListenable<Box<CustomerModel>> customersListenable() {
-    return customers.listenable();
+  void deleteAllCustomer(ids) {
+    customerBox.removeMany(ids);
   }
 
-  void storeSetting(String key, dynamic value) async {
-    if (_settings.isOpen) await _settings.put(key, value);
+  customersListenable() {}
+
+  void storeSetting(SettingsModel setting) {
+    settingsBox.put(setting);
   }
 
-  String? getSetting(String key) {
-    return _settings.isOpen ? _settings.get(key) : null;
+  SettingsModel? getSetting(int id) {
+    return settingsBox.get(id);
   }
 
-  watchSetting(String key) {
-    return _settings.watch(key: key);
+  watchSetting(id) {
+    return settingsBox.get(id);
   }
 
-  void clearSetting(String key) {
-    if (_settings.isOpen) _settings.delete(key);
+  void clearSetting(id) {
+    settingsBox.remove(id);
   }
 
-  void storeGroup(String key, GroupModel value) async {
-    if (_groups.isOpen) await _groups.put(key, value);
+  void storeGroup(id, GroupModel group) {
+    groupBox.put(group);
   }
 
-  GroupModel? getGroup(String key) {
-    return _groups.isOpen ? _groups.get(key) : null;
+  GroupModel? getGroup(id) {
+    return groupBox.get(id);
   }
 
   List<GroupModel> getGroupList() {
-    return _groups.toMap().values.toList();
+    return groupBox.getAll();
   }
 
-  void storeProduct(String key, ProductModel value) async {
-    if (_products.isOpen) await _products.put(key, value);
+  void storeProduct(ProductModel product) {
+    productBox.put(product);
   }
 
   List<ProductModel> getProductList() {
-    return _products.toMap().values.toList();
+    return productBox.getAll();
   }
 
-  ProductModel? getProduct(String key) {
-    return _products.isOpen ? _products.get(key) : null;
+  ProductModel? getProduct(id) {
+    return productBox.get(id);
   }
 
-  void storeEnabledModules(List<String> modules) async {
-    if (_settings.isOpen) {
-      await _settings.put(StorageKey.enabledModules, modules);
-    }
+  void storeEnabledModules(modules) {
+    settingsBox.put(modules);
   }
 
-  List<String> getEnabledModules() {
-    return _settings.isOpen
-        ? _settings.get(StorageKey.enabledModules) != null
-            ? List<String>.from(
-                _settings.get(StorageKey.enabledModules).map((x) => x))
-            : <String>[]
-        : <String>[];
+  SettingsModel? getEnabledModules(id) {
+    return settingsBox.get(id);
   }
 
-  ValueListenable<Box> settingsListenable() {
-    return _settings.listenable();
-  }
+  settingsListenable() {}
 
   void clearAll() {
-    customers.clear();
-    _groups.clear();
-    invoices.clear();
-    _payments.clear();
-    _products.clear();
-    _settings.clear();
-    _company.clear();
-    _addresses.clear();
-    _user.clear();
-    _settings.clear();
+    addressBox.removeAll();
+    companyBox.removeAll();
+    customerBox.removeAll();
+    groupBox.removeAll();
+    invoiceBox.removeAll();
+    paymentBox.removeAll();
+    productBox.removeAll();
+    settingsBox.removeAll();
+    userBox.removeAll();
   }
 }
