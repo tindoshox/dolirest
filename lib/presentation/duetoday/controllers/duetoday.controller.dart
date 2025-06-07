@@ -10,22 +10,17 @@ class DueTodayController extends GetxController {
 
   @override
   void onInit() {
-    _watchBoxes();
     _updateInvoices();
     super.onInit();
   }
 
-  void _watchBoxes() {
-    storage.invoicesListenable().addListener(_updateInvoices);
-  }
-
   void _updateInvoices() {
-    var invoices = storage.getInvoiceList();
+    var invoices = storage.invoiceBox.getAll();
     dueToday.value = invoices
         .where((invoice) =>
             invoice.type == DocumentType.invoice &&
             invoice.remaintopay != "0" &&
-            Utils.intToDateTime(invoice.dateLimReglement!).day ==
+            Utils.intToDateTime(invoice.dateLimReglement).day ==
                 DateTime.now().day)
         .toList();
   }

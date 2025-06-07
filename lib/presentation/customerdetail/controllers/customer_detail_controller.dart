@@ -9,6 +9,7 @@ import 'package:dolirest/infrastructure/dal/services/local_storage/storage_servi
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
@@ -23,9 +24,7 @@ class CustomerDetailController extends GetxController
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
-  final DataRefreshContoller _dataRefreshContoller = Get.find();
-  final String customerId = Get.arguments['customerId'];
-  final int customerEntityId = Get.arguments['customerEntityId'];
+  final DataRefreshService _dataRefreshContoller = Get.find();
   var customer = CustomerEntity().obs;
   var invoices = <InvoiceEntity>[].obs;
   var moduleEnabledStatement = false.obs;
@@ -56,12 +55,27 @@ class CustomerDetailController extends GetxController
     tabController = TabController(length: customerTabs.length, vsync: this);
     startDateController.text = Utils.dateTimeToDMY(startDate.value);
     endDateController.text = Utils.dateTimeToDMY(endDate.value);
-    moduleEnabledStatement.value = storage
-        .getEnabledModules(SettingId.moduleSettingId)!
+    moduleEnabledStatement.value = storage.settingsBox
+        .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('customerstatement');
-    _updateCustomer();
-    _updateInvoices();
+    customer.value = storage.customerBox.get(Get.arguments['entityId'])!;
+    customer.bindStream(storage.customerBox
+        .query(CustomerEntity_.id.equals(customer.value.id))
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.findFirst() ?? CustomerEntity(name: 'Unknown Customer');
+    }));
+    invoices.value = storage.invoiceBox
+        .query(InvoiceEntity_.socid.equals(customer.value.customerId))
+        .build()
+        .find();
+    invoices.bindStream(storage.invoiceBox
+        .query(InvoiceEntity_.socid.equals(customer.value.customerId))
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.find();
+    }));
     tabController.addListener(() {
       tabIndex(tabController.index);
     });
@@ -84,33 +98,23 @@ class CustomerDetailController extends GetxController
     endDateController.dispose();
   }
 
-  void _updateCustomer() {
-    final c = storage.getCustomer(customerId);
-    if (c != null) {
-      customer.value = c;
-    }
-  }
-
-  void _updateInvoices() {
-    invoices.value =
-        storage.getInvoiceList(customerId: customer.value.customerId);
-  }
-
   // Fetch invoice data from server
   Future<void> refreshCustomerInvoiceData() async {
     isLoading.value = true;
-    await _dataRefreshContoller.syncInvoices(customerId: customerId);
+    await _dataRefreshContoller.syncInvoices(
+        customerId: customer.value.customerId);
     isLoading.value = false;
   }
 
   Future<void> deleteCustomer() async {
     DialogHelper.showLoading('Deleting customer...');
-    final result = await customerRepository.deleteCustomer(customer.value.id);
+    final result =
+        await customerRepository.deleteCustomer(customer.value.customerId);
     result.fold(
       (failure) {
         DialogHelper.hideLoading();
         if (failure.code == 404) {
-          storage.deleteCustomer(customer.value.id);
+          storage.customerBox.remove(customer.value.id);
           Get.back();
           SnackBarHelper.successSnackbar(message: 'Customer deleted');
         } else {
@@ -119,7 +123,7 @@ class CustomerDetailController extends GetxController
       },
       (res) {
         DialogHelper.hideLoading();
-        storage.deleteCustomer(customer.value.id);
+        storage.customerBox.remove(customer.value.id);
         Get.back();
         SnackBarHelper.successSnackbar(message: 'Customer deleted');
       },

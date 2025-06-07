@@ -16,19 +16,12 @@ String paymentModelToJson(List<PaymentModel> data) =>
 class PaymentModel {
   int id;
   String amount;
-
   String type;
-
   DateTime date;
-
   String? num;
-
   String? ref;
-
   String? refExt;
-
   String? fkBankLine;
-
   String? invoiceId;
 
   PaymentModel({

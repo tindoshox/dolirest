@@ -74,7 +74,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
       onTap: () async {
         if (Get.find<NetworkController>().connected.value) {
           Get.offAndToNamed(route, arguments: {
-            'customerId': controller.customerId,
+            'entityId': controller.customer.value.id,
             ...?additionalArgs
           });
         } else {
@@ -98,7 +98,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
 
   Widget _customerInfoTab() {
     final customer = controller.customer.value;
-    return customer.customerId == null
+    return customer.customerId.isEmpty
         ? Center()
         : CustomerInfoWidget(
             customer: customer,

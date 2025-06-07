@@ -12,8 +12,8 @@ class DioService extends GetxService {
 
   @override
   void onInit() {
-    String? url = storage.getSetting(SettingId.urlSettingId)?.strValue;
-    String? token = storage.getSetting(SettingId.tokenSettingId)?.strValue;
+    String? url = storage.settingsBox.get(SettingId.urlSettingId)?.strValue;
+    String? token = storage.settingsBox.get(SettingId.tokenSettingId)?.strValue;
 
     if (url != null && token != null) {
       configureDio(url: '$url$apiStub', token: token);

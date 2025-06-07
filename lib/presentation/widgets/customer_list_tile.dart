@@ -8,18 +8,17 @@ Card buildCustomerListTile(CustomerEntity customer, BuildContext context) {
   return Card(
     child: ListTile(
       onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
-        'customerId': customer.customerId,
-        'customerEntityId': customer.id,
+        'entityId': customer.id,
       }),
       leading: Initicon(
-        text: customer.name!,
+        text: customer.name,
         size: 30,
       ),
       title: Row(
         children: [
           Flexible(
             child: Text(
-              customer.name!,
+              customer.name,
               style: Theme.of(context).textTheme.titleSmall,
               overflow: TextOverflow.ellipsis,
             ),
@@ -30,7 +29,7 @@ Card buildCustomerListTile(CustomerEntity customer, BuildContext context) {
         children: [
           Flexible(
             child: Text(
-              '${customer.address ?? ''} ${customer.town ?? ''}',
+              '${customer.address} ${customer.town}'.trim(),
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,
             ),

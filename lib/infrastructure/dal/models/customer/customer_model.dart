@@ -44,12 +44,8 @@ class CustomerModel {
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) => CustomerModel(
         id: json["id"],
-        stateId: json["state_id"] = json["state_id"] is int
-            ? json["state_id"]
-            : int.parse(json["state_id"]),
-        regionId: json["region_id"] = json["region_id"] is int
-            ? json["region_id"]
-            : int.parse(json["region_id"]),
+        stateId: json["state_id"],
+        regionId: json["region_id"],
         name: json["name"],
         dateModification: json["date_modification"],
         phone: json["phone"],

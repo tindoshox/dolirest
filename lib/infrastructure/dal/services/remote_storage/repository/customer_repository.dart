@@ -10,27 +10,40 @@ import 'package:fpdart/fpdart.dart';
 
 class CustomerRepository extends DioService {
   Future<Either<DolibarrApiError, List<CustomerEntity>>> fetchCustomerList(
-      {int page = 1, int limit = 0, String? dateModified}) {
+      {String? dateModified}) {
     final properties =
         "id,name,state_id,region_id,date_modification,phone,fax,code_client,address,town";
 
-    var queryParameters = {
-      "sortfield": "t.rowid",
-      "sortorder": "ASC",
-      "mode": "1",
-      "limit": limit,
-      "page": page,
-      "properties": properties
-    };
-
-    if (dateModified != null) {
-      queryParameters["sqlfilters"] = "(t.tms:>:'$dateModified')";
-    }
-
     return dio.safeRequest(() async {
-      final response =
-          await dio.get(ApiPath.customers, queryParameters: queryParameters);
-      return parseCustomersFromJson(response.data);
+      var customers = <CustomerEntity>[];
+      int page = 0;
+      const int limit = 1000;
+      bool hasNextPage = true;
+      while (hasNextPage) {
+        var queryParameters = {
+          "sortfield": "t.rowid",
+          "sortorder": "ASC",
+          "mode": "1",
+          "limit": limit,
+          "page": page,
+          "properties": properties,
+          if (dateModified != null) "t.tms": dateModified,
+        };
+
+        final response =
+            await dio.get(ApiPath.customers, queryParameters: queryParameters);
+        final list = parseCustomerListFromJson(response.data);
+        if (list.length < limit) {
+          hasNextPage = false;
+        } else {
+          page++;
+        }
+
+        if (list.isNotEmpty) {
+          customers.addAll(list);
+        }
+      }
+      return customers;
     });
   }
 
@@ -38,19 +51,7 @@ class CustomerRepository extends DioService {
       String id) {
     return dio.safeRequest(() async {
       final response = await dio.get('${ApiPath.customers}/$id');
-      final customer = CustomerModel.fromJson(response.data);
-      return CustomerEntity(
-        customerId: customer.id,
-        name: customer.name,
-        stateId: customer.stateId,
-        regionId: customer.regionId,
-        dateModification: customer.dateModification,
-        phone: customer.phone,
-        fax: customer.fax,
-        codeClient: customer.codeClient,
-        address: customer.address,
-        town: customer.town,
-      );
+      return parseCustomerFromJson(response.data);
     });
   }
 
@@ -67,21 +68,21 @@ class CustomerRepository extends DioService {
       final response = await dio.put('${ApiPath.customers}/$id', data: body);
       final customer = customerModelFromJson(jsonEncode(response.data));
       return CustomerEntity(
-        customerId: customer.id,
-        name: customer.name,
-        stateId: customer.stateId,
-        regionId: customer.regionId,
-        dateModification: customer.dateModification,
-        phone: customer.phone,
-        fax: customer.fax,
-        codeClient: customer.codeClient,
-        address: customer.address,
-        town: customer.town,
+        customerId: customer.id ?? '',
+        name: customer.name ?? '',
+        stateId: customer.stateId ?? '',
+        regionId: customer.regionId ?? '',
+        dateModification: customer.dateModification ?? 0,
+        phone: customer.phone ?? '',
+        fax: customer.fax ?? '',
+        codeClient: customer.codeClient ?? '',
+        address: customer.address ?? '',
+        town: customer.town ?? '',
       );
     });
   }
 
-  Future<Either<DolibarrApiError, String>> deleteCustomer(int id) {
+  Future<Either<DolibarrApiError, String>> deleteCustomer(String id) {
     return dio.safeRequest(() async {
       final response = await dio.delete('${ApiPath.customers}/$id');
       return response.statusCode.toString();

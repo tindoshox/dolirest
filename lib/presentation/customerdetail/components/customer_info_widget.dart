@@ -11,14 +11,14 @@ class CustomerInfoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> children = [
       _buildCustomerInfoRow(
-        title: customer.name!,
+        title: customer.name,
         leading: Initicon(
-          text: customer.name!,
+          text: customer.name,
           size: 30,
         ),
         style: Theme.of(context).textTheme.titleSmall,
         subtitle: Text(
-          customer.codeClient!,
+          customer.codeClient,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),
@@ -30,20 +30,20 @@ class CustomerInfoWidget extends StatelessWidget {
         ),
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      if (customer.phone?.trim().isNotEmpty ?? false)
+      if (customer.phone.trim().isNotEmpty)
         _buildCustomerInfoRow(
-          onTap: () => Utils.makePhoneCall(customer.phone!.trim()),
-          title: customer.phone!,
+          onTap: () => Utils.makePhoneCall(customer.phone.trim()),
+          title: customer.phone,
           leading: const Icon(
             Icons.phone_android,
             color: Colors.blueAccent,
           ),
           style: Theme.of(context).textTheme.bodySmall,
         ),
-      if (customer.fax?.trim().isNotEmpty ?? false)
+      if (customer.fax.trim().isNotEmpty)
         _buildCustomerInfoRow(
-          onTap: () => Utils.makePhoneCall(customer.fax!.trim()),
-          title: customer.fax!,
+          onTap: () => Utils.makePhoneCall(customer.fax.trim()),
+          title: customer.fax,
           leading: const Icon(
             Icons.phone_android_outlined,
             color: Colors.blueGrey,

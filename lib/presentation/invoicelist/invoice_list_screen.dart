@@ -68,7 +68,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          Expanded(child: buildInvoiceList()),
+          Expanded(child: Obx(() => buildInvoiceList())),
         ],
       ),
     );
@@ -86,7 +86,7 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                       .toString()
                       .toUpperCase()
                       .contains(controller.searchString.value.toUpperCase()) ||
-                  invoice.ref!.contains(controller.searchString.value) ||
+                  invoice.ref.contains(controller.searchString.value) ||
                   invoice.refCustomer
                       .toString()
                       .contains(controller.searchString.value),
@@ -110,12 +110,13 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
               }
 
               if (index < invoices.length) {
+                // ignore: unused_local_variable
                 final customer = controller.storage
                     .getCustomerList()
                     .firstWhere((c) => c.customerId == invoices[index].socid);
                 return InvoiceListTile(
                   invoice: invoices[index],
-                  customer: customer,
+                  storage: controller.storage,
                 );
               } else {
                 return const Padding(

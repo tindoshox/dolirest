@@ -42,7 +42,8 @@ class PaymentScreen extends GetView<PaymentController> {
         child: Card(
           child: ListView(
             children: [
-              if (controller.invoiceId == null) _buildSearchField(context),
+              if (controller.invoice.value.documentId.isEmpty)
+                _buildSearchField(context),
               _buildPayDateField(),
               _buildDueDateField(),
               _buildReceiptNumberField(),
@@ -101,7 +102,7 @@ class PaymentScreen extends GetView<PaymentController> {
     );
   }
 
-  CustomFormField _buildAmountField(Rx<InvoiceEntity> invoice) {
+  CustomFormField _buildAmountField(Rx<InvoiceEntity>? invoice) {
     return CustomFormField(
       name: 'amount',
       onChanged: (value) => controller.amount.value = value!,
@@ -112,11 +113,14 @@ class PaymentScreen extends GetView<PaymentController> {
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,
       validator: (amount) {
+        if (invoice?.value.documentId == null) {
+          return 'Please select an invoice first';
+        }
         if (amount!.isEmpty) {
           return 'Amount is required';
         }
         if (GetUtils.isGreaterThan(
-            int.parse(amount), int.parse(invoice.value.remaintopay!))) {
+            int.parse(amount), int.parse(invoice!.value.remaintopay))) {
           return 'Amount cannot be greater than balance';
         }
         return null;
@@ -214,13 +218,13 @@ class PaymentScreen extends GetView<PaymentController> {
         compareFn: (item1, item2) => item1.name == item2.name,
         onChanged: (invoice) {
           if (invoice != null) {
-            controller.fetchData(invoice.socid!, invoice.documentId!);
+            controller.fetchData(invoice);
           } else {
             controller.clearInvoice();
           }
         },
         validator: (value) => value == null ? 'Invoice is required' : null,
-        itemAsString: (InvoiceEntity? invoice) => invoice!.ref!,
+        itemAsString: (InvoiceEntity invoice) => invoice.ref,
         decoratorProps: const DropDownDecoratorProps(
           decoration: InputDecoration(
             labelText: 'Invoice',
@@ -247,7 +251,7 @@ class PaymentScreen extends GetView<PaymentController> {
             itemBuilder: (context, invoice, isSelected, l) {
               return InvoiceListTile(
                 invoice: invoice,
-                customer: controller.customer.value,
+                storage: controller.storage,
               );
             },
             emptyBuilder: ((context, searchEntry) =>
@@ -257,7 +261,7 @@ class PaymentScreen extends GetView<PaymentController> {
           return await controller.fetchInvoices();
         },
         filterFn: (invoice, filter) =>
-            invoice.name!.contains(filter) || invoice.ref!.contains(filter),
+            invoice.name.contains(filter) || invoice.ref.contains(filter),
       ),
     );
   }
@@ -271,12 +275,14 @@ class PaymentScreen extends GetView<PaymentController> {
               children: [
                 Flexible(
                   child: Text(
-                    customer.value.name ?? 'No Invoice Selected',
+                    customer.value.name.isEmpty
+                        ? 'No Invoice Selected'
+                        : customer.value.name,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
-                Text(invoice.value.ref ?? '',
+                Text(invoice.value.ref,
                     style: Theme.of(context).textTheme.titleSmall),
               ],
             ),
@@ -285,7 +291,7 @@ class PaymentScreen extends GetView<PaymentController> {
               children: [
                 Flexible(
                   child: Text(
-                    controller.customer.value.customerId == null
+                    controller.customer.value.customerId.isEmpty
                         ? ''
                         : '${customer.value.town}: ${customer.value.address}',
                     overflow: TextOverflow.ellipsis,
@@ -293,9 +299,9 @@ class PaymentScreen extends GetView<PaymentController> {
                   ),
                 ),
                 Text(
-                  controller.customer.value.customerId == null
+                  controller.customer.value.customerId.isEmpty
                       ? ''
-                      : 'BALANCE: ${invoice.value.remaintopay ?? '0'}',
+                      : 'BALANCE: ${invoice.value.remaintopay}',
                   textAlign: TextAlign.start,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),

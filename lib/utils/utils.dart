@@ -128,4 +128,8 @@ class Utils {
     final int dotIndex = s.indexOf('.');
     return dotIndex == -1 ? s : s.substring(0, dotIndex);
   }
+
+  static DateTime dateOnly(DateTime date) {
+    return DateUtils.dateOnly(date);
+  }
 }

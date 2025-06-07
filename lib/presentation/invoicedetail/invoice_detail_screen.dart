@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicedetail/components/invoice_detail_widget.dart';
@@ -31,7 +31,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
             : TabBarView(
                 controller: controller.tabController,
                 children: [
-                  InvoiceDetailWidget(
+                  invoiceDetailWidget(
+                      context: context,
                       onPressed: () {
                         if (Get.find<NetworkController>().connected.value) {
                           controller.setDueDate();
@@ -48,9 +49,10 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         )
                       : Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: PaymentsList(
-                            totalTtc: controller.document.value.totalTtc ?? '0',
-                            payments: controller.payments,
+                          child: paymentsList(
+                            context,
+                            controller.document.value.totalTtc,
+                            controller.payments,
                           ),
                         ),
                 ],
@@ -83,11 +85,11 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
       itemBuilder: (context) => [
         PopupMenuItem(
           child: Text('Return Item'),
-          onTap: () => controller.creditNote(productReturned: true),
+          onTap: () => controller.createCreditNote(productReturned: true),
         ),
         PopupMenuItem(
           child: Text('Write-off Item'),
-          onTap: () => controller.creditNote(productReturned: false),
+          onTap: () => controller.createCreditNote(productReturned: false),
         )
       ],
     );
@@ -116,7 +118,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     buttonText: 'Validate',
                     onTap: () => connected
                         ? controller.validateDocument(
-                            id: document.documentId!,
+                            id: document.documentId,
                             invoiceValidation:
                                 document.type == DocumentType.invoice)
                         : SnackBarHelper.networkSnackbar(),
@@ -155,7 +157,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     buttonText: 'Delete',
                     onTap: () => connected
                         ? controller.deleteDocument(
-                            documentId: document.documentId!,
+                            documentId: document.documentId,
                             entityId: document.id)
                         : SnackBarHelper.networkSnackbar(),
                   ),
@@ -257,7 +259,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
   Widget _productListDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: DropdownSearch<ProductModel>(
+      child: DropdownSearch<ProductEntity>(
         compareFn: (item1, item2) => item1 == item2,
         onChanged: (product) {
           if (product != null) {
@@ -277,7 +279,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
             ),
           ),
         ),
-        itemAsString: (ProductModel product) => '${product.label}',
+        itemAsString: (ProductEntity product) => '${product.label}',
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -303,7 +305,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<ProductModel> products =
+          List<ProductEntity> products =
               controller.searchProduct(searchString: searchString);
           return products;
         },

@@ -29,7 +29,8 @@ class CustomerListScreen extends GetView<CustomerListController> {
           Obx(() => _buildSearchActionButton()),
         ],
       ),
-      body: Padding(padding: EdgeInsets.all(10), child: _buildCustomerList()),
+      body: Padding(
+          padding: EdgeInsets.all(10), child: Obx(() => _buildCustomerList())),
     );
   }
 
@@ -69,7 +70,20 @@ class CustomerListScreen extends GetView<CustomerListController> {
 
   Widget _buildCustomerList() {
     var customers = <CustomerEntity>[];
-    var list = controller.customers;
+    var noInvoiceCustomers = <CustomerEntity>[];
+    if (controller.noInvoiceCustomers == true) {
+      for (var customer in controller.dataRefreshContoller.customers) {
+        final invoices = controller.dataRefreshContoller.invoices
+            .where((i) => i.socid == customer.customerId);
+        if (invoices.isEmpty) {
+          (noInvoiceCustomers.add(customer));
+        }
+      }
+    }
+    var list = !controller.noInvoiceCustomers
+        ? controller.dataRefreshContoller.customers
+        : noInvoiceCustomers;
+
     String search = controller.searchString.value;
     customers = search.length > 2
         ? list

@@ -1,11 +1,11 @@
-import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/loading_indicator.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 
 import 'controllers/editcustomer_controller.dart';
 
@@ -17,7 +17,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            controller.customerId == null ? 'New Customer' : 'Edit Customer'),
+            controller.entityId == null ? 'New Customer' : 'Edit Customer'),
         actions: [Obx(() => getStatusIcon())],
       ),
       body: Center(
@@ -38,7 +38,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             _buildNameField(),
             _buildCityAutocomplete(),
             _buildAddressAutocomplete(),
-            if (controller.customerId == null) _buildGroupDropdown(context),
+            if (controller.entityId == null) _buildGroupDropdown(context),
             _buildPhoneField(),
             _buildFaxField(),
             _buildActionButtons(),
@@ -67,30 +67,29 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
 
   Widget _buildCityAutocomplete() {
     return Obx(() {
-      final addresses =
-          controller.addresses.map((a) => a.town.toString().toUpperCase());
-      final towns = addresses.toSet().toList();
+      final box = controller.addressBox;
+      final towns = box
+          .getAll()
+          .map((a) => a.town.toUpperCase())
+          .toSet()
+          .toList()
+        ..sort();
+
       return Autocomplete<String>(
         optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            return towns;
-          }
-          return towns.where((String town) => town
-              .toString()
-              .toUpperCase()
-              .startsWith(textEditingValue.text.toUpperCase()));
+          if (textEditingValue.text.isEmpty) return towns;
+          return towns.where(
+              (town) => town.startsWith(textEditingValue.text.toUpperCase()));
         },
         onSelected: (town) {
-          controller.selectedTown.value = town;
+          controller.selectedTown.value = town.trim().toUpperCase();
           controller.townController.text = town.trim().toUpperCase();
         },
         fieldViewBuilder:
             (context, townController, focusNode, onFieldSubmitted) {
           return CustomFormField(
-            prefixIcon: const Icon(
-              Icons.location_city,
-              color: Colors.greenAccent,
-            ),
+            prefixIcon:
+                const Icon(Icons.location_city, color: Colors.greenAccent),
             onChanged: (town) {
               if (town != null && town.isNotEmpty) {
                 controller.selectedTown.value = town;
@@ -98,7 +97,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
               }
             },
             name: 'customer_city',
-            controller: controller.customerId == null
+            controller: controller.entityId == null
                 ? townController
                 : controller.townController,
             focusNode: focusNode,
@@ -113,11 +112,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
 
   Widget _buildAddressAutocomplete() {
     return Obx(() {
-      var list = controller.addresses
-          .where((a) => a.town == controller.selectedTown.value)
-          .toList();
-      var filteredList = list.map((l) => l.address!.toUpperCase()).toList();
-      var addresses = filteredList.toSet().toList();
+      final addresses = controller.addressList;
 
       return Autocomplete<String>(
         optionsBuilder: (TextEditingValue textEditingValue) {
@@ -125,26 +120,28 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             return addresses;
           } else {
             return addresses.where(
-              (String addr) => addr.startsWith(
-                textEditingValue.text.toUpperCase(),
-              ),
-            );
+                (addr) => addr.startsWith(textEditingValue.text.toUpperCase()));
           }
         },
         onSelected: (address) {
           controller.addressController.text = address.trim().toUpperCase();
         },
-        fieldViewBuilder: (BuildContext context, addressController, focusNode,
-            onFieldSubmitted) {
+        fieldViewBuilder: (
+          BuildContext context,
+          TextEditingController addressController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted,
+        ) {
           return CustomFormField(
             prefixIcon: const Icon(
               Icons.location_pin,
               color: Colors.orangeAccent,
             ),
-            onChanged: (address) => controller.addressController.text =
-                address!.trim().toUpperCase(),
+            onChanged: (address) {
+              controller.addressController.text = address!.trim().toUpperCase();
+            },
             name: 'customer_address',
-            controller: controller.customerId == null
+            controller: controller.entityId == null
                 ? addressController
                 : controller.addressController,
             focusNode: focusNode,
@@ -161,7 +158,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
   Widget _buildGroupDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: DropdownSearch<GroupModel>(
+      child: DropdownSearch<GroupEntity>(
         onChanged: (group) {
           if (group != null) {
             controller.selectedGroup.value = group;
@@ -180,7 +177,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
             ),
           ),
         ),
-        itemAsString: (GroupModel group) => group.name!,
+        itemAsString: (GroupEntity group) => group.name!,
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -201,7 +198,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<GroupModel> groups =
+          List<GroupEntity> groups =
               await controller.getGroups(search: searchString);
           return groups;
         },

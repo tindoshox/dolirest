@@ -9,19 +9,18 @@ class AddressModel {
   @Id()
   int id;
 
-  String? town;
-  String? address;
+  String town;
+  String address;
 
   AddressModel({
     this.id = 0,
-    this.town,
-    this.address,
+    this.town = '',
+    this.address = '',
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) => AddressModel(
-        id: json['id'] as int? ?? 0,
-        town: json['town'] as String?,
-        address: json['address'] as String?,
+        town: json['town'],
+        address: json['address'],
       );
 
   Map<String, dynamic> toJson() => {

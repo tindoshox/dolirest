@@ -16,7 +16,7 @@ InvoiceModel invoiceFromJson(String str) =>
 String invoiceToJson(InvoiceModel data) => json.encode(data.toJson());
 
 class InvoiceModel {
-  int? id;
+  String? id;
   String? ref;
   String? status;
   String? totalHt;
@@ -27,7 +27,7 @@ class InvoiceModel {
   int? dateModification;
   int? totalpaid;
   String? type;
-  int? socid;
+  String? socid;
   String? paye;
   int? date;
   int? dateLimReglement;
@@ -39,7 +39,7 @@ class InvoiceModel {
   String? remaintopay;
   int? datem;
   String? refCustomer;
-  int? fkFactureSource;
+  String? fkFactureSource;
   String? modeReglementCode;
   String? condReglementCode;
 
@@ -73,7 +73,7 @@ class InvoiceModel {
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
-        id: json["id"] = json["id"] is int ? json["id"] : int.parse(json["id"]),
+        id: json["id"],
         ref: json["ref"],
         status: json["status"],
         totalHt: json["total_ht"],

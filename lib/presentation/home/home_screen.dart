@@ -1,9 +1,12 @@
 import 'package:change_case/change_case.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -32,10 +35,10 @@ class HomeScreen extends GetView<HomeController> {
               _buildUserInfo(context),
               _buildMainShortCuts(),
               _buildSecondaryShortCuts(),
-              Obx(() => _buildDrafts(context)),
-              _buildNoInvoiceCustomer(context),
-              Obx(() => _buildInvoices(context)),
-              Obx(() => _buildCashflow(context)),
+              if (controller.dataRefreshContoller.noInvoiceCustomers.isNotEmpty)
+                _buildNoInvoiceCustomer(context),
+              _buildInvoices(context),
+              _buildCashflow(context),
             ],
           ),
         ),
@@ -81,7 +84,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.light);
-            controller.storage.storeSetting(SettingsModel(
+            controller.storage.settingsBox.put(SettingsModel(
                 id: SettingId.themeModeId,
                 name: StorageKey.theme,
                 strValue: 'light'));
@@ -95,7 +98,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.dark);
-            controller.storage.storeSetting(SettingsModel(
+            controller.storage.settingsBox.put(SettingsModel(
                 id: SettingId.themeModeId,
                 name: StorageKey.theme,
                 strValue: 'dark'));
@@ -109,7 +112,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.system);
-            controller.storage.storeSetting(SettingsModel(
+            controller.storage.settingsBox.put(SettingsModel(
                 id: SettingId.themeModeId,
                 name: StorageKey.theme,
                 strValue: 'system'));
@@ -298,8 +301,7 @@ class HomeScreen extends GetView<HomeController> {
             shortcutItem(
                 onTap: () {
                   if (Get.find<NetworkController>().connected.value) {
-                    Get.toNamed(Routes.CREATEINVOICE,
-                        arguments: {'invoiceId': ''});
+                    Get.toNamed(Routes.CREATEINVOICE, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
                   }
@@ -382,118 +384,188 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   _buildInvoices(BuildContext context) {
-    var openInvoices = controller.openInvoices.value;
-    var overDues = controller.overDues.value;
-    var sales = controller.sales.value;
-    var dueToday = controller.dueToday;
-    dueToday.removeWhere((d) => DateUtils.isSameMonth(
-        Utils.intToDateTime(d.dateLimReglement!),
-        DateTime.now().add(Duration(days: 30))));
+    return StreamBuilder<List<InvoiceEntity>>(
+        stream: controller.storage.invoiceBox
+            .query(InvoiceEntity_.type
+                .equals(DocumentType.invoice)
+                .and(InvoiceEntity_.paye.equals(PaidStatus.unpaid)))
+            .watch(triggerImmediately: true)
+            .map((query) => query.find()),
+        builder: (context, snapshot) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Text('Error loading invoices: ${snapshot.error}'),
+            );
+          }
 
-    return Column(
-      children: [
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.inventory_outlined),
-            title: Text(
-              "Open Invoices: $openInvoices",
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Overdue: $overDues",
-                  style: Theme.of(context).textTheme.bodySmall,
+          var openInvoices = snapshot.data!
+              .where((i) =>
+                  i.type == DocumentType.invoice &&
+                  i.paye == PaidStatus.unpaid &&
+                  i.remaintopay != "0" &&
+                  i.status == ValidationStatus.validated)
+              .length;
+          int drafts = snapshot.data!
+              .where((invoice) => invoice.status == ValidationStatus.draft)
+              .length;
+          var overDues = snapshot.data!
+              .where((i) =>
+                  i.type == DocumentType.invoice &&
+                  i.paye == PaidStatus.unpaid &&
+                  i.remaintopay != "0" &&
+                  i.status == ValidationStatus.validated &&
+                  Utils.intToDateTime(i.dateLimReglement)
+                      .isBefore(DateTime.now().subtract(Duration(days: 31))))
+              .length;
+
+          var sales = snapshot.data!
+              .where((invoice) =>
+                  DateUtils.isSameMonth(
+                      Utils.intToDateTime(invoice.date), DateTime.now()) &&
+                  invoice.type == DocumentType.invoice)
+              .length;
+          var dueToday = snapshot.data!
+              .where((i) =>
+                  i.type == DocumentType.invoice &&
+                  i.remaintopay != "0" &&
+                  Utils.intToDateTime(i.dateLimReglement).day ==
+                      DateTime.now().day)
+              .toList();
+          dueToday.removeWhere((d) => DateUtils.isSameMonth(
+              Utils.intToDateTime(d.dateLimReglement),
+              DateTime.now().add(Duration(days: 30))));
+
+          return Column(
+            children: [
+              if (drafts > 0)
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.inventory_outlined),
+                    title: Text(
+                      "Draft Invoices: $drafts",
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    subtitle: drafts == 0
+                        ? null
+                        : Text('Tap to View',
+                            style: Theme.of(context).textTheme.bodySmall),
+                    onTap: () => drafts == 0
+                        ? null
+                        : Get.toNamed(Routes.INVOICELIST, arguments: {
+                            'drafts': drafts,
+                          }),
+                  ),
                 ),
-                Text(
-                  "Items Sold This Month: $sales",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ),
-        dueToday.isEmpty
-            ? SizedBox()
-            : Card(
+              Card(
                 child: ListTile(
-                  onTap: () => Get.toNamed(Routes.DUETODAY),
                   leading: const Icon(Icons.inventory_outlined),
                   title: Text(
-                    "Invoices Due Today: ${dueToday.length}",
+                    "Open Invoices: $openInvoices",
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  subtitle: Text(
-                    'Tap to View',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Overdue: $overDues",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Text(
+                        "Items Sold This Month: $sales",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
                 ),
               ),
-      ],
-    );
-  }
-
-  _buildDrafts(BuildContext context) {
-    int drafts = controller.drafts.value;
-
-    return drafts == 0
-        ? SizedBox()
-        : Card(
-            child: ListTile(
-              leading: const Icon(Icons.inventory_outlined),
-              title: Text(
-                "Draft Invoices: $drafts",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              subtitle: drafts == 0
-                  ? null
-                  : Text('Tap to View',
-                      style: Theme.of(context).textTheme.bodySmall),
-              onTap: () => drafts == 0
-                  ? null
-                  : Get.toNamed(Routes.INVOICELIST, arguments: {
-                      'drafts': drafts,
-                    }),
-            ),
+              if (dueToday.isNotEmpty)
+                Card(
+                  child: ListTile(
+                    onTap: () => Get.toNamed(Routes.DUETODAY),
+                    leading: const Icon(Icons.inventory_outlined),
+                    title: Text(
+                      "Invoices Due Today: ${dueToday.length}",
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    subtitle: Text(
+                      'Tap to View',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ),
+            ],
           );
+        });
   }
 
   _buildNoInvoiceCustomer(BuildContext context) {
-    List<CustomerEntity> noInvoiceCustomers = controller.noInvoiceCustomers;
+    return StreamBuilder<List<CustomerEntity>>(
+        stream: controller.storage.customerBox
+            .query()
+            .watch(triggerImmediately: true)
+            .map((query) {
+          var noInvoiceCustomers = <CustomerEntity>[];
+          var allCustomers = query.find();
 
-    return Obx(
-      () => noInvoiceCustomers.isEmpty
-          ? SizedBox()
-          : Card(
-              child: ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: Text(
-                  "Customers Without Invoices: ${noInvoiceCustomers.length}",
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                subtitle: noInvoiceCustomers.isEmpty
-                    ? null
-                    : Text('Tap to View',
-                        style: Theme.of(context).textTheme.bodySmall),
-                onTap: () => noInvoiceCustomers.isEmpty
-                    ? null
-                    : Get.toNamed(Routes.CUSTOMERLIST, arguments: {
-                        'noInvoiceCustomers': true,
-                      }),
+          for (var customer in allCustomers) {
+            var invoices = controller.storage.invoiceBox
+                .query(InvoiceEntity_.socid.equals(customer.customerId))
+                .build()
+                .find();
+            if (invoices.isEmpty) {
+              noInvoiceCustomers.add(customer);
+            }
+          }
+          return noInvoiceCustomers;
+        }),
+        builder: (context, snapshot) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Text('Error loading customers: ${snapshot.error}'),
+            );
+          }
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: Text(
+                "Customers Without Invoices: ${snapshot.data!.length}",
+                style: Theme.of(context).textTheme.titleSmall,
               ),
+              subtitle: snapshot.data!.isEmpty
+                  ? null
+                  : Text('Tap to View',
+                      style: Theme.of(context).textTheme.bodySmall),
+              onTap: () => snapshot.data!.isEmpty
+                  ? null
+                  : Get.toNamed(Routes.CUSTOMERLIST, arguments: {
+                      'noInvoiceCustomers': true,
+                    }),
             ),
-    );
+          );
+        });
   }
 
   _buildCashflow(BuildContext context) {
-    var dayCashflow = controller.dayCashflow;
-    List<int> dayAmounts =
-        dayCashflow.map((payment) => Utils.intAmounts(payment.amount)).toList();
-    int dayTotal = dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
-    return dayTotal == 0
-        ? SizedBox()
-        : Card(
+    return StreamBuilder<List<PaymentEntity>>(
+        stream: controller.storage.paymentBox
+            .query(
+                PaymentEntity_.date.equalsDate(Utils.dateOnly(DateTime.now())))
+            .watch(triggerImmediately: true)
+            .map((query) => query.find()),
+        builder: (context, snapshot) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Text('Error loading cashflow: ${snapshot.error}'),
+            );
+          }
+
+          List<int> dayAmounts = snapshot.data!
+              .map((payment) => Utils.intAmounts(payment.amount))
+              .toList();
+          int dayTotal =
+              dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
+
+          return Card(
             child: ListTile(
               leading: const Icon(Icons.money_outlined),
               title: Text(
@@ -507,5 +579,6 @@ class HomeScreen extends GetView<HomeController> {
               onTap: () => Get.toNamed(Routes.CASHFLOW),
             ),
           );
+        });
   }
 }

@@ -4,7 +4,7 @@ import 'package:dolirest/infrastructure/dal/models/credit_available_model.dart';
 import 'package:dolirest/infrastructure/dal/models/discount_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dio_safe_request.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dolibarr_api_error.dart';
@@ -17,34 +17,51 @@ class InvoiceRepository extends DioService {
     String? dateModified,
     String? status,
     String? type,
-    int limit = 0,
-    int page = 1,
   }) {
     final properties =
         "id,ref,status,total_ht,total_tva,total_ttc,lines,name,date_modification,totalpaid,type,socid,paye,date,dateLimReglement,totaldeposits,totalcreditnotes,sumpayed,sumdeposit,sumcreditnote,remaintopay,datem,ref_customer,fk_facture_source,mode_reglement_code,cond_reglement_code,date_lim_reglement";
 
-    var queryParameters = {
-      "sortfield": "t.rowid",
-      "sortorder": "ASC",
-      "page": page,
-      "limit": limit,
-      "status": status ?? '',
-      "properties": properties
-    };
-
-    if (customerId != null) {
-      queryParameters["thirdparty_ids"] = customerId;
-    }
-
-    if (dateModified != null) {
-      queryParameters["sqlfilters"] = "(t.tms:>:'$dateModified')";
-    }
-
     return dio.safeRequest(() async {
-      final response =
-          await dio.get(ApiPath.invoices, queryParameters: queryParameters);
-      //  debugPrint(response.data.toString());
-      return parseInvoicesFromJson(response.data);
+      var invoices = <InvoiceEntity>[];
+      int page = 0;
+      const int limit = 1000;
+      bool hasNextPage = true;
+
+      while (hasNextPage) {
+        var queryParameters = {
+          "sortfield": "t.rowid",
+          "sortorder": "ASC",
+          "page": page,
+          "limit": limit,
+          "properties": properties,
+          if (status != null) "status": status,
+          if (type != null) "type": type,
+          if (customerId != null) "thirdparty_ids": customerId,
+          if (dateModified != null) "t.tms": dateModified,
+        };
+        final response =
+            await dio.get(ApiPath.invoices, queryParameters: queryParameters);
+        //  debugPrint(response.data.toString());
+        final list = parseInvoiceListFromJson(response.data);
+        if (list.length < limit) {
+          hasNextPage = false;
+        } else {
+          page++;
+        }
+
+        if (list.isNotEmpty) {
+          invoices.addAll(list);
+        }
+      }
+      return invoices;
+    });
+  }
+
+  Future<Either<DolibarrApiError, InvoiceEntity>> fetchInvoiceById(
+      String documentId) {
+    return dio.safeRequest(() async {
+      final response = await dio.get('${ApiPath.invoices}/$documentId');
+      return parseInvoiceFromJson(response.data);
     });
   }
 

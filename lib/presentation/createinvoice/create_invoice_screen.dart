@@ -1,5 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
-import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
 import 'package:dolirest/presentation/widgets/customer_list_tile.dart';
@@ -41,11 +41,12 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _buildCustomerCard() {
     return Card(
       child: Obx(() => ListTile(
-            title:
-                Text(controller.customer.value.name ?? 'No Customer Selected'),
-            subtitle: Text(controller.customer.value.town == null
-                ? ''
-                : '${controller.customer.value.town}: ${controller.customer.value.address}'),
+            title: Text(controller.customer.value.name.isEmpty
+                ? 'No Customer Selected'
+                : controller.customer.value.name),
+            subtitle: Text(
+                '${controller.customer.value.town}: ${controller.customer.value.address}'
+                    .trim()),
           )),
     );
   }
@@ -57,7 +58,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         () => Card(
           child: ListView(
             children: [
-              if (controller.customerId == null) _customerDropdown(context),
+              if (controller.entityId == null) _customerDropdown(context),
               _invoiceDateField(),
               _dueDateField(),
               _deliveryNoteField(),
@@ -81,7 +82,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
       child: DropdownSearch<CustomerEntity>(
         onChanged: (customer) {
           if (customer != null) {
-            controller.fetchCustomerById(customer.customerId!);
+            controller.fetchCustomerById(customer.id);
           } else {
             controller.clearCustomer();
           }
@@ -96,7 +97,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             ),
           ),
         ),
-        itemAsString: (CustomerEntity? customer) => customer!.name!,
+        itemAsString: (CustomerEntity? customer) => customer!.name,
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -253,7 +254,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   Widget _productListDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: DropdownSearch<ProductModel>(
+      child: DropdownSearch<ProductEntity>(
         compareFn: (item1, item2) => item1 == item2,
         onChanged: (product) {
           if (product != null) {
@@ -273,7 +274,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
             ),
           ),
         ),
-        itemAsString: (ProductModel product) => '${product.label}',
+        itemAsString: (ProductEntity product) => '${product.label}',
         suffixProps: const DropdownSuffixProps(
             clearButtonProps: ClearButtonProps(isVisible: true)),
         popupProps: PopupProps.modalBottomSheet(
@@ -291,7 +292,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           itemBuilder: (context, product, isSelected, l) {
             return ListTile(
               title: Text('${product.label}'),
-              subtitle: Text(Utils.amounts('${product.price}')),
+              subtitle: Text('In stock: ${product.stockReel}'),
             );
           },
           emptyBuilder: (context, searchEntry) =>
@@ -299,7 +300,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<ProductModel> products =
+          List<ProductEntity> products =
               controller.searchProduct(searchString: searchString);
           return products;
         },

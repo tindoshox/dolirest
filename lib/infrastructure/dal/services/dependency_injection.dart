@@ -15,7 +15,6 @@ import 'package:get/get.dart';
 
 class DependencyInjection {
   static void init() async {
-    // Get.put<StorageService>(StorageService(), permanent: true);
     final storageService = await StorageService.create();
     Get.put<StorageService>(storageService, permanent: true);
     Get.put<NetworkController>(NetworkController(), permanent: true);
@@ -29,6 +28,6 @@ class DependencyInjection {
     Get.put<UserRepository>(UserRepository());
     Get.put<DocumentRepository>(DocumentRepository());
     Get.put<ModuleRepository>(ModuleRepository());
-    Get.put<DataRefreshContoller>(DataRefreshContoller(), permanent: true);
+    Get.put<DataRefreshService>(DataRefreshService(), permanent: true);
   }
 }

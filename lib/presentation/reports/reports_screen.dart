@@ -1,12 +1,12 @@
-import 'package:dolirest/presentation/widgets/period_dropdown.dart';
-import 'package:dolirest/presentation/widgets/status_icon.dart';
-import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:get/get.dart';
-import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/custom_form_field.dart';
+import 'package:dolirest/presentation/widgets/period_dropdown.dart';
+import 'package:dolirest/presentation/widgets/status_icon.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'controllers/reports_controller.dart';
 
@@ -119,7 +119,7 @@ class ReportsScreen extends GetView<ReportsController> {
                 if (controller.selectedReport.value.hasGroupParam)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: DropdownSearch<GroupModel>(
+                    child: DropdownSearch<GroupEntity>(
                       validator: (value) {
                         if (controller.selectedReport.value.groupIsRequired &&
                             value == null) {
@@ -148,7 +148,7 @@ class ReportsScreen extends GetView<ReportsController> {
                           ),
                         ),
                       ),
-                      itemAsString: (GroupModel group) => '${group.name}',
+                      itemAsString: (GroupEntity group) => '${group.name}',
                       popupProps: PopupProps.modalBottomSheet(
                           modalBottomSheetProps: ModalBottomSheetProps(
                               shape: const RoundedRectangleBorder(),
@@ -167,7 +167,7 @@ class ReportsScreen extends GetView<ReportsController> {
                               const Center(child: Text('Group Not Found')),
                           showSearchBox: true),
                       items: (String searchString, l) async {
-                        List<GroupModel> groups =
+                        List<GroupEntity> groups =
                             await controller.getGroups(search: searchString);
                         return groups;
                       },

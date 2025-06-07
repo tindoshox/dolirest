@@ -1,8 +1,9 @@
 import 'dart:io';
 
+import 'package:dolirest/config_dev.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:restart_app/restart_app.dart';
-import 'package:dolirest/config_dev.dart';
 
 class LoginController extends GetxController {
   final StorageService storage = Get.find();
@@ -56,7 +56,7 @@ class LoginController extends GetxController {
         _clearStorage();
       }, (user) async {
         _writeStore();
-        storage.storeUser(user);
+        storage.userBox.put(user);
         DialogHelper.hideLoading();
         if (Platform.isAndroid) {
           Restart.restartApp();
@@ -69,11 +69,11 @@ class LoginController extends GetxController {
 
   /// Writes the server info to the local storage.
   void _writeStore() {
-    storage.storeSetting(SettingsModel(
+    storage.settingsBox.put(SettingsModel(
         id: SettingId.urlSettingId,
         name: StorageKey.url,
         strValue: serverUrl.value));
-    storage.storeSetting(SettingsModel(
+    storage.settingsBox.put(SettingsModel(
         id: SettingId.tokenSettingId,
         name: StorageKey.token,
         strValue: token.value));

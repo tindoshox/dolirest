@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dolirest/infrastructure/dal/models/build_report_request_model.dart';
-import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
@@ -22,7 +22,7 @@ class ReportsController extends GetxController {
   TextEditingController toEndController = TextEditingController();
   TextEditingController startReceiptController = TextEditingController();
   TextEditingController endReceiptController = TextEditingController();
-  RxList<GroupModel> groups = List<GroupModel>.empty().obs;
+  RxList<GroupEntity> groups = List<GroupEntity>.empty().obs;
   final DocumentRepository repository = Get.find();
 
   late bool permissionReady;
@@ -99,7 +99,7 @@ class ReportsController extends GetxController {
 
   Rx<DateTime> startdate = DateTime.now().obs;
   Rx<DateTime> enddate = DateTime.now().obs;
-  Rx<GroupModel> selectedGroup = GroupModel().obs;
+  Rx<GroupEntity> selectedGroup = GroupEntity().obs;
   Rx<ReportIdModel> selectedReport = ReportIdModel().obs;
   RxString salesperson = ''.obs;
 
@@ -112,7 +112,7 @@ class ReportsController extends GetxController {
       platform = TargetPlatform.iOS;
     }
 
-    List<GroupModel> list = storage.getGroupList();
+    List<GroupEntity> list = storage.getGroupList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -136,12 +136,12 @@ class ReportsController extends GetxController {
     return groups;
   }
 
-  Future<List<GroupModel>> refreshGroups() async {
+  Future<List<GroupEntity>> refreshGroups() async {
     final result = await groupRepository.fetchGroups();
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
-      for (GroupModel group in groups) {
+      for (GroupEntity group in groups) {
         storage.storeGroup(group.id, group);
       }
     });
@@ -239,6 +239,6 @@ class ReportsController extends GetxController {
   }
 
   void clearGroup() {
-    selectedGroup(GroupModel());
+    selectedGroup(GroupEntity());
   }
 }

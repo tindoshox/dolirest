@@ -24,7 +24,7 @@ class InvoiceListWidget extends StatelessWidget {
           itemBuilder: (context, index) {
             return InvoiceListTile(
               invoice: invoices[index],
-              customer: customer,
+              storage: controller.storage,
             );
           }),
     );

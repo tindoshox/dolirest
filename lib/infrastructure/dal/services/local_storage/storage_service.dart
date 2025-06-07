@@ -1,10 +1,10 @@
 import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/company_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
-import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
-import 'package:dolirest/infrastructure/dal/models/product_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/objectbox.g.dart';
@@ -16,9 +16,9 @@ class StorageService extends GetxService {
   late final Box<CustomerEntity> customerBox;
   late final Box<InvoiceEntity> invoiceBox;
   late final Box<InvoiceLineEntity> lineBox;
-  late final Box<PaymentModel> paymentBox;
-  late final Box<ProductModel> productBox;
-  late final Box<GroupModel> groupBox;
+  late final Box<PaymentEntity> paymentBox;
+  late final Box<ProductEntity> productBox;
+  late final Box<GroupEntity> groupBox;
   late final Box<CompanyModel> companyBox;
   late final Box<UserModel> userBox;
   late final Box<AddressModel> addressBox;
@@ -29,9 +29,9 @@ class StorageService extends GetxService {
     customerBox = Box<CustomerEntity>(store);
     invoiceBox = Box<InvoiceEntity>(store);
     lineBox = Box<InvoiceLineEntity>(store);
-    paymentBox = Box<PaymentModel>(store);
-    productBox = Box<ProductModel>(store);
-    groupBox = Box<GroupModel>(store);
+    paymentBox = Box<PaymentEntity>(store);
+    productBox = Box<ProductEntity>(store);
+    groupBox = Box<GroupEntity>(store);
     companyBox = Box<CompanyModel>(store);
     userBox = Box<UserModel>(store);
     addressBox = Box<AddressModel>(store);
@@ -71,11 +71,11 @@ class StorageService extends GetxService {
 
   companyListenable() {}
 
-  void storePayment(PaymentModel payment) async {
+  void storePayment(PaymentEntity payment) async {
     paymentBox.put(payment);
   }
 
-  List<PaymentModel> getPaymentList({String? invoiceId}) {
+  List<PaymentEntity> getPaymentList({String? invoiceId}) {
     if (invoiceId == null) {
       return paymentBox.getAll();
     } else {
@@ -86,11 +86,8 @@ class StorageService extends GetxService {
     }
   }
 
-  Stream<Query<PaymentModel>> paymentsStream() {
-    return paymentBox
-        .query()
-        .order(PaymentModel_.date, flags: Order.descending)
-        .watch(triggerImmediately: true);
+  Stream<Query<PaymentEntity>> paymentsStream() {
+    return paymentBox.query().watch(triggerImmediately: true);
   }
 
   void storeInvoice(InvoiceEntity invoice) {
@@ -148,7 +145,10 @@ class StorageService extends GetxService {
   }
 
   CustomerEntity? getCustomer(String customerId) {
-    return customerBox.getAll().firstWhere((c) => c.customerId == customerId);
+    return customerBox
+        .query(CustomerEntity_.customerId.equals(customerId))
+        .build()
+        .findFirst();
   }
 
   List<CustomerEntity> getCustomerList() {
@@ -181,27 +181,27 @@ class StorageService extends GetxService {
     settingsBox.remove(id);
   }
 
-  void storeGroup(id, GroupModel group) {
+  void storeGroup(id, GroupEntity group) {
     groupBox.put(group);
   }
 
-  GroupModel? getGroup(id) {
+  GroupEntity? getGroup(id) {
     return groupBox.get(id);
   }
 
-  List<GroupModel> getGroupList() {
+  List<GroupEntity> getGroupList() {
     return groupBox.getAll();
   }
 
-  void storeProduct(ProductModel product) {
+  void storeProduct(ProductEntity product) {
     productBox.put(product);
   }
 
-  List<ProductModel> getProductList() {
+  List<ProductEntity> getProductList() {
     return productBox.getAll();
   }
 
-  ProductModel? getProduct(id) {
+  ProductEntity? getProduct(id) {
     return productBox.get(id);
   }
 
@@ -213,8 +213,6 @@ class StorageService extends GetxService {
     return settingsBox.get(id);
   }
 
-  settingsListenable() {}
-
   void clearAll() {
     addressBox.removeAll();
     companyBox.removeAll();
@@ -225,5 +223,21 @@ class StorageService extends GetxService {
     productBox.removeAll();
     settingsBox.removeAll();
     userBox.removeAll();
+  }
+
+  Stream<List<CustomerEntity>> streamCustomerList() {
+    return customerBox
+        .query()
+        .order(CustomerEntity_.name, flags: Order.descending)
+        .watch(triggerImmediately: true)
+        .map((query) => query.find());
+  }
+
+  Stream<List<InvoiceEntity>> streamInvoiceList() {
+    return invoiceBox
+        .query()
+        .order(InvoiceEntity_.date, flags: Order.descending)
+        .watch(triggerImmediately: true)
+        .map((query) => query.find());
   }
 }

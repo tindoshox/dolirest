@@ -1,6 +1,7 @@
-import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -9,16 +10,20 @@ import 'package:get/get.dart';
 
 class InvoiceListTile extends StatelessWidget {
   const InvoiceListTile(
-      {super.key, required this.invoice, required this.customer});
+      {super.key, required this.invoice, required this.storage});
 
   final InvoiceEntity invoice;
-  final CustomerEntity customer;
+  final StorageService storage;
   @override
   Widget build(BuildContext context) {
+    final customer = storage.customerBox
+        .query(CustomerEntity_.customerId.equals(invoice.socid))
+        .build()
+        .findFirst()!;
     return Card(
       child: ListTile(
         leading: Initicon(
-          text: customer.name ?? 'Please refresh customers',
+          text: customer.name,
           size: 30,
         ),
         isThreeLine: true,
@@ -27,7 +32,7 @@ class InvoiceListTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              invoice.ref ?? '', // Handle potential null
+              invoice.ref, // Handle potential null
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
@@ -47,17 +52,16 @@ class InvoiceListTile extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    customer.name ??
-                        'Please refresh customer list', // Handle potential null
+                    customer.name,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
                 Text(
                   Utils.intToDMY(
-                      invoice.dateLimReglement!), // Handle potential null
+                      invoice.dateLimReglement), // Handle potential null
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Utils.overDueStyle(invoice.dateLimReglement!)),
+                      color: Utils.overDueStyle(invoice.dateLimReglement)),
                 )
               ],
             ),
@@ -98,8 +102,7 @@ class InvoiceListTile extends StatelessWidget {
     Get.toNamed(
       Routes.INVOICEDETAIL,
       arguments: {
-        'customerId': invoice.socid,
-        'documentId': invoice.documentId,
+        'entityId': invoice.id,
       },
     );
   }

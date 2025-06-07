@@ -1,4 +1,5 @@
 import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -28,7 +29,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
     return Obx(() {
       var invoices = controller.dueToday;
       invoices.removeWhere((d) => DateUtils.isSameMonth(
-          Utils.intToDateTime(d.dateLimReglement!),
+          Utils.intToDateTime(d.dateLimReglement),
           DateTime.now().add(Duration(days: 30))));
 
       if (invoices.isEmpty) {
@@ -42,13 +43,15 @@ class DueTodayScreen extends GetView<DueTodayController> {
           itemBuilder: (context, index) {
             if (index < invoices.length) {
               var invoice = invoices[index];
-              var customer = controller.storage.getCustomer(invoice.socid!);
+              var customer = controller.storage.customerBox
+                  .query(CustomerEntity_.customerId.equals(invoice.socid))
+                  .build()
+                  .findFirst();
               return Card(
                 child: InkWell(
                   onTap: () {
                     Get.toNamed(Routes.INVOICEDETAIL, arguments: {
-                      'documentId': invoice.id,
-                      'customerId': invoice.socid,
+                      'entityId': invoice.id,
                     });
                   },
                   child: Padding(
@@ -60,7 +63,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
                           width: 2,
                         ),
                         textBox(
-                            context, Utils.intToDMY(invoice.dateLimReglement!),
+                            context, Utils.intToDMY(invoice.dateLimReglement),
                             textAlign: TextAlign.center),
                         SizedBox(
                           width: 2,

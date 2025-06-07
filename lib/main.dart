@@ -24,10 +24,11 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final StorageService storage = Get.find();
-    final initialRoute = storage.getSetting(SettingId.tokenSettingId) == null ||
-            storage.getSetting(SettingId.urlSettingId) == null
-        ? Routes.LOGIN
-        : Routes.HOME;
+    final initialRoute =
+        storage.settingsBox.get(SettingId.tokenSettingId) == null ||
+                storage.settingsBox.get(SettingId.urlSettingId) == null
+            ? Routes.LOGIN
+            : Routes.HOME;
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
@@ -41,8 +42,10 @@ class Main extends StatelessWidget {
 }
 
 _getThmeMode() {
-  String? mode =
-      Get.find<StorageService>().getSetting(SettingId.themeModeId)?.strValue;
+  String? mode = Get.find<StorageService>()
+      .settingsBox
+      .get(SettingId.themeModeId)
+      ?.strValue;
   switch (mode) {
     case 'light':
       return ThemeMode.light;

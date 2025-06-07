@@ -4,22 +4,17 @@
 
 import 'dart:convert';
 
-import 'package:objectbox/objectbox.dart';
-
 List<ProductModel> productModelFromJson(String str) => List<ProductModel>.from(
     json.decode(str).map((x) => ProductModel.fromJson(x)));
 
 String productModelToJson(List<ProductModel> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-@Entity()
 class ProductModel {
-  @Id(assignable: true)
-  int? id;
+  String? id;
   String? ref;
   String? status;
   int? dateModification;
-  int? specimen;
   String? label;
   String? description;
   String? type;
@@ -31,13 +26,13 @@ class ProductModel {
   String? barcode;
   String? fkDefaultWarehouse;
   String? fkPriceExpression;
+  String? stockReel;
 
   ProductModel({
     this.id,
     this.ref,
     this.status,
     this.dateModification,
-    this.specimen,
     this.label,
     this.description,
     this.type,
@@ -49,16 +44,14 @@ class ProductModel {
     this.barcode,
     this.fkDefaultWarehouse,
     this.fkPriceExpression,
+    this.stockReel,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
-        id: json['id'] != null ? int.parse(json['id']) : null,
+        id: json['id'],
         ref: json['ref'],
         status: json['status'],
-        dateModification: json['date_modification'] != null
-            ? int.parse(json['date_modification'])
-            : null,
-        specimen: json['specimen'] != null ? int.parse(json['specimen']) : null,
+        dateModification: json['date_modification'],
         label: json['label'],
         description: json['description'],
         type: json['type'],
@@ -70,6 +63,7 @@ class ProductModel {
         barcode: json['barcode'],
         fkDefaultWarehouse: json['fk_default_warehouse'],
         fkPriceExpression: json['fk_price_expression'],
+        stockReel: json['stock_reel'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -77,7 +71,6 @@ class ProductModel {
         'ref': ref,
         'status': status,
         'date_modification': dateModification,
-        'specimen': specimen,
         'label': label,
         'description': description,
         'type': type,
@@ -89,5 +82,6 @@ class ProductModel {
         'barcode': barcode,
         'fk_default_warehouse': fkDefaultWarehouse,
         'fk_price_expression': fkPriceExpression,
+        'stock_reel': stockReel,
       };
 }

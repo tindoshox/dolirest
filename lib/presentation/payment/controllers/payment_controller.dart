@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
+import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +25,8 @@ class PaymentController extends GetxController {
   TextEditingController amountController = TextEditingController();
   TextEditingController invoiceController = TextEditingController();
 
-  final String? invoiceId = Get.arguments['invoiceId'];
-  final String? socid = Get.arguments['socid'];
-  final bool batch = Get.arguments['batch'] ?? false;
+  final int? entityId = Get.arguments['entityId'];
+  bool batch = true;
 
   GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
   GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
@@ -33,8 +34,8 @@ class PaymentController extends GetxController {
   Rx<DateTime> payDate = DateTime.now().obs;
   Rx<DateTime> dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
-  Rx<InvoiceEntity> invoice = InvoiceEntity().obs;
-  Rx<CustomerEntity> customer = CustomerEntity().obs;
+  var invoice = InvoiceEntity().obs;
+  var customer = CustomerEntity().obs;
 
   RxString amount = ''.obs;
   RxString receipt = ''.obs;
@@ -43,8 +44,15 @@ class PaymentController extends GetxController {
 
   @override
   void onInit() {
-    if (invoiceId != null) {
-      fetchData(socid!, invoiceId!);
+    if (entityId != null) {
+      batch = false;
+      invoice.bindStream(storage.invoiceBox
+          .query(InvoiceEntity_.id.equals(entityId!))
+          .watch(triggerImmediately: true)
+          .map((query) => query.findFirst()!));
+      customer.value = storage.customerBox
+          .getAll()
+          .firstWhere((c) => c.customerId == invoice.value.socid);
     }
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
@@ -63,31 +71,32 @@ class PaymentController extends GetxController {
   }
 
   void clearInvoice() {
-    customer(CustomerEntity());
-    invoice(InvoiceEntity());
+    invoice.value = InvoiceEntity();
+    customer.value = CustomerEntity();
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
+    receiptController.clear();
+    amountController.clear();
   }
 
   /// Fetches customer and invoice data based on the given customer and invoice IDs.
-  void fetchData(String customerId, String invoiceId) async {
-    await _fetchCustomerById(customerId);
-    await _fetchInvoiceById(invoiceId);
-    await _fetchPayments(invoiceId);
-  }
-
-  _fetchInvoiceById(String invoiceId) {
-    invoice.value = storage.getInvoice(invoiceId)!;
+  void fetchData(InvoiceEntity selectedInvoice) async {
+    invoice.value = selectedInvoice;
+    await _fetchCustomerById(selectedInvoice.socid);
+    await _fetchPayments(selectedInvoice.documentId);
   }
 
   Future _fetchPayments(invoiceId) async {
-    List<PaymentModel> list = storage.getPaymentList(invoiceId: invoiceId);
+    List<PaymentEntity> list = storage.paymentBox
+        .query(PaymentEntity_.invoiceId.equals(invoiceId))
+        .build()
+        .find();
 
     receiptNumbers.value =
         list.map((payment) => payment.num.toString()).toList();
 
     paymentDates.value =
-        list.map((payment) => Utils.dateTimeToDMY(payment.date)).toList();
+        list.map((payment) => Utils.dateTimeToDMY(payment.date!)).toList();
   }
 
   _fetchCustomerById(String customerId) {
@@ -135,7 +144,7 @@ class PaymentController extends GetxController {
       DialogHelper.showLoading('Processing payment...');
       String body = jsonEncode({
         "arrayofamounts": {
-          "${invoice.value.id}": {
+          invoice.value.documentId: {
             "amount": amount.value,
             "multicurrency_amount": ""
           }
@@ -166,9 +175,9 @@ class PaymentController extends GetxController {
       SnackBarHelper.errorSnackbar(message: 'Payment not saved');
     }, (p) async {
       DialogHelper.updateMessage('Updating due date ..');
-      await _updateDueDate(invoice.value.documentId!);
+      await _updateDueDate(invoice.value.documentId);
       DialogHelper.updateMessage('Reloading data ..');
-      await _refreshPayments(invoice.value.id);
+      await _refreshPayments(invoice.value.documentId);
 
       await _refreshInvoice(invoice.value.id);
 
@@ -207,15 +216,15 @@ class PaymentController extends GetxController {
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
       for (var payment in payments) {
-        PaymentModel p = PaymentModel(
+        PaymentEntity p = PaymentEntity(
           amount: payment.amount,
           type: payment.type,
           date: payment.date,
-          num: payment.num,
-          fkBankLine: payment.fkBankLine,
-          ref: payment.ref,
+          num: payment.num ?? '',
+          fkBankLine: payment.fkBankLine ?? '',
+          ref: payment.ref!,
           invoiceId: invoiceId,
-          refExt: payment.refExt,
+          refExt: payment.refExt ?? '',
         );
         storage.storePayment(p);
       }
@@ -238,8 +247,23 @@ class PaymentController extends GetxController {
   }
 
   fetchInvoices() {
-    return storage.getInvoiceList();
-    // .where((invoice) => invoice.remaintopay != "0")
-    // .toList();
+    var openInvoices = storage.invoiceBox
+        .query(InvoiceEntity_.paye
+            .equals(PaidStatus.unpaid)
+            .and(InvoiceEntity_.type.equals(DocumentType.invoice))
+            .and(InvoiceEntity_.status.equals(ValidationStatus.validated)))
+        .build()
+        .find();
+
+    for (var i in openInvoices) {
+      final CustomerEntity? c = storage.customerBox
+          .query(CustomerEntity_.customerId.equals(i.socid))
+          .build()
+          .findFirst();
+      if (c != null) {
+        i.name = c.name;
+      }
+    }
+    return openInvoices;
   }
 }

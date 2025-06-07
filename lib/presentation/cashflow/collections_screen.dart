@@ -1,7 +1,8 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,8 +32,8 @@ class CashflowScreen extends GetView<CashflowController> {
     final StorageService storage = controller.storage;
 
     //Day Cashflow
-    List<PaymentModel> dayCashflow = controller.dayCashflow;
-    dayCashflow.sort((a, b) => a.date.compareTo(b.date));
+    List<PaymentEntity> dayCashflow = controller.dayCashflow;
+    dayCashflow.sort((a, b) => a.date!.compareTo(b.date!));
     List<int> dayAmounts =
         dayCashflow.map((payment) => Utils.intAmounts(payment.amount)).toList();
     int dayTotal = dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
@@ -62,14 +63,20 @@ class CashflowScreen extends GetView<CashflowController> {
 
     List<DataRow2> buildDataRow() {
       List<DataRow2> rows = <DataRow2>[];
-      for (PaymentModel payment in dayCashflow) {
-        final InvoiceEntity invoice = storage.getInvoice(payment.invoiceId!)!;
-        final CustomerEntity customer = storage.getCustomer(invoice.socid!)!;
+      for (PaymentEntity payment in dayCashflow) {
+        final InvoiceEntity invoice = storage.invoiceBox
+            .query(InvoiceEntity_.documentId.equals(payment.invoiceId))
+            .build()
+            .findFirst()!;
+        final CustomerEntity customer = storage.customerBox
+            .query(CustomerEntity_.customerId.equals(invoice.socid))
+            .build()
+            .findFirst()!;
         rows.add(DataRow2(
           cells: [
-            buildCell(invoice.ref ?? 'Unknown Invoice'),
-            buildCell(customer.name!),
-            buildCell(payment.num!, textAlign: TextAlign.center),
+            buildCell(invoice.ref),
+            buildCell(customer.name),
+            buildCell(payment.num, textAlign: TextAlign.center),
             buildCell(Utils.amounts(payment.amount), textAlign: TextAlign.end),
           ],
         ));

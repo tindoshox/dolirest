@@ -7,7 +7,8 @@ import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart
 import 'package:dolirest/infrastructure/dal/models/customer/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -19,38 +20,67 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
-class DataRefreshContoller extends GetxController {
+class DataRefreshService extends GetxService {
   final StorageService _storage = Get.find();
   final CustomerRepository _customerRepository = Get.find();
   final InvoiceRepository _invoiceRepository = Get.find();
   final NetworkController _networkController = Get.find();
+  var invoices = <InvoiceEntity>[].obs;
+  var customers = <CustomerEntity>[].obs;
+  var noInvoiceCustomers = <CustomerEntity>[].obs;
   var refreshing = false.obs;
   bool _isRefreshing = false;
 
   @override
   void onInit() {
-    _dataRefreshSchedule();
-
     super.onInit();
+    _dataRefreshSchedule();
+    invoices.bindStream(_storage.invoiceBox
+        .query()
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.find();
+    }));
+    customers.bindStream(_storage.customerBox
+        .query()
+        .order(CustomerEntity_.name, flags: Order.nullsLast)
+        .watch(triggerImmediately: true)
+        .map((query) => query.find()));
+
+    noInvoiceCustomers.bindStream(_storage.customerBox
+        .query()
+        .watch(triggerImmediately: true)
+        .map((query) {
+      var allCustomers = query.find();
+      var nICustomers = <CustomerEntity>[];
+      for (var customer in allCustomers) {
+        final customerInvoices =
+            invoices.where((invoice) => invoice.socid == customer.customerId);
+        if (customerInvoices.isEmpty) {
+          nICustomers.add(customer);
+        }
+      }
+      return nICustomers;
+    }));
+    _importCustomersToAddressBox();
   }
 
   void _dataRefreshSchedule() {
-    final customers = _storage.getCustomerList();
-    customers
-        .sort((a, b) => a.dateModification!.compareTo(b.dateModification!));
+    // final customers = _storage.getCustomerList();
+    customers.sort((a, b) => a.dateModification.compareTo(b.dateModification));
 
     String? customerDateModified = customers.isEmpty
         ? null
-        : Utils.intToYMD(customers.last.dateModification!);
+        : Utils.intToYMD(customers.last.dateModification);
 
-    var invoices = _storage.getInvoiceList();
-    invoices.removeWhere((i) => i.dateModification == null);
-    invoices.sort((a, b) => a.dateModification!.compareTo(b.dateModification!));
+    // var invoices = _storage.getInvoiceList();
+    invoices.removeWhere((i) => i.dateModification == 0);
+    invoices.sort((a, b) => a.dateModification.compareTo(b.dateModification));
     String? invoiceDateModified = invoices.isEmpty
         ? null
-        : Utils.intToYMD(invoices.last.dateModification!);
+        : Utils.intToYMD(invoices.last.dateModification);
 
-    Timer.periodic(const Duration(seconds: 600), (Timer timer) async {
+    Timer.periodic(const Duration(minutes: 10), (Timer timer) async {
       await forceRefresh(
           customerDateModified: customerDateModified,
           invoiceDateModified: invoiceDateModified);
@@ -121,8 +151,25 @@ class DataRefreshContoller extends GetxController {
     }
   }
 
+  CustomerEntity upsertCustomer(
+      CustomerEntity customer, Box<CustomerEntity> box) {
+    final existing = box
+        .query(CustomerEntity_.customerId.equals(customer.customerId))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      customer.id = existing.id; // assign internal ObjectBox ID to update
+    }
+
+    box.put(customer); // will insert or update based on ID
+    return customer;
+  }
+
   _saveCustomers(List<CustomerEntity> customers) async {
-    _storage.storeCustomers(customers);
+    for (var customer in customers) {
+      upsertCustomer(customer, _storage.customerBox);
+    }
     if (Get.isDialogOpen == true) {
       DialogHelper.updateMessage('Saved ${customers.length} customer(s)');
     }
@@ -155,8 +202,24 @@ class DataRefreshContoller extends GetxController {
     }
   }
 
+  InvoiceEntity upsertInvoice(InvoiceEntity invoice, Box<InvoiceEntity> box) {
+    final existing = box
+        .query(InvoiceEntity_.documentId.equals(invoice.documentId))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      invoice.id = existing.id; // assign internal ObjectBox ID to update
+    }
+
+    box.put(invoice); // will insert or update based on ID
+    return invoice;
+  }
+
   _saveInvoices(List<InvoiceEntity> invoices) async {
-    _storage.storeInvoices(invoices);
+    for (var invoice in invoices) {
+      upsertInvoice(invoice, _storage.invoiceBox);
+    }
     if (Get.isDialogOpen == true) {
       DialogHelper.updateMessage('Saved ${invoices.length} invoice(s)');
     }
@@ -168,20 +231,43 @@ class DataRefreshContoller extends GetxController {
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
-        (payments) {
-      for (var payment in payments) {
-        PaymentModel p = PaymentModel(
-          amount: payment.amount,
-          type: payment.type,
-          date: payment.date,
-          num: payment.num,
-          fkBankLine: payment.fkBankLine,
-          ref: payment.ref,
-          invoiceId: documentId,
-          refExt: payment.refExt,
-        );
-        _storage.storePayment(p);
+        (payments) {});
+  }
+
+  PaymentEntity upsertPayment(PaymentEntity payment, Box<PaymentEntity> box) {
+    final existing = box
+        .query(PaymentEntity_.invoiceId.equals(payment.invoiceId))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      payment.id = existing.id; // assign internal ObjectBox ID to update
+    }
+
+    box.put(payment); // will insert or update based on ID
+    return payment;
+  }
+
+  void _importCustomersToAddressBox() {
+    final customers = _storage.customerBox.getAll();
+    final box = _storage.addressBox;
+
+    for (var customer in customers) {
+      if (customer.address.isNotEmpty && customer.town.isNotEmpty) {
+        final exists = box
+            .query(AddressModel_.address
+                .equals(customer.address)
+                .and(AddressModel_.town.equals(customer.town)))
+            .build()
+            .findFirst();
+
+        if (exists == null) {
+          box.put(AddressModel(
+            town: customer.town,
+            address: customer.address,
+          ));
+        }
       }
-    });
+    }
   }
 }

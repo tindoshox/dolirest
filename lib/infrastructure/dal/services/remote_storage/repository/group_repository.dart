@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/models/group_model.dart';
+import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dio_safe_request.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dolibarr_api_error.dart';
@@ -6,7 +6,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/a
 import 'package:fpdart/fpdart.dart';
 
 class GroupRepository extends DioService {
-  Future<Either<DolibarrApiError, List<GroupModel>>> fetchGroups() {
+  Future<Either<DolibarrApiError, List<GroupEntity>>> fetchGroups() {
     final queryParameters = {
       "sortfield": "nom",
       "sortorder": "ASC",
@@ -19,10 +19,7 @@ class GroupRepository extends DioService {
         queryParameters: queryParameters,
       );
 
-      final data = response.data as List;
-      return data
-          .map((g) => GroupModel.fromJson(g as Map<String, dynamic>))
-          .toList();
+      return parseGroupsFromJson(response.data);
     });
   }
 }
