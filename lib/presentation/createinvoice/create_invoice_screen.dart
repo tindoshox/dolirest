@@ -25,7 +25,9 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
   AppBar _buildAppBar() {
     return AppBar(
       title: const Text('Create Invoice'),
-      actions: [Obx(() => getStatusIcon())],
+      actions: [
+        Obx(() => getStatusIcon(connected: controller.connected.value))
+      ],
     );
   }
 
@@ -111,7 +113,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           itemBuilder: (context, customer, isSelected, l) {
-            return buildCustomerListTile(customer, context);
+            return buildCustomerListTile(customer: customer, context: context);
           },
           emptyBuilder: (context, searchEntry) => const Center(
             child: Text(

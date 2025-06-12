@@ -28,11 +28,12 @@ import 'package:open_filex/open_filex.dart';
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final StorageService storage = Get.find();
+  final NetworkController network = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
   final ProductRepository productRepository = Get.find();
-  final DataRefreshService _dataRefreshContoller = Get.find();
+  final DataRefreshService data = Get.find();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -47,7 +48,7 @@ class InvoiceDetailController extends GetxController
   TextEditingController priceController = TextEditingController();
   TextEditingController customerController = TextEditingController();
   var moduleProductEnabled = false.obs;
-
+  var connected = false.obs;
   var selectedProduct = ProductEntity().obs;
   var productType = '1'.obs;
 
@@ -68,6 +69,38 @@ class InvoiceDetailController extends GetxController
 
   @override
   void onInit() {
+    everAll([
+      network.connected,
+      payments,
+      customer,
+    ], (_) {
+      connected = network.connected;
+    });
+    connected = network.connected;
+
+    document.bindStream(storage.invoiceBox
+        .query(InvoiceEntity_.id.equals(Get.arguments['entityId']))
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.findUnique()!;
+    }));
+
+    document.value = storage.invoiceBox.get(Get.arguments['entityId'])!;
+    customer.value =
+        data.customers.firstWhere((c) => c.customerId == document.value.socid);
+
+    payments.bindStream(storage.paymentBox
+        .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
+        .watch()
+        .map((query) {
+      return query.find();
+    }));
+
+    payments.value = storage.paymentBox
+        .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
+        .build()
+        .find();
+
     if (Platform.isAndroid) {
       platform = TargetPlatform.android;
     } else {
@@ -78,32 +111,6 @@ class InvoiceDetailController extends GetxController
         .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('product');
-    document.value = storage.invoiceBox.get(Get.arguments['entityId'])!;
-    document.bindStream(storage.invoiceBox
-        .query(InvoiceEntity_.id.equals(document.value.id))
-        .watch(triggerImmediately: true)
-        .map((query) {
-      return query.findFirst()!;
-    }));
-
-    customer.bindStream(storage.customerBox
-        .query(CustomerEntity_.customerId.equals(document.value.socid))
-        .watch(triggerImmediately: true)
-        .map((query) {
-      return query.findFirst() ?? CustomerEntity(name: 'Unknown Customer');
-    }));
-
-    payments.value = storage.paymentBox
-        .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
-        .build()
-        .find();
-
-    payments.bindStream(storage.paymentBox
-        .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
-        .watch(triggerImmediately: true)
-        .map((query) {
-      return query.find();
-    }));
 
     tabController.addListener(() {
       tabIndex(tabController.index);
@@ -135,7 +142,6 @@ class InvoiceDetailController extends GetxController
     List<int> amounts =
         payments.map((payment) => Utils.intAmounts(payment.amount)).toList();
     int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
-    debugPrint('Total: $total');
 
     if (document.value.totalpaid != total) {
       if (Get.find<NetworkController>().connected.value) {
@@ -153,14 +159,20 @@ class InvoiceDetailController extends GetxController
 
   Future _refreshPaymentData() async {
     isLoading.value = true;
-    await _dataRefreshContoller.fetchPayment(
-        documentId: document.value.documentId);
+    await data.refreshPaymentData([document.value]);
     isLoading.value = false;
   }
 
-  Future refreshInvoiceData() async {
+  Future refreshInvoiceData(String invoiceId) async {
     DialogHelper.showLoading('Refreshing Invoice');
-    await _dataRefreshContoller.syncInvoices(customerId: document.value.socid);
+    final result = await invoiceRepository.fetchInvoiceById(invoiceId);
+
+    result.fold(
+        (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
+        (invoice) {
+      storage.storeInvoice(invoice);
+      document.value = invoice;
+    });
     DialogHelper.hideLoading();
   }
 
@@ -227,31 +239,9 @@ class InvoiceDetailController extends GetxController
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) async {
-      await refreshInvoiceData();
+      await refreshInvoiceData(invoice.documentId);
       DialogHelper.hideLoading();
       SnackBarHelper.successSnackbar(message: 'Due date changed');
-    });
-  }
-
-  void deleteDocument(
-      {required String documentId, required int entityId}) async {
-    DialogHelper.showLoading('Deleting Invoice');
-    final result =
-        await invoiceRepository.deleteInvoice(documentId: documentId);
-    result.fold((failure) {
-      DialogHelper.hideLoading();
-      if (failure.code == 404) {
-        storage.invoiceBox.remove(entityId);
-        Get.back();
-        SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
-      } else {
-        SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
-      }
-    }, (deleted) {
-      DialogHelper.hideLoading();
-      storage.invoiceBox.remove(entityId);
-      Get.back();
-      SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
     });
   }
 
@@ -294,9 +284,9 @@ class InvoiceDetailController extends GetxController
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'create draft: ${failure.message}');
-    }, (id) async {
+    }, (creditNoted) async {
       DialogHelper.updateMessage('Validating credit note...');
-      await validateDocument(id: id.toString(), invoiceValidation: false)
+      await validateDocument(id: creditNoted, invoiceValidation: false)
           .then((validatedId) async {
         DialogHelper.updateMessage('Marking credit available...');
         await _markAsCreditAvailable(creditNoteId: validatedId)
@@ -333,9 +323,10 @@ class InvoiceDetailController extends GetxController
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'Validation: ${failure.message}');
+      return;
     }, (validated) async {
-      if (invoiceValidation) {
-        await refreshInvoiceData().then((value) {
+      if (invoiceValidation == true) {
+        await refreshInvoiceData(id).then((value) {
           DialogHelper.hideLoading();
 
           SnackBarHelper.successSnackbar(message: 'Invioce validated');
@@ -353,6 +344,7 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Credit Available: ${failure.message}');
+      return;
     }, (credit) {});
     return creditNoteId;
   }
@@ -366,6 +358,7 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Fetch Discount: ${failure.message}');
+      return;
     }, (discount) {
       discountId = discount;
     });
@@ -380,6 +373,7 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Apply Discount: ${failure.message}');
+      return;
     }, (code) {
       return code;
     });
@@ -392,8 +386,9 @@ class InvoiceDetailController extends GetxController
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(
           message: 'Classify Paid: ${failure.message}');
+      return;
     }, (code) async {
-      await refreshInvoiceData().then((r) {
+      await refreshInvoiceData(invoiceId).then((r) {
         DialogHelper.hideLoading();
         Get.back();
         SnackBarHelper.successSnackbar(message: 'Successful');
@@ -478,7 +473,7 @@ class InvoiceDetailController extends GetxController
     // DialogHelper.hideLoading();
   }
 
-  Future<void> _addProduct() async {
+  _addProduct() async {
     var line = Line(
             qty: '1',
             subprice: priceController.text,
@@ -500,7 +495,7 @@ class InvoiceDetailController extends GetxController
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (value) async {
-      await refreshInvoiceData();
+      await refreshInvoiceData(document.value.documentId);
       Get.back();
     });
   }

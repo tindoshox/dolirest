@@ -1,3 +1,5 @@
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -11,12 +13,23 @@ class CustomerListController extends GetxController {
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
-  StorageService storage = Get.find();
+  final StorageService storage = Get.find();
 
-  CustomerRepository repository = Get.find();
-  final DataRefreshService dataRefreshContoller = Get.find();
+  final CustomerRepository customerRepository = Get.find();
+  final DataRefreshService data = Get.find();
+  var customers = <CustomerEntity>[].obs;
+  var invoices = <InvoiceEntity>[].obs;
   var searchIconVisible = true.obs;
   var searchString = ''.obs;
+
+  @override
+  void onInit() {
+    everAll([data.customers, data.invoices], (_) {
+      customers = data.customers;
+      invoices = data.invoices;
+    });
+    super.onInit();
+  }
 
   @override
   void onClose() {
@@ -30,12 +43,33 @@ class CustomerListController extends GetxController {
 
   refreshCustomerList() async {
     DialogHelper.showLoading('Syncing customers');
-    if (!dataRefreshContoller.refreshing.value) {
-      await dataRefreshContoller
-          .syncCustomers()
-          .then((v) => DialogHelper.hideLoading());
+    if (!data.refreshing.value) {
+      await data.syncCustomers().then((v) => DialogHelper.hideLoading());
     } else {
       SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
     }
+  }
+
+  Future<void> deleteCustomer(String customerId, int entityId) async {
+    DialogHelper.showLoading('Deleting customer...');
+    final result = await customerRepository.deleteCustomer(customerId);
+    result.fold(
+      (failure) {
+        DialogHelper.hideLoading();
+        if (failure.code == 404) {
+          storage.customerBox.remove(entityId);
+
+          SnackBarHelper.successSnackbar(message: 'Customer deleted');
+        } else {
+          SnackBarHelper.errorSnackbar(message: failure.message);
+        }
+      },
+      (res) {
+        DialogHelper.hideLoading();
+        storage.customerBox.remove(entityId);
+
+        SnackBarHelper.successSnackbar(message: 'Customer deleted');
+      },
+    );
   }
 }

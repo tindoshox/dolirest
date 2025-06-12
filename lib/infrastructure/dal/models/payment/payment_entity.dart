@@ -6,23 +6,23 @@ class PaymentEntity {
   int id = 0;
   String amount;
   String type;
-  DateTime? date;
-  String num;
+  DateTime date;
+  String? num;
   @Unique(onConflict: ConflictStrategy.replace)
   String ref;
-  String refExt;
-  String fkBankLine;
+  String? refExt;
+  String? fkBankLine;
   String invoiceId;
 
   PaymentEntity({
-    this.amount = '0',
-    this.type = '',
-    this.date,
-    this.num = '',
-    @Unique(onConflict: ConflictStrategy.replace) this.ref = '',
-    this.refExt = '',
-    this.fkBankLine = '',
-    @Index(type: IndexType.value) this.invoiceId = '',
+    required this.amount,
+    required this.type,
+    required this.date,
+    this.num,
+    @Unique(onConflict: ConflictStrategy.replace) required this.ref,
+    this.refExt,
+    this.fkBankLine,
+    @Index(type: IndexType.value) required this.invoiceId,
   });
 }
 

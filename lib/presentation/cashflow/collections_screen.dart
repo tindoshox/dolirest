@@ -33,7 +33,7 @@ class CashflowScreen extends GetView<CashflowController> {
 
     //Day Cashflow
     List<PaymentEntity> dayCashflow = controller.dayCashflow;
-    dayCashflow.sort((a, b) => a.date!.compareTo(b.date!));
+    dayCashflow.sort((a, b) => a.date.compareTo(b.date));
     List<int> dayAmounts =
         dayCashflow.map((payment) => Utils.intAmounts(payment.amount)).toList();
     int dayTotal = dayAmounts.isEmpty ? 0 : dayAmounts.reduce((a, b) => a + b);
@@ -76,7 +76,7 @@ class CashflowScreen extends GetView<CashflowController> {
           cells: [
             buildCell(invoice.ref),
             buildCell(customer.name),
-            buildCell(payment.num, textAlign: TextAlign.center),
+            buildCell(payment.num ?? '', textAlign: TextAlign.center),
             buildCell(Utils.amounts(payment.amount), textAlign: TextAlign.end),
           ],
         ));

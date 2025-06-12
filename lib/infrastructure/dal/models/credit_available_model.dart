@@ -11,9 +11,9 @@ String creditAvailableModelToJson(CreditAvailableModel data) =>
     json.encode(data.toJson());
 
 class CreditAvailableModel {
-  int? id;
-  int? fkFacture;
-  int? fkFactureSource;
+  String? id;
+  String? fkFacture;
+  String? fkFactureSource;
 
   CreditAvailableModel({
     this.id,
@@ -23,15 +23,9 @@ class CreditAvailableModel {
 
   factory CreditAvailableModel.fromJson(Map<String, dynamic> json) =>
       CreditAvailableModel(
-        id: json["id"] =
-            json["id"] is int ? json["id"] : int.tryParse(json["id"]),
-        fkFacture: json["fk_facture"] = json["fk_facture"] is int
-            ? json["fk_facture"]
-            : int.tryParse(json["fk_facture"]),
-        fkFactureSource: json["fk_facture_source"] =
-            json["fk_facture_source"] is int
-                ? json["fk_facture_source"]
-                : int.tryParse(json["fk_facture_source"]),
+        id: json["id"],
+        fkFacture: json["fk_facture"],
+        fkFactureSource: json["fk_facture_source"],
       );
 
   Map<String, dynamic> toJson() => {

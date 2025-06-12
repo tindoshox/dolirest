@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:get/get.dart';
 
-Card buildCustomerListTile(CustomerEntity customer, BuildContext context) {
+Card buildCustomerListTile(
+    {required CustomerEntity customer,
+    required BuildContext context,
+    bool noInvoice = false,
+    void Function()? onDeletePressed}) {
   return Card(
     child: ListTile(
       onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
@@ -14,6 +18,9 @@ Card buildCustomerListTile(CustomerEntity customer, BuildContext context) {
         text: customer.name,
         size: 30,
       ),
+      trailing: noInvoice == false
+          ? null
+          : IconButton(onPressed: onDeletePressed, icon: Icon(Icons.delete)),
       title: Row(
         children: [
           Flexible(

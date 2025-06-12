@@ -24,7 +24,9 @@ class ReportsScreen extends GetView<ReportsController> {
       ],
       appBar: AppBar(
         title: const Text('Reports'),
-        actions: [Obx(() => getStatusIcon())],
+        actions: [
+          Obx(() => getStatusIcon(connected: controller.connected.value))
+        ],
       ),
       body: Form(
         key: controller.reportFormKey,

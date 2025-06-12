@@ -30,17 +30,7 @@ class CashflowController extends GetxController {
           (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
           (payments) {
         for (var payment in payments) {
-          PaymentEntity p = PaymentEntity(
-            amount: payment.amount,
-            type: payment.type,
-            date: payment.date,
-            num: payment.num ?? '',
-            fkBankLine: payment.fkBankLine ?? '',
-            ref: payment.ref!,
-            invoiceId: invoice.documentId,
-            refExt: payment.refExt ?? '',
-          );
-          storage.paymentBox.put(p);
+          storage.paymentBox.put(payment);
         }
       });
     }
@@ -50,7 +40,7 @@ class CashflowController extends GetxController {
     final list = storage.paymentBox.getAll();
     //Day Cashflow
     dayCashflow.value = list
-        .where((f) => Utils.datePaid(f.date!) == Utils.datePaid(DateTime.now()))
+        .where((f) => Utils.datePaid(f.date) == Utils.datePaid(DateTime.now()))
         .cast<PaymentEntity>()
         .toList();
   }

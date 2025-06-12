@@ -4,6 +4,8 @@ import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
@@ -18,6 +20,8 @@ import 'package:get/get.dart';
 class PaymentController extends GetxController {
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
+  final NetworkController network = Get.find();
+  final DataRefreshService data = Get.find();
 
   TextEditingController payDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
@@ -36,23 +40,35 @@ class PaymentController extends GetxController {
 
   var invoice = InvoiceEntity().obs;
   var customer = CustomerEntity().obs;
+  var customers = <CustomerEntity>[].obs;
+  var invoices = <InvoiceEntity>[].obs;
 
-  RxString amount = ''.obs;
-  RxString receipt = ''.obs;
-  RxList receiptNumbers = [].obs;
-  RxList paymentDates = [].obs;
+  var amount = ''.obs;
+  var receipt = ''.obs;
+  var receiptNumbers = [].obs;
+  var paymentDates = [].obs;
+  var connected = false.obs;
 
   @override
   void onInit() {
+    everAll([network.connected, data.invoices, data.customers], (_) {
+      connected = network.connected;
+      invoice.value = data.invoices.firstWhere((i) => i.id == entityId);
+      customer.value =
+          data.customers.firstWhere((c) => c.customerId == invoice.value.socid);
+      customers = data.customers;
+      invoices = data.invoices;
+    });
+
+    connected = network.connected;
+    if (entityId == null) {
+      customers = data.customers;
+      invoices = data.invoices;
+    }
     if (entityId != null) {
-      batch = false;
-      invoice.bindStream(storage.invoiceBox
-          .query(InvoiceEntity_.id.equals(entityId!))
-          .watch(triggerImmediately: true)
-          .map((query) => query.findFirst()!));
-      customer.value = storage.customerBox
-          .getAll()
-          .firstWhere((c) => c.customerId == invoice.value.socid);
+      invoice.value = data.invoices.firstWhere((i) => i.id == entityId);
+      customer.value =
+          data.customers.firstWhere((c) => c.customerId == invoice.value.socid);
     }
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
@@ -96,7 +112,7 @@ class PaymentController extends GetxController {
         list.map((payment) => payment.num.toString()).toList();
 
     paymentDates.value =
-        list.map((payment) => Utils.dateTimeToDMY(payment.date!)).toList();
+        list.map((payment) => Utils.dateTimeToDMY(payment.date)).toList();
   }
 
   _fetchCustomerById(String customerId) {
@@ -216,17 +232,7 @@ class PaymentController extends GetxController {
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
       for (var payment in payments) {
-        PaymentEntity p = PaymentEntity(
-          amount: payment.amount,
-          type: payment.type,
-          date: payment.date,
-          num: payment.num ?? '',
-          fkBankLine: payment.fkBankLine ?? '',
-          ref: payment.ref!,
-          invoiceId: invoiceId,
-          refExt: payment.refExt ?? '',
-        );
-        storage.storePayment(p);
+        storage.storePayment(payment);
       }
     });
   }

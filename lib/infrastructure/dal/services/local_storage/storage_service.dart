@@ -23,7 +23,6 @@ class StorageService extends GetxService {
   late final Box<UserModel> userBox;
   late final Box<AddressModel> addressBox;
   late final Box<SettingsModel> settingsBox;
-  // Add more boxes as needed
 
   StorageService._create(this.store) {
     customerBox = Box<CustomerEntity>(store);
@@ -39,109 +38,105 @@ class StorageService extends GetxService {
   }
 
   static Future<StorageService> create() async {
-    final store = await openStore(); // generated method
+    final store = await openStore();
     return StorageService._create(store);
   }
 
-  void storeUser(UserModel user) {
-    userBox.put(user);
+  _upsertPayment(PaymentEntity payment) {
+    final existing = paymentBox
+        .query(PaymentEntity_.invoiceId
+            .equals(payment.invoiceId)
+            .and(PaymentEntity_.ref.equals(payment.ref)))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      payment.id = existing.id;
+    }
+
+    paymentBox.put(payment);
+    return payment;
   }
-
-  UserModel? getUser(int id) {
-    return userBox.get(id);
-  }
-
-  userListenable() {}
-
-  void storeAddresses(AddressModel address) {
-    addressBox.put(address);
-  }
-
-  List<AddressModel> getAddressList() {
-    return addressBox.getAll();
-  }
-
-  void storeCompany(CompanyModel company) {
-    companyBox.put(company);
-  }
-
-  CompanyModel? getCompany(int id) {
-    return companyBox.get(id);
-  }
-
-  companyListenable() {}
 
   void storePayment(PaymentEntity payment) async {
-    paymentBox.put(payment);
+    _upsertPayment(payment);
   }
 
-  List<PaymentEntity> getPaymentList({String? invoiceId}) {
-    if (invoiceId == null) {
-      return paymentBox.getAll();
-    } else {
-      return paymentBox
-          .getAll()
-          .where((p) => p.invoiceId == invoiceId)
-          .toList();
+  InvoiceEntity _upsertInvoice(InvoiceEntity invoice) {
+    final existing = invoiceBox
+        .query(InvoiceEntity_.documentId.equals(invoice.documentId))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      // Fix: Use = for assignment instead of == for comparison
+      invoice.id = existing.id;
+
+      final linesToRemove = lineBox
+          .query(InvoiceLineEntity_.fkFacture.equals(invoice.documentId))
+          .build()
+          .find();
+      lineBox.removeMany(linesToRemove.map((e) => e.id).toList());
     }
-  }
 
-  Stream<Query<PaymentEntity>> paymentsStream() {
-    return paymentBox.query().watch(triggerImmediately: true);
-  }
-
-  void storeInvoice(InvoiceEntity invoice) {
+    // Store the invoice first to ensure it has an ID
     invoiceBox.put(invoice);
+
+    return invoice;
   }
 
-  void storeInvoices(List<InvoiceEntity> invoices) {
+  storeInvoice(InvoiceEntity invoice) {
+    return _upsertInvoice(invoice);
+  }
+
+  storeInvoices(List<InvoiceEntity> invoices) {
     if (invoices.isNotEmpty) {
-      invoiceBox.putMany(invoices);
+      for (var invoice in invoices) {
+        _upsertInvoice(invoice);
+      }
     }
+    return invoices;
   }
 
-  InvoiceEntity? getInvoice(String documentId) {
-    return invoiceBox
-        .getAll()
-        .firstWhereOrNull((i) => i.documentId == documentId);
+  deleteInvoice(int id) {
+    return invoiceBox.remove(id);
   }
 
-  List<InvoiceEntity> getInvoiceList({String? customerId}) {
-    if (customerId == null) {
-      return invoiceBox.getAll();
-    } else {
-      return invoiceBox.getAll().where((i) => i.socid == customerId).toList();
+  deleteAllInvoices(List<int> ids) {
+    return invoiceBox.removeMany(ids);
+  }
+
+  deleteAllPayments(List<int> ids) {
+    return paymentBox.removeMany(ids);
+  }
+
+  _upsertCustomer(CustomerEntity customer) {
+    final existing = customerBox
+        .query(CustomerEntity_.customerId.equals(customer.customerId))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      customer.id = existing.id;
     }
-  }
 
-  Stream<List<InvoiceEntity>> getInvoices() {
-    final builder = invoiceBox.query()
-      ..order(InvoiceEntity_.date, flags: Order.descending);
-    return builder.watch(triggerImmediately: true).map((query) => query.find());
-  }
-
-  invoicesListenable() {}
-
-  void deleteInvoice(int id) {
-    invoiceBox.remove(id);
-  }
-
-  void deleteAllInvoices(List<int> ids) {
-    invoiceBox.removeMany(ids);
-  }
-
-  void deleteAllPayments(List<int> ids) {
-    paymentBox.removeMany(ids);
+    customerBox.put(customer);
+    return customer;
   }
 
   void storeCustomer(CustomerEntity customer) {
-    customerBox.put(customer);
+    _upsertCustomer(customer);
   }
 
-  void storeCustomers(List<CustomerEntity> customers) {
+  storeCustomers(List<CustomerEntity> customers) {
     if (customers.isNotEmpty) {
-      customerBox.putMany(customers);
+      for (var customer in customers) {
+        _upsertCustomer(
+          customer,
+        );
+      }
     }
+    return customers;
   }
 
   CustomerEntity? getCustomer(String customerId) {
@@ -155,18 +150,16 @@ class StorageService extends GetxService {
     return customerBox.getAll();
   }
 
-  void deleteCustomer(int id) {
-    customerBox.remove(id);
+  deleteCustomer(int id) {
+    return customerBox.remove(id);
   }
 
-  void deleteAllCustomer(ids) {
-    customerBox.removeMany(ids);
+  deleteManyCustomer(ids) {
+    return customerBox.removeMany(ids);
   }
 
-  customersListenable() {}
-
-  void storeSetting(SettingsModel setting) {
-    settingsBox.put(setting);
+  storeSetting(SettingsModel setting) {
+    return settingsBox.put(setting);
   }
 
   SettingsModel? getSetting(int id) {
@@ -177,12 +170,34 @@ class StorageService extends GetxService {
     return settingsBox.get(id);
   }
 
-  void clearSetting(id) {
-    settingsBox.remove(id);
+  clearSetting(id) {
+    return settingsBox.remove(id);
   }
 
-  void storeGroup(id, GroupEntity group) {
+  _upsertGroup(GroupEntity group) {
+    final existing = groupBox
+        .query(GroupEntity_.groupId.equals(group.groupId!))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      group.id = existing.id;
+    }
+
     groupBox.put(group);
+    return group;
+  }
+
+  storeGroup(GroupEntity group) {
+    return _upsertGroup(group);
+  }
+
+  void storeGroups(List<GroupEntity> groups) {
+    if (groups.isNotEmpty) {
+      for (var group in groups) {
+        _upsertGroup(group);
+      }
+    }
   }
 
   GroupEntity? getGroup(id) {
@@ -193,24 +208,29 @@ class StorageService extends GetxService {
     return groupBox.getAll();
   }
 
-  void storeProduct(ProductEntity product) {
+  _upsertProduct(ProductEntity product) {
+    final existing = productBox
+        .query(ProductEntity_.productId.equals(product.productId!))
+        .build()
+        .findFirst();
+
+    if (existing != null) {
+      product.id = existing.id;
+    }
+
     productBox.put(product);
   }
 
-  List<ProductEntity> getProductList() {
-    return productBox.getAll();
+  void storeProduct(ProductEntity product) {
+    _upsertProduct(product);
   }
 
-  ProductEntity? getProduct(id) {
-    return productBox.get(id);
-  }
-
-  void storeEnabledModules(modules) {
-    settingsBox.put(modules);
-  }
-
-  SettingsModel? getEnabledModules(id) {
-    return settingsBox.get(id);
+  void storeProducts(List<ProductEntity> products) {
+    if (products.isNotEmpty) {
+      for (var product in products) {
+        _upsertProduct(product);
+      }
+    }
   }
 
   void clearAll() {
@@ -223,21 +243,5 @@ class StorageService extends GetxService {
     productBox.removeAll();
     settingsBox.removeAll();
     userBox.removeAll();
-  }
-
-  Stream<List<CustomerEntity>> streamCustomerList() {
-    return customerBox
-        .query()
-        .order(CustomerEntity_.name, flags: Order.descending)
-        .watch(triggerImmediately: true)
-        .map((query) => query.find());
-  }
-
-  Stream<List<InvoiceEntity>> streamInvoiceList() {
-    return invoiceBox
-        .query()
-        .order(InvoiceEntity_.date, flags: Order.descending)
-        .watch(triggerImmediately: true)
-        .map((query) => query.find());
   }
 }

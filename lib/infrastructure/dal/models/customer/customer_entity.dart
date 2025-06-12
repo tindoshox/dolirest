@@ -4,7 +4,7 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class CustomerEntity {
-  @Id()
+  @Id(assignable: true)
   int id = 0;
   @Index(type: IndexType.value)
   @Unique(onConflict: ConflictStrategy.replace)

@@ -67,7 +67,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
       title: const Text('Invoice Detail'),
       actions: [
         getStatusIcon(
-          onPressed: () => controller.refreshInvoiceData(),
+          connected: controller.connected.value,
+          onPressed: () => controller.refreshInvoiceData(document.documentId),
         ),
         if (document.type == DocumentType.invoice &&
             document.paye == PaidStatus.unpaid &&
@@ -150,17 +151,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                 SizedBox(
                   width: 10,
                 ),
-                if (document.status == ValidationStatus.draft &&
-                    document.paye == PaidStatus.unpaid)
-                  CustomActionButton(
-                    isCancel: true,
-                    buttonText: 'Delete',
-                    onTap: () => connected
-                        ? controller.deleteDocument(
-                            documentId: document.documentId,
-                            entityId: document.id)
-                        : SnackBarHelper.networkSnackbar(),
-                  ),
+
                 if (document.type == DocumentType.invoice &&
                     document.status == ValidationStatus.validated)
                   CustomActionButton(

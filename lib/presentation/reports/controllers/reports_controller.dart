@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dolirest/infrastructure/dal/models/build_report_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/reportid_model.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
@@ -15,6 +16,7 @@ import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
+  final NetworkController networkController = Get.find();
   final StorageService storage = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
@@ -30,6 +32,7 @@ class ReportsController extends GetxController {
 
   var startPeriod = ''.obs;
   var endPeriod = ''.obs;
+  var connected = false.obs;
 
   /// A list of available reports.
   List<ReportIdModel> reportList = [
@@ -142,7 +145,7 @@ class ReportsController extends GetxController {
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
       for (GroupEntity group in groups) {
-        storage.storeGroup(group.id, group);
+        storage.storeGroup(group);
       }
     });
 

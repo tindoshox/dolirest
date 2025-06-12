@@ -56,7 +56,7 @@ class InvoiceEntity {
 
 @Entity()
 class InvoiceLineEntity {
-  @Id()
+  @Id(assignable: true)
   int id = 0;
   String? lineId;
   String? description;
@@ -111,6 +111,8 @@ List<InvoiceEntity> parseInvoiceListFromJson(List<dynamic> jsonList) {
       refCustomer: invoiceJson['ref_customer'] ?? '',
       fkFactureSource: invoiceJson['fk_facture_source'] ?? '',
     );
+
+    invoice.lines.clear();
 
     if (invoiceJson['lines'] is List) {
       invoice.lines.addAll(

@@ -29,8 +29,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
           Obx(() => _buildSearchActionButton()),
         ],
       ),
-      body: Padding(
-          padding: EdgeInsets.all(10), child: Obx(() => _buildCustomerList())),
+      body: Padding(padding: EdgeInsets.all(10), child: _buildCustomerList()),
     );
   }
 
@@ -69,68 +68,76 @@ class CustomerListScreen extends GetView<CustomerListController> {
   }
 
   Widget _buildCustomerList() {
-    var customers = <CustomerEntity>[];
-    var noInvoiceCustomers = <CustomerEntity>[];
-    if (controller.noInvoiceCustomers == true) {
-      for (var customer in controller.dataRefreshContoller.customers) {
-        final invoices = controller.dataRefreshContoller.invoices
-            .where((i) => i.socid == customer.customerId);
-        if (invoices.isEmpty) {
-          (noInvoiceCustomers.add(customer));
+    return Obx(() {
+      var customers = <CustomerEntity>[];
+      var noInvoiceCustomers = <CustomerEntity>[];
+      if (controller.noInvoiceCustomers == true) {
+        for (var customer in controller.customers) {
+          final invoices = controller.data.invoices
+              .where((i) => i.socid == customer.customerId);
+          if (invoices.isEmpty) {
+            (noInvoiceCustomers.add(customer));
+          }
         }
       }
-    }
-    var list = !controller.noInvoiceCustomers
-        ? controller.dataRefreshContoller.customers
-        : noInvoiceCustomers;
+      var list = !controller.noInvoiceCustomers
+          ? controller.data.customers
+          : noInvoiceCustomers;
 
-    String search = controller.searchString.value;
-    customers = search.length > 2
-        ? list
-            .where((customer) =>
-                customer.name
-                    .toString()
-                    .toUpperCase()
-                    .contains(search.toUpperCase()) ||
-                customer.address
-                    .toString()
-                    .toUpperCase()
-                    .contains(search.toUpperCase()) ||
-                customer.town
-                    .toString()
-                    .toUpperCase()
-                    .contains(search.toUpperCase()) ||
-                customer.phone.toString().contains(search) ||
-                customer.fax.toString().contains(search))
-            .toList()
-        : list;
+      String search = controller.searchString.value;
+      customers = search.length > 2
+          ? list
+              .where((customer) =>
+                  customer.name
+                      .toString()
+                      .toUpperCase()
+                      .contains(search.toUpperCase()) ||
+                  customer.address
+                      .toString()
+                      .toUpperCase()
+                      .contains(search.toUpperCase()) ||
+                  customer.town
+                      .toString()
+                      .toUpperCase()
+                      .contains(search.toUpperCase()) ||
+                  customer.phone.toString().contains(search) ||
+                  customer.fax.toString().contains(search))
+              .toList()
+          : list;
 
-    return RefreshIndicator(
-      onRefresh: () => controller.refreshCustomerList(),
-      child: ListView.builder(
-        controller: controller.scrollController,
-        itemCount: customers.length + 1,
-        itemBuilder: (context, index) {
-          if (customers.isEmpty) {
-            return ListTile(
-              title:
-                  const Text('No customers found', textAlign: TextAlign.center),
-              trailing: ElevatedButton(
-                  onPressed: () => controller.refreshCustomerList(),
-                  child: const Text('Refresh')),
-            );
-          }
-          if (index < customers.length) {
-            CustomerEntity customer = customers[index];
-            return buildCustomerListTile(customer, context);
-          } else {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32.0),
-              child: Center(child: Text('nothing more to load!')),
-            );
-          }
-        },
-      ),
-    );
+      return RefreshIndicator(
+        onRefresh: () => controller.refreshCustomerList(),
+        child: ListView.builder(
+          controller: controller.scrollController,
+          itemCount: customers.length + 1,
+          itemBuilder: (context, index) {
+            if (customers.isEmpty) {
+              return ListTile(
+                title: const Text('No customers found',
+                    textAlign: TextAlign.center),
+                trailing: ElevatedButton(
+                    onPressed: () => controller.refreshCustomerList(),
+                    child: const Text('Refresh')),
+              );
+            }
+            if (index < customers.length) {
+              CustomerEntity customer = customers[index];
+              return buildCustomerListTile(
+                customer: customer,
+                context: context,
+                noInvoice: controller.noInvoiceCustomers,
+                onDeletePressed: () =>
+                    controller.deleteCustomer(customer.customerId, customer.id),
+              );
+            } else {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32.0),
+                child: Center(child: Text('nothing more to load!')),
+              );
+            }
+          },
+        ),
+      );
+    });
   }
 }

@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/credit_available_model.dart';
 import 'package:dolirest/infrastructure/dal/models/discount_model.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
-import 'package:dolirest/infrastructure/dal/models/payment/payment_model.dart';
+import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dio_safe_request.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dolibarr_api_error.dart';
@@ -37,7 +36,7 @@ class InvoiceRepository extends DioService {
           if (status != null) "status": status,
           if (type != null) "type": type,
           if (customerId != null) "thirdparty_ids": customerId,
-          if (dateModified != null) "t.tms": dateModified,
+          if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
         };
         final response =
             await dio.get(ApiPath.invoices, queryParameters: queryParameters);
@@ -65,30 +64,30 @@ class InvoiceRepository extends DioService {
     });
   }
 
-  Future<Either<DolibarrApiError, List<PaymentModel>>> fetchPaymentsByInvoice({
+  Future<Either<DolibarrApiError, List<PaymentEntity>>> fetchPaymentsByInvoice({
     required String invoiceId,
   }) {
     return dio.safeRequest(() async {
       final res = await dio.get('${ApiPath.invoices}/$invoiceId/payments');
-      final list = res.data as List;
-      return list.map((e) => PaymentModel.fromJson(e)).toList();
+      return parsePaymentsFromJson(res.data, invoiceId);
     });
   }
 
-  Future<Either<DolibarrApiError, InvoiceModel>> updateInvoice({
+  Future<Either<DolibarrApiError, InvoiceEntity>> updateInvoice({
     required String invoiceId,
     required String body,
   }) {
     return dio.safeRequest(() async {
       final res = await dio.put('${ApiPath.invoices}/$invoiceId', data: body);
-      return InvoiceModel.fromJson(res.data);
+      return parseInvoiceFromJson(res.data);
     });
   }
 
-  Future<Either<DolibarrApiError, int>> createInvoice({required String body}) {
+  Future<Either<DolibarrApiError, String>> createInvoice(
+      {required String body}) {
     return dio.safeRequest(() async {
       final res = await dio.post(ApiPath.invoices, data: body);
-      return int.parse(res.data.toString().replaceAll('"', ''));
+      return (res.data.toString().replaceAll('"', ''));
     });
   }
 

@@ -1,8 +1,6 @@
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:get/get.dart';
 
 Widget _makeIcon(
     {required String text,
@@ -22,7 +20,11 @@ Widget _makeIcon(
           )));
 }
 
-Widget getStatusIcon({void Function()? onPressed, bool refreshing = false}) {
+Widget getStatusIcon({
+  void Function()? onPressed,
+  bool refreshing = false,
+  required bool connected,
+}) {
   if (refreshing) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
@@ -32,7 +34,7 @@ Widget getStatusIcon({void Function()? onPressed, bool refreshing = false}) {
       ),
     );
   } else {
-    if (!Get.find<NetworkController>().connected.value) {
+    if (!connected) {
       return _makeIcon(
           text: 'No connection',
           icon: Icons.cloud_off_outlined,

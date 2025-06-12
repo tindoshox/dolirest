@@ -20,7 +20,9 @@ class PaymentScreen extends GetView<PaymentController> {
 
     return Scaffold(
       appBar: AppBar(
-        actions: [Obx(() => getStatusIcon())],
+        actions: [
+          Obx(() => getStatusIcon(connected: controller.connected.value))
+        ],
         title: const Text('Record Payment'),
       ),
       body: Center(
@@ -249,7 +251,10 @@ class PaymentScreen extends GetView<PaymentController> {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             itemBuilder: (context, invoice, isSelected, l) {
-              return InvoiceListTile(
+              return invoiceListTile(
+                context: context,
+                customer: controller.customers
+                    .firstWhere((c) => c.customerId == invoice.socid),
                 invoice: invoice,
                 storage: controller.storage,
               );

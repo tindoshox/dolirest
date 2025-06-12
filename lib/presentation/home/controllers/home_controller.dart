@@ -10,8 +10,9 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
-import 'package:dolirest/utils/dialog_helper.dart';
+import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
+import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
@@ -22,12 +23,19 @@ class HomeController extends GetxController {
   final CompanyRepository companyRepository = Get.find();
   final UserRepository userRepository = Get.find();
   final ModuleRepository moduleRepository = Get.find();
-  final DataRefreshService dataRefreshContoller = Get.find();
+  final DataRefreshService data = Get.find();
 
   var isLoading = false.obs;
+  var connected = false.obs;
   var user = UserModel().obs;
   var company = ''.obs;
-
+  var noInvoiceCustomers = 0.obs;
+  var cashflow = 0.obs;
+  var openInvoices = 0.obs;
+  var draftInvoices = 0.obs;
+  var dueTodayInvoices = 0.obs;
+  var overDueInvoices = 0.obs;
+  var salesInvoices = 0.obs;
   var enabledModules = <String>[].obs;
 
   @override
@@ -36,6 +44,92 @@ class HomeController extends GetxController {
     _updateModules();
     _updateCompany();
 
+    everAll([
+      data.noInvoiceCustomers,
+      data.cashflow,
+      data.invoices,
+      networkController.connected
+    ], (_) {
+      noInvoiceCustomers = data.noInvoiceCustomers;
+      cashflow = data.cashflow;
+      connected = networkController.connected;
+
+      openInvoices.value = data.invoices
+          .where((i) =>
+              i.type == DocumentType.invoice &&
+              i.paye == PaidStatus.unpaid &&
+              i.remaintopay != "0" &&
+              i.status == ValidationStatus.validated)
+          .length;
+      draftInvoices.value = data.invoices
+          .where((invoice) => invoice.status == ValidationStatus.draft)
+          .length;
+      overDueInvoices.value = data.invoices
+          .where((i) =>
+              i.type == DocumentType.invoice &&
+              i.paye == PaidStatus.unpaid &&
+              i.remaintopay != "0" &&
+              i.status == ValidationStatus.validated &&
+              Utils.intToDateTime(i.dateLimReglement)
+                  .isBefore(DateTime.now().subtract(Duration(days: 31))))
+          .length;
+
+      salesInvoices.value = data.invoices
+          .where((invoice) =>
+              Utils.isSameMonth(
+                  Utils.intToDateTime(invoice.date), DateTime.now()) &&
+              invoice.type == DocumentType.invoice)
+          .length;
+      dueTodayInvoices.value = data.invoices
+          .where((i) =>
+              i.type == DocumentType.invoice &&
+              i.remaintopay != "0" &&
+              i.paye == PaidStatus.unpaid &&
+              Utils.intToDateTime(i.dateLimReglement).day ==
+                  DateTime.now().day &&
+              Utils.intToDateTime(i.dateLimReglement)
+                  .isBefore(DateTime.now().add(Duration(days: 1))))
+          .length;
+    });
+
+    noInvoiceCustomers = data.noInvoiceCustomers;
+    cashflow = data.cashflow;
+    connected = networkController.connected;
+
+    openInvoices.value = data.invoices
+        .where((i) =>
+            i.type == DocumentType.invoice &&
+            i.paye == PaidStatus.unpaid &&
+            i.remaintopay != "0" &&
+            i.status == ValidationStatus.validated)
+        .length;
+    draftInvoices.value = data.invoices
+        .where((invoice) => invoice.status == ValidationStatus.draft)
+        .length;
+    overDueInvoices.value = data.invoices
+        .where((i) =>
+            i.type == DocumentType.invoice &&
+            i.paye == PaidStatus.unpaid &&
+            i.remaintopay != "0" &&
+            i.status == ValidationStatus.validated &&
+            Utils.intToDateTime(i.dateLimReglement)
+                .isBefore(DateTime.now().subtract(Duration(days: 31))))
+        .length;
+
+    salesInvoices.value = data.invoices
+        .where((invoice) =>
+            Utils.isSameMonth(
+                Utils.intToDateTime(invoice.date), DateTime.now()) &&
+            invoice.type == DocumentType.invoice)
+        .length;
+    dueTodayInvoices.value = data.invoices
+        .where((i) =>
+            i.type == DocumentType.invoice &&
+            i.remaintopay != "0" &&
+            Utils.dateOnly(Utils.intToDateTime(i.dateLimReglement)) ==
+                Utils.dateOnly(DateTime.now()))
+        .length;
+
     super.onInit();
   }
 
@@ -43,7 +137,7 @@ class HomeController extends GetxController {
   void onReady() {
     if ((storage.customerBox.getAll().isEmpty ||
             storage.invoiceBox.getAll().isEmpty) &&
-        !dataRefreshContoller.refreshing.value) {
+        !data.refreshing.value) {
       forceRefresh();
     }
 
@@ -73,10 +167,9 @@ class HomeController extends GetxController {
   }
 
   void forceRefresh() async {
-    DialogHelper.showLoading();
-    await dataRefreshContoller.forceRefresh().then((v) {
-      DialogHelper.hideLoading();
-    });
+    SnackBarHelper.successSnackbar(message: 'Refreshing data');
+
+    data.forceRefresh();
   }
 
   void _updateModules() {

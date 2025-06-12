@@ -6,7 +6,7 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class AddressModel {
-  @Id()
+  @Id(assignable: true)
   int id;
 
   String town;

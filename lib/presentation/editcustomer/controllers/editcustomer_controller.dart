@@ -5,6 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
@@ -17,6 +18,7 @@ import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
   StorageService storage = Get.find();
+  NetworkController networkController = Get.find();
   CustomerRepository customerRepository = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
@@ -26,24 +28,33 @@ class EditCustomerController extends GetxController {
   TextEditingController phoneController = TextEditingController();
   TextEditingController faxController = TextEditingController();
 
-  RxBool isLoading = false.obs;
+  var isLoading = false.obs;
+  var connected = false.obs;
 
-  Rx<CustomerEntity> customerToEdit = CustomerEntity().obs;
+  var customerToEdit = CustomerEntity().obs;
   int? entityId = Get.arguments['entityId'];
 
-  Rx<GroupEntity> selectedGroup = GroupEntity().obs;
-  RxList<GroupEntity> groups = List<GroupEntity>.empty().obs;
+  var selectedGroup = GroupEntity().obs;
+  var groups = List<GroupEntity>.empty().obs;
 
-  List<String> towns = <String>[];
+  var towns = <String>[];
   var addresses = List<AddressModel>.empty().obs;
 
-  late final Box<AddressModel> addressBox;
   final selectedTown = ''.obs;
   StreamSubscription? _addressSub;
   final addressList = <String>[].obs;
 
   @override
   void onInit() async {
+    if (entityId != null) {
+      customerToEdit.value = storage.customerBox.get(entityId!)!;
+    }
+
+    ever(networkController.connected, (_) {
+      connected = networkController.connected;
+    });
+
+    connected = networkController.connected;
     if (entityId != null) {
       await _fetchCustomerById(entityId!);
     }
@@ -72,7 +83,7 @@ class EditCustomerController extends GetxController {
 
   void bindAddressStream() {
     _addressSub?.cancel(); // cleanup old sub
-    _addressSub = addressBox
+    _addressSub = storage.addressBox
         .query(AddressModel_.town.equals(selectedTown.value))
         .watch(triggerImmediately: true)
         .map((q) =>
@@ -176,16 +187,7 @@ class EditCustomerController extends GetxController {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) async {
-      final existing = storage.customerBox
-          .query(CustomerEntity_.customerId.equals(customer.customerId))
-          .build()
-          .findFirst();
-
-      if (existing != null) {
-        customer.id = existing.id; // assign internal ObjectBox ID to update
-      }
-
-      storage.customerBox.put(customer);
+      storage.storeCustomer(customer);
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
           arguments: {'entityId': customer.id});

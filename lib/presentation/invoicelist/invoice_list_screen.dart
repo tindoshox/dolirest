@@ -68,62 +68,67 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          Expanded(child: Obx(() => buildInvoiceList())),
+          Expanded(child: buildInvoiceList()),
         ],
       ),
     );
   }
 
   Widget buildInvoiceList() {
-    String search = controller.searchString.value;
-    var list = controller.invoices;
+    return Obx(() {
+      String search = controller.searchString.value;
+      List<InvoiceEntity> list = controller.invoices;
+      list.sort((a, b) => a.name.compareTo(b.name));
 
-    List<InvoiceEntity> invoices = search != ""
-        ? list
-            .where(
-              (invoice) =>
-                  invoice.name
-                      .toString()
-                      .toUpperCase()
-                      .contains(controller.searchString.value.toUpperCase()) ||
-                  invoice.ref.contains(controller.searchString.value) ||
-                  invoice.refCustomer
-                      .toString()
-                      .contains(controller.searchString.value),
-            )
-            .toList()
-        : list;
-    return RefreshIndicator(
-        onRefresh: () => controller.refreshInvoiceList(),
-        child: ListView.builder(
-            controller: controller.scrollController,
-            itemCount: invoices.length + 1,
-            itemBuilder: (context, index) {
-              if (invoices.isEmpty) {
-                return ListTile(
-                  title: const Text('No invoices found',
-                      textAlign: TextAlign.center),
-                  trailing: ElevatedButton(
-                      onPressed: () => controller.refreshInvoiceList(),
-                      child: const Text('Refresh')),
-                );
-              }
+      List<InvoiceEntity> invoices = search != ""
+          ? list
+              .where(
+                (invoice) =>
+                    invoice.name.toString().toUpperCase().contains(
+                        controller.searchString.value.toUpperCase()) ||
+                    invoice.ref.contains(controller.searchString.value) ||
+                    invoice.refCustomer
+                        .toString()
+                        .contains(controller.searchString.value),
+              )
+              .toList()
+          : list;
+      return RefreshIndicator(
+          onRefresh: () => controller.refreshInvoiceList(),
+          child: ListView.builder(
+              controller: controller.scrollController,
+              itemCount: invoices.length + 1,
+              itemBuilder: (context, index) {
+                if (invoices.isEmpty) {
+                  return ListTile(
+                    title: const Text('No invoices found',
+                        textAlign: TextAlign.center),
+                    trailing: ElevatedButton(
+                        onPressed: () => controller.refreshInvoiceList(),
+                        child: const Text('Refresh')),
+                  );
+                }
 
-              if (index < invoices.length) {
-                // ignore: unused_local_variable
-                final customer = controller.storage
-                    .getCustomerList()
-                    .firstWhere((c) => c.customerId == invoices[index].socid);
-                return InvoiceListTile(
-                  invoice: invoices[index],
-                  storage: controller.storage,
-                );
-              } else {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32.0),
-                  child: Center(child: Text('End of list!')),
-                );
-              }
-            }));
+                if (index < invoices.length) {
+                  // ignore: unused_local_variable
+                  final customer = controller.customers
+                      .firstWhere((c) => c.customerId == invoices[index].socid);
+                  return invoiceListTile(
+                    context: context,
+                    customer: customer,
+                    onDeletePressed: () => controller.deleteDraft(
+                        documentId: invoices[index].documentId,
+                        entityId: invoices[index].id),
+                    invoice: invoices[index],
+                    storage: controller.storage,
+                  );
+                } else {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    child: Center(child: Text('End of list!')),
+                  );
+                }
+              }));
+    });
   }
 }

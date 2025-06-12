@@ -1689,16 +1689,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (PaymentEntity object, fb.Builder fbb) {
         final amountOffset = fbb.writeString(object.amount);
         final typeOffset = fbb.writeString(object.type);
-        final numOffset = fbb.writeString(object.num);
+        final numOffset = object.num == null
+            ? null
+            : fbb.writeString(object.num!);
         final refOffset = fbb.writeString(object.ref);
-        final refExtOffset = fbb.writeString(object.refExt);
-        final fkBankLineOffset = fbb.writeString(object.fkBankLine);
+        final refExtOffset = object.refExt == null
+            ? null
+            : fbb.writeString(object.refExt!);
+        final fkBankLineOffset = object.fkBankLine == null
+            ? null
+            : fbb.writeString(object.fkBankLine!);
         final invoiceIdOffset = fbb.writeString(object.invoiceId);
         fbb.startTable(10);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, amountOffset);
         fbb.addOffset(2, typeOffset);
-        fbb.addInt64(3, object.date?.millisecondsSinceEpoch);
+        fbb.addInt64(3, object.date.millisecondsSinceEpoch);
         fbb.addOffset(4, numOffset);
         fbb.addOffset(5, refOffset);
         fbb.addOffset(6, refExtOffset);
@@ -1710,32 +1716,27 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
-        final dateValue = const fb.Int64Reader().vTableGetNullable(
-          buffer,
-          rootOffset,
-          10,
-        );
         final amountParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 6, '');
         final typeParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');
-        final dateParam = dateValue == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(dateValue);
+        final dateParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+        );
         final numParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 12, '');
+        ).vTableGetNullable(buffer, rootOffset, 12);
         final refParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 14, '');
         final refExtParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 16, '');
+        ).vTableGetNullable(buffer, rootOffset, 16);
         final fkBankLineParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 18, '');
+        ).vTableGetNullable(buffer, rootOffset, 18);
         final invoiceIdParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 20, '');

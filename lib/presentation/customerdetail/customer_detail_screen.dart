@@ -17,22 +17,13 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton:
-          Obx(() => controller.invoices.isEmpty && !controller.isLoading.value
-              ? FloatingActionButton(
-                  backgroundColor: Colors.redAccent,
-                  onPressed: () => Get.find<NetworkController>().connected.value
-                      ? controller.deleteCustomer()
-                      : SnackBarHelper.networkSnackbar(),
-                  child: const Icon(Icons.delete),
-                )
-              : SizedBox()),
       persistentFooterAlignment: AlignmentDirectional.center,
       persistentFooterButtons: _buildFooterButtons(),
       appBar: AppBar(
         title: Text('Customer Details'),
         actions: [
           getStatusIcon(
+            connected: controller.connected.value,
             onPressed: () => controller.refreshCustomerInvoiceData(),
           ),
           if (controller.moduleEnabledStatement.value) _getMenu()
@@ -113,7 +104,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     return invoices.isEmpty
         ? const ListTile(
             title: Text('No invoices.', textAlign: TextAlign.center))
-        : InvoiceListWidget(
+        : invoiceList(
             customer: controller.customer.value,
             invoices: invoices,
             controller: controller,

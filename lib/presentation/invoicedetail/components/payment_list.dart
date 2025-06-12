@@ -32,9 +32,9 @@ List<DataRow2> _buildDataRow(List<PaymentEntity> payments, String totalTtc) {
   for (var payment in payments) {
     price -= Utils.intAmounts(payment.amount);
     rows.add(DataRow2(cells: [
-      DataCell(Text(Utils.datePaid(payment.date!))),
+      DataCell(Text(Utils.datePaid(payment.date))),
       DataCell(Text(
-        payment.num,
+        payment.num ?? '',
       )),
       DataCell(Text(
         Utils.amounts(payment.amount),

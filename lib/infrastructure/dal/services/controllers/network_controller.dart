@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reachablility.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:get/get.dart';
 
 class NetworkController extends GetxService {
@@ -48,7 +47,7 @@ class NetworkController extends GetxService {
   void _startServerReachabilityCheck() {
     _serverCheckTimer?.cancel(); // Cancel any existing timer
     _serverCheckTimer =
-        Timer.periodic(const Duration(minutes: 5), (timer) async {
+        Timer.periodic(const Duration(minutes: 1), (timer) async {
       connected.value = await reachablility.checkServerReachability();
     });
   }

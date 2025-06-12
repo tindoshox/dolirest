@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,10 +42,9 @@ class DueTodayScreen extends GetView<DueTodayController> {
           itemBuilder: (context, index) {
             if (index < invoices.length) {
               var invoice = invoices[index];
-              var customer = controller.storage.customerBox
-                  .query(CustomerEntity_.customerId.equals(invoice.socid))
-                  .build()
-                  .findFirst();
+              var customer = controller.customers
+                  .firstWhere((c) => c.customerId == invoice.socid);
+
               return Card(
                 child: InkWell(
                   onTap: () {
@@ -58,7 +56,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
                       children: [
-                        textBox(context, customer?.name ?? '', flex: 2),
+                        textBox(context, customer.name, flex: 2),
                         SizedBox(
                           width: 2,
                         ),
@@ -70,12 +68,12 @@ class DueTodayScreen extends GetView<DueTodayController> {
                         ),
                         textBox(
                           context,
-                          customer?.town ?? '',
+                          customer.town,
                         ),
                         SizedBox(
                           width: 3,
                         ),
-                        textBox(context, customer?.address ?? ''),
+                        textBox(context, customer.address),
                       ],
                     ),
                   ),

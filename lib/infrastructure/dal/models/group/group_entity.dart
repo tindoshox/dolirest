@@ -2,7 +2,7 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class GroupEntity {
-  @Id()
+  @Id(assignable: true)
   int id = 0;
   @Unique(onConflict: ConflictStrategy.replace)
   String? groupId;

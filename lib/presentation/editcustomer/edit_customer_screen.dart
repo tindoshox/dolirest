@@ -18,34 +18,35 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
       appBar: AppBar(
         title: Text(
             controller.entityId == null ? 'New Customer' : 'Edit Customer'),
-        actions: [Obx(() => getStatusIcon())],
+        actions: [
+          Obx(() => getStatusIcon(connected: controller.connected.value))
+        ],
       ),
-      body: Center(
-        child: controller.isLoading.value
-            ? const LoadingIndicator(
-                message: Text('Loading customer invoices...'))
-            : _buildForm(context),
-      ),
+      body: Obx(() => Center(
+            child: controller.isLoading.value
+                ? const LoadingIndicator(
+                    message: Text('Loading customer invoices...'))
+                : _buildForm(context),
+          )),
     );
   }
 
   Widget _buildForm(BuildContext context) {
     return Form(
-      key: controller.customerFormKey,
-      child: Card(
-        child: ListView(
-          children: [
-            _buildNameField(),
-            _buildCityAutocomplete(),
-            _buildAddressAutocomplete(),
-            if (controller.entityId == null) _buildGroupDropdown(context),
-            _buildPhoneField(),
-            _buildFaxField(),
-            _buildActionButtons(),
-          ],
-        ),
-      ),
-    );
+        key: controller.customerFormKey,
+        child: Card(
+          child: ListView(
+            children: [
+              _buildNameField(),
+              _buildCityAutocomplete(),
+              _buildAddressAutocomplete(),
+              if (controller.entityId == null) _buildGroupDropdown(context),
+              _buildPhoneField(),
+              _buildFaxField(),
+              _buildActionButtons(),
+            ],
+          ),
+        ));
   }
 
   Widget _buildNameField() {
@@ -66,93 +67,87 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
   }
 
   Widget _buildCityAutocomplete() {
-    return Obx(() {
-      final box = controller.addressBox;
-      final towns = box
-          .getAll()
-          .map((a) => a.town.toUpperCase())
-          .toSet()
-          .toList()
-        ..sort();
+    final towns = controller.storage.addressBox
+        .getAll()
+        .map((a) => a.town.toUpperCase())
+        .toSet()
+        .toList()
+      ..sort();
 
-      return Autocomplete<String>(
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) return towns;
-          return towns.where(
-              (town) => town.startsWith(textEditingValue.text.toUpperCase()));
-        },
-        onSelected: (town) {
-          controller.selectedTown.value = town.trim().toUpperCase();
-          controller.townController.text = town.trim().toUpperCase();
-        },
-        fieldViewBuilder:
-            (context, townController, focusNode, onFieldSubmitted) {
-          return CustomFormField(
-            prefixIcon:
-                const Icon(Icons.location_city, color: Colors.greenAccent),
-            onChanged: (town) {
-              if (town != null && town.isNotEmpty) {
-                controller.selectedTown.value = town;
-                controller.townController.text = town.trim().toUpperCase();
-              }
-            },
-            name: 'customer_city',
-            controller: controller.entityId == null
-                ? townController
-                : controller.townController,
-            focusNode: focusNode,
-            validator: (city) =>
-                GetUtils.isLengthLessThan(city, 3) ? 'City is required' : null,
-            labelText: 'City',
-          );
-        },
-      );
-    });
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) return towns;
+        return towns.where(
+            (town) => town.startsWith(textEditingValue.text.toUpperCase()));
+      },
+      onSelected: (town) {
+        controller.selectedTown.value = town.trim().toUpperCase();
+        controller.townController.text = town.trim().toUpperCase();
+      },
+      fieldViewBuilder: (context, townController, focusNode, onFieldSubmitted) {
+        return CustomFormField(
+          prefixIcon:
+              const Icon(Icons.location_city, color: Colors.greenAccent),
+          onChanged: (town) {
+            if (town != null && town.isNotEmpty) {
+              controller.selectedTown.value = town;
+              controller.townController.text = town.trim().toUpperCase();
+            }
+          },
+          name: 'customer_city',
+          controller: controller.entityId == null
+              ? townController
+              : controller.townController,
+          focusNode: focusNode,
+          validator: (city) =>
+              GetUtils.isLengthLessThan(city, 3) ? 'City is required' : null,
+          labelText: 'City',
+        );
+      },
+    );
   }
 
   Widget _buildAddressAutocomplete() {
-    return Obx(() {
-      final addresses = controller.addressList;
+    final addresses = controller.addressList;
 
-      return Autocomplete<String>(
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            return addresses;
-          } else {
-            return addresses.where(
-                (addr) => addr.startsWith(textEditingValue.text.toUpperCase()));
-          }
-        },
-        onSelected: (address) {
-          controller.addressController.text = address.trim().toUpperCase();
-        },
-        fieldViewBuilder: (
-          BuildContext context,
-          TextEditingController addressController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted,
-        ) {
-          return CustomFormField(
-            prefixIcon: const Icon(
-              Icons.location_pin,
-              color: Colors.orangeAccent,
-            ),
-            onChanged: (address) {
-              controller.addressController.text = address!.trim().toUpperCase();
-            },
-            name: 'customer_address',
-            controller: controller.entityId == null
-                ? addressController
-                : controller.addressController,
-            focusNode: focusNode,
-            validator: (address) => GetUtils.isLengthLessThan(address, 3)
-                ? 'Address is required'
-                : null,
-            labelText: 'Address',
-          );
-        },
-      );
-    });
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return addresses;
+        } else {
+          return addresses.where(
+              (addr) => addr.startsWith(textEditingValue.text.toUpperCase()));
+        }
+      },
+      onSelected: (address) {
+        controller.addressController.text = address.trim().toUpperCase();
+      },
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController addressController,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
+        return CustomFormField(
+          prefixIcon: const Icon(
+            Icons.location_pin,
+            color: Colors.orangeAccent,
+          ),
+          onChanged: (address) {
+            controller.addressController.text = address!.trim().toUpperCase();
+          },
+          name: 'customer_address',
+          controller: controller.entityId == null
+              ? addressController
+              : controller.addressController,
+          focusNode: focusNode,
+          validator: (address) => GetUtils.isLengthLessThan(address, 3)
+              ? 'Address is required'
+              : null,
+          labelText: 'Address',
+        );
+      },
+    );
   }
 
   Widget _buildGroupDropdown(BuildContext context) {

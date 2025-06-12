@@ -1,3 +1,4 @@
+import 'package:dolirest/infrastructure/dal/services/controllers/auth_service.dart';
 import 'package:dolirest/infrastructure/dal/services/dependency_injection.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
@@ -10,10 +11,11 @@ import 'package:get/get.dart';
 import 'infrastructure/navigation/navigation.dart';
 
 void main() async {
+  DependencyInjection.init();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   runApp(Main());
-  DependencyInjection.init();
 }
 
 class Main extends StatelessWidget {
@@ -23,12 +25,9 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final StorageService storage = Get.find();
+    final AuthService auth = Get.find();
     final initialRoute =
-        storage.settingsBox.get(SettingId.tokenSettingId) == null ||
-                storage.settingsBox.get(SettingId.urlSettingId) == null
-            ? Routes.LOGIN
-            : Routes.HOME;
+        auth.token.isEmpty || auth.url.isEmpty ? Routes.LOGIN : Routes.HOME;
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

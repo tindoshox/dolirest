@@ -5,6 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/build_statement_request_model
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
@@ -20,17 +21,18 @@ import 'package:open_filex/open_filex.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
+  final NetworkController network = Get.find();
   final StorageService storage = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
-  final DataRefreshService _dataRefreshContoller = Get.find();
+  final DataRefreshService data = Get.find();
   var customer = CustomerEntity().obs;
   var invoices = <InvoiceEntity>[].obs;
   var moduleEnabledStatement = false.obs;
   var startDate = DateTime(DateTime.now().year, DateTime.now().month, 1).obs;
   var endDate = DateTime.now().obs;
-
+  var connected = false.obs;
   GlobalKey<FormState> dateFormkey = GlobalKey<FormState>();
   TextEditingController startDateController = TextEditingController();
   TextEditingController endDateController = TextEditingController();
@@ -47,6 +49,25 @@ class CustomerDetailController extends GetxController
 
   @override
   void onInit() async {
+    ever(network.connected, (_) {
+      connected = network.connected;
+    });
+
+    connected = network.connected;
+
+    customer.bindStream(storage.customerBox
+        .query(CustomerEntity_.id.equals(Get.arguments['entityId']))
+        .watch()
+        .map((query) {
+      return query.findFirst()!;
+    }));
+
+    customer.value =
+        data.customers.firstWhere((c) => c.id == Get.arguments['entityId']);
+
+    invoices.value = data.invoices
+        .where((i) => i.socid == customer.value.customerId)
+        .toList();
     if (Platform.isAndroid) {
       platform = TargetPlatform.android;
     } else {
@@ -59,23 +80,7 @@ class CustomerDetailController extends GetxController
         .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('customerstatement');
-    customer.value = storage.customerBox.get(Get.arguments['entityId'])!;
-    customer.bindStream(storage.customerBox
-        .query(CustomerEntity_.id.equals(customer.value.id))
-        .watch(triggerImmediately: true)
-        .map((query) {
-      return query.findFirst() ?? CustomerEntity(name: 'Unknown Customer');
-    }));
-    invoices.value = storage.invoiceBox
-        .query(InvoiceEntity_.socid.equals(customer.value.customerId))
-        .build()
-        .find();
-    invoices.bindStream(storage.invoiceBox
-        .query(InvoiceEntity_.socid.equals(customer.value.customerId))
-        .watch(triggerImmediately: true)
-        .map((query) {
-      return query.find();
-    }));
+
     tabController.addListener(() {
       tabIndex(tabController.index);
     });
@@ -101,33 +106,8 @@ class CustomerDetailController extends GetxController
   // Fetch invoice data from server
   Future<void> refreshCustomerInvoiceData() async {
     isLoading.value = true;
-    await _dataRefreshContoller.syncInvoices(
-        customerId: customer.value.customerId);
+    await data.syncInvoices(customerId: customer.value.customerId);
     isLoading.value = false;
-  }
-
-  Future<void> deleteCustomer() async {
-    DialogHelper.showLoading('Deleting customer...');
-    final result =
-        await customerRepository.deleteCustomer(customer.value.customerId);
-    result.fold(
-      (failure) {
-        DialogHelper.hideLoading();
-        if (failure.code == 404) {
-          storage.customerBox.remove(customer.value.id);
-          Get.back();
-          SnackBarHelper.successSnackbar(message: 'Customer deleted');
-        } else {
-          SnackBarHelper.errorSnackbar(message: failure.message);
-        }
-      },
-      (res) {
-        DialogHelper.hideLoading();
-        storage.customerBox.remove(customer.value.id);
-        Get.back();
-        SnackBarHelper.successSnackbar(message: 'Customer deleted');
-      },
-    );
   }
 
   Future generateStatement() async {

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
@@ -20,6 +21,7 @@ import 'package:get/get.dart';
 class CreateinvoiceController extends GetxController {
   final int? entityId = Get.arguments['entityId'];
   final StorageService storage = Get.find();
+  final NetworkController networkController = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final ProductRepository productRepository = Get.find();
   var moduleProductEnabled = false.obs;
@@ -38,13 +40,18 @@ class CreateinvoiceController extends GetxController {
 
   Rx<ProductEntity> selectedProduct = ProductEntity().obs;
   RxString productType = '1'.obs;
-
+  var connected = false.obs;
   Rx<DateTime> invoiceDate = DateTime.now().obs;
 
   Rx<DateTime> dueDate = DateTime.now().add(const Duration(days: 31)).obs;
 
   @override
   onInit() {
+    ever(networkController.connected, (_) {
+      connected = networkController.connected;
+    });
+
+    connected = networkController.connected;
     moduleProductEnabled.value = storage.settingsBox
         .get(SettingId.moduleSettingId)!
         .listValue!
@@ -105,10 +112,10 @@ class CreateinvoiceController extends GetxController {
         .findFirst();
 
     if (existing != null) {
-      product.id = existing.id; // assign internal ObjectBox ID to update
+      product.id = existing.id;
     }
 
-    box.put(product); // will insert or update based on ID
+    box.put(product);
     return product;
   }
 
@@ -228,7 +235,7 @@ class CreateinvoiceController extends GetxController {
     final result =
         await invoiceRepository.validateInvoice(body: body, docId: invoiceId);
     result.fold((failure) {
-      _deleteInvoice(invoiceId);
+      _getNewInvoice(invoiceId);
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
           arguments: {'customerId': customer.value.id});
@@ -239,16 +246,6 @@ class CreateinvoiceController extends GetxController {
 
         Get.offAndToNamed(Routes.INVOICEDETAIL, arguments: {'entityId': id});
       });
-    });
-  }
-
-  void _deleteInvoice(String invoiceId) async {
-    final result = await invoiceRepository.deleteInvoice(documentId: invoiceId);
-    result.fold((failure) {}, (deleted) {
-      DialogHelper.hideLoading();
-      Get.offAndToNamed(Routes.CUSTOMERDETAIL,
-          arguments: {'customerId': customer.value.id});
-      SnackBarHelper.errorSnackbar(message: 'Could not create invoice');
     });
   }
 

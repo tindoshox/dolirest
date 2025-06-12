@@ -9,26 +9,28 @@ Widget invoiceDetailWidget(
     required CustomerEntity customer,
     Function()? onPressed}) {
   Widget buildInvoiceHeader() {
-    return ListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            invoice.ref,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          if (invoice.refCustomer != null)
-            Text(
-              'Delivery Note: ${invoice.ref}',
+    return invoice.documentId.isEmpty
+        ? SizedBox()
+        : ListTile(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${invoice.ref} : ${invoice.documentId}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                if (invoice.refCustomer != null)
+                  Text(
+                    'Delivery Note: ${invoice.refCustomer}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+              ],
+            ),
+            subtitle: Text(
+              'Balance Due: ${invoice.remaintopay}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
-        ],
-      ),
-      subtitle: Text(
-        'Balance Due: ${invoice.remaintopay}',
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-    );
+          );
   }
 
   Widget buildDueDateTile() {

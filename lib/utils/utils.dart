@@ -132,4 +132,8 @@ class Utils {
   static DateTime dateOnly(DateTime date) {
     return DateUtils.dateOnly(date);
   }
+
+  static bool isSameMonth(DateTime dateA, DateTime dateB) {
+    return DateUtils.isSameMonth(dateA, dateB);
+  }
 }

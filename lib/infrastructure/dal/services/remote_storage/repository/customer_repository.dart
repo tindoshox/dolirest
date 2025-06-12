@@ -27,7 +27,7 @@ class CustomerRepository extends DioService {
           "limit": limit,
           "page": page,
           "properties": properties,
-          if (dateModified != null) "t.tms": dateModified,
+          if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
         };
 
         final response =

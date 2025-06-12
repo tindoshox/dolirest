@@ -1,6 +1,8 @@
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
@@ -10,7 +12,8 @@ import 'package:get/get.dart';
 class InvoicelistController extends GetxController {
   int drafts = Get.arguments['drafts'] ?? 0;
   final StorageService storage = Get.find();
-  final DataRefreshService _dataRefreshContoller = Get.find();
+  final DataRefreshService data = Get.find();
+  final InvoiceRepository invoiceRepository = Get.find();
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
@@ -19,27 +22,47 @@ class InvoicelistController extends GetxController {
   var searchIcon = true.obs;
 
   var invoices = <InvoiceEntity>[].obs;
+  var customers = <CustomerEntity>[].obs;
 
   @override
   void onInit() {
-    // invoices.bindStream(
-    //     storage.invoiceBox.query().watch(triggerImmediately: true).map((query) {
-    //   final list = query.find();
+    everAll([data.invoices, data.customers], (_) {
+      invoices.value = drafts != 0
+          ? data.invoices
+              .where((invoice) => invoice.status == ValidationStatus.draft)
+              .toList()
+          : data.invoices
+              .where((invoice) =>
+                  invoice.type == DocumentType.invoice &&
+                  invoice.remaintopay != "0" &&
+                  invoice.status == ValidationStatus.validated &&
+                  invoice.paye == PaidStatus.unpaid)
+              .toList();
 
-    if (drafts != 0) {
-      invoices.value = _dataRefreshContoller.invoices
-          .where((invoice) => invoice.status == ValidationStatus.draft)
-          .toList();
-    } else {
-      invoices.value = _dataRefreshContoller.invoices
-          .where((invoice) =>
-              invoice.type == DocumentType.invoice &&
-              invoice.remaintopay != "0" &&
-              invoice.status == ValidationStatus.validated &&
-              invoice.paye == PaidStatus.unpaid)
-          .toList();
+      customers = data.customers;
+      for (var invoice in invoices) {
+        invoice.name =
+            customers.firstWhere((c) => c.customerId == invoice.socid).name;
+      }
+    });
+
+    invoices.value = drafts != 0
+        ? data.invoices
+            .where((invoice) => invoice.status == ValidationStatus.draft)
+            .toList()
+        : data.invoices
+            .where((invoice) =>
+                invoice.type == DocumentType.invoice &&
+                invoice.remaintopay != "0" &&
+                invoice.status == ValidationStatus.validated &&
+                invoice.paye == PaidStatus.unpaid)
+            .toList();
+
+    customers = data.customers;
+    for (var invoice in invoices) {
+      invoice.name =
+          customers.firstWhere((c) => c.customerId == invoice.socid).name;
     }
-
     super.onInit();
   }
 
@@ -55,11 +78,9 @@ class InvoicelistController extends GetxController {
   }
 
   refreshInvoiceList() async {
-    if (!_dataRefreshContoller.refreshing.value) {
+    if (!data.refreshing.value) {
       DialogHelper.showLoading('Syncing invoices');
-      await _dataRefreshContoller
-          .syncInvoices()
-          .then((i) => DialogHelper.hideLoading());
+      await data.syncInvoices().then((i) => DialogHelper.hideLoading());
     } else {
       SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
     }
@@ -73,5 +94,26 @@ class InvoicelistController extends GetxController {
       searchController.clear();
       searchString.value = "";
     }
+  }
+
+  void deleteDraft({required String documentId, required int entityId}) async {
+    DialogHelper.showLoading('Deleting Invoice');
+    final result =
+        await invoiceRepository.deleteInvoice(documentId: documentId);
+    result.fold((failure) {
+      DialogHelper.hideLoading();
+      if (failure.code == 404) {
+        storage.invoiceBox.remove(entityId);
+
+        SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+      } else {
+        SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
+      }
+    }, (deleted) {
+      DialogHelper.hideLoading();
+      storage.invoiceBox.remove(entityId);
+
+      SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+    });
   }
 }
