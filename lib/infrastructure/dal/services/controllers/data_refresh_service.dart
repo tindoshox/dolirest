@@ -7,7 +7,7 @@ import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
@@ -23,7 +23,7 @@ class DataRefreshService extends GetxService {
 
   final CustomerRepository _customerRepository = Get.find();
   final InvoiceRepository _invoiceRepository = Get.find();
-  final NetworkController _networkController = Get.find();
+  final NetworkService _networkController = Get.find();
 
   var invoices = <InvoiceEntity>[].obs;
   var customers = <CustomerEntity>[].obs;
@@ -121,9 +121,13 @@ class DataRefreshService extends GetxService {
   }
 
   fetchCustomers({String? dateModified}) async {
-    try {
+    const int limit = 100;
+    int page = 0;
+    bool hasMore = true;
+
+    while (hasMore == true) {
       final result = await _customerRepository.fetchCustomerList(
-          dateModified: dateModified);
+          page: page, limit: limit, dateModified: dateModified);
 
       result.fold((failure) {
         if (!kReleaseMode) {
@@ -132,12 +136,14 @@ class DataRefreshService extends GetxService {
       }, (customers) async {
         if (customers.isNotEmpty) {
           _storage.storeCustomers(customers);
+          if (customers.length < limit) {
+            hasMore = false;
+          } else {
+            page++;
+          }
         }
       });
-    } catch (e) {
-      //
     }
-    return customers;
   }
 
   Future<void> syncCustomers({String? dateModified}) async {
@@ -169,14 +175,27 @@ class DataRefreshService extends GetxService {
   }
 
   fetchInvoices({String? customerId, String? dateModified}) async {
-    try {
+    const int limit = 100;
+    int page = 0;
+    bool hasMore = true;
+
+    while (hasMore == true) {
       final result = await _invoiceRepository.fetchInvoiceList(
-          customerId: customerId, dateModified: dateModified);
+          page: page,
+          limit: limit,
+          customerId: customerId,
+          dateModified: dateModified);
       result.fold((e) {}, (invoices) {
-        _storage.storeInvoices(invoices);
+        if (invoices.isNotEmpty) {
+          _storage.storeInvoices(invoices);
+        }
+
+        if (invoices.length < limit) {
+          hasMore == false;
+        } else {
+          page++;
+        }
       });
-    } catch (e) {
-      //
     }
   }
 

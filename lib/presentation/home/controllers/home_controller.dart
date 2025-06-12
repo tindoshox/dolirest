@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -16,7 +16,7 @@ import 'package:dolirest/utils/utils.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  final NetworkController networkController = Get.find();
+  final NetworkService network = Get.find();
   final StorageService storage = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
@@ -48,11 +48,11 @@ class HomeController extends GetxController {
       data.noInvoiceCustomers,
       data.cashflow,
       data.invoices,
-      networkController.connected
+      network.connected
     ], (_) {
       noInvoiceCustomers = data.noInvoiceCustomers;
       cashflow = data.cashflow;
-      connected = networkController.connected;
+      connected = network.connected;
 
       openInvoices.value = data.invoices
           .where((i) =>
@@ -94,7 +94,7 @@ class HomeController extends GetxController {
 
     noInvoiceCustomers = data.noInvoiceCustomers;
     cashflow = data.cashflow;
-    connected = networkController.connected;
+    connected = network.connected;
 
     openInvoices.value = data.invoices
         .where((i) =>

@@ -8,8 +8,8 @@ import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
@@ -28,7 +28,7 @@ import 'package:open_filex/open_filex.dart';
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final StorageService storage = Get.find();
-  final NetworkController network = Get.find();
+  final NetworkService network = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();
   final DocumentRepository documentRepository = Get.find();
@@ -144,7 +144,7 @@ class InvoiceDetailController extends GetxController
     int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
 
     if (document.value.totalpaid != total) {
-      if (Get.find<NetworkController>().connected.value) {
+      if (Get.find<NetworkService>().connected.value) {
         await _refreshPaymentData();
       } else {
         SnackBarHelper.errorSnackbar(message: 'Unable to load payments');

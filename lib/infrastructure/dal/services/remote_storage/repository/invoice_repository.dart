@@ -16,43 +16,28 @@ class InvoiceRepository extends DioService {
     String? dateModified,
     String? status,
     String? type,
+    required int page,
+    required int limit,
   }) {
     final properties =
         "id,ref,status,total_ht,total_tva,total_ttc,lines,name,date_modification,totalpaid,type,socid,paye,date,dateLimReglement,totaldeposits,totalcreditnotes,sumpayed,sumdeposit,sumcreditnote,remaintopay,datem,ref_customer,fk_facture_source,mode_reglement_code,cond_reglement_code,date_lim_reglement";
 
     return dio.safeRequest(() async {
-      var invoices = <InvoiceEntity>[];
-      int page = 0;
-      const int limit = 1000;
-      bool hasNextPage = true;
+      var queryParameters = {
+        "sortfield": "t.rowid",
+        "sortorder": "ASC",
+        "page": page,
+        "limit": limit,
+        "properties": properties,
+        if (status != null) "status": status,
+        if (type != null) "type": type,
+        if (customerId != null) "thirdparty_ids": customerId,
+        if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
+      };
+      final response =
+          await dio.get(ApiPath.invoices, queryParameters: queryParameters);
 
-      while (hasNextPage) {
-        var queryParameters = {
-          "sortfield": "t.rowid",
-          "sortorder": "ASC",
-          "page": page,
-          "limit": limit,
-          "properties": properties,
-          if (status != null) "status": status,
-          if (type != null) "type": type,
-          if (customerId != null) "thirdparty_ids": customerId,
-          if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
-        };
-        final response =
-            await dio.get(ApiPath.invoices, queryParameters: queryParameters);
-        //  debugPrint(response.data.toString());
-        final list = parseInvoiceListFromJson(response.data);
-        if (list.length < limit) {
-          hasNextPage = false;
-        } else {
-          page++;
-        }
-
-        if (list.isNotEmpty) {
-          invoices.addAll(list);
-        }
-      }
-      return invoices;
+      return parseInvoiceListFromJson(response.data);
     });
   }
 

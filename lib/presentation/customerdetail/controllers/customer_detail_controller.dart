@@ -4,8 +4,8 @@ import 'dart:io' show Platform;
 import 'package:dolirest/infrastructure/dal/models/build_statement_request_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
@@ -21,7 +21,7 @@ import 'package:open_filex/open_filex.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final NetworkController network = Get.find();
+  final NetworkService network = Get.find();
   final StorageService storage = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final CustomerRepository customerRepository = Get.find();

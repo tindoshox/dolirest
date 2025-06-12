@@ -1,7 +1,7 @@
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -9,7 +9,7 @@ import 'package:dolirest/utils/utils.dart' show Utils;
 import 'package:get/get.dart';
 
 class CashflowController extends GetxController {
-  var connected = Get.find<NetworkController>().connected.value;
+  var connected = Get.find<NetworkService>().connected.value;
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
   var dayCashflow = <PaymentEntity>[].obs;

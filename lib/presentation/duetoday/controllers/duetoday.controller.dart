@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/utils/string_manager.dart'
     show DocumentType, PaidStatus;
 import 'package:dolirest/utils/utils.dart';

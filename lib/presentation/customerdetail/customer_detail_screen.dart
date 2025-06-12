@@ -1,4 +1,4 @@
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_info_widget.dart';
 import 'package:dolirest/presentation/customerdetail/components/customer_invoice_list_widget.dart';
@@ -63,7 +63,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     return CustomActionButton(
       buttonText: buttonText,
       onTap: () async {
-        if (Get.find<NetworkController>().connected.value) {
+        if (Get.find<NetworkService>().connected.value) {
           Get.offAndToNamed(route, arguments: {
             'entityId': controller.customer.value.id,
             ...?additionalArgs

@@ -1,6 +1,6 @@
 import 'package:change_case/change_case.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/custom_action_button.dart';
@@ -283,7 +283,7 @@ class HomeScreen extends GetView<HomeController> {
           children: [
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkController>().connected.value) {
+                  if (Get.find<NetworkService>().connected.value) {
                     Get.toNamed(Routes.EDITCUSTOMER, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -298,7 +298,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 228, 253, 199)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkController>().connected.value) {
+                  if (Get.find<NetworkService>().connected.value) {
                     Get.toNamed(Routes.CREATEINVOICE, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -313,7 +313,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 127, 197, 255)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkController>().connected.value) {
+                  if (Get.find<NetworkService>().connected.value) {
                     Get.toNamed(Routes.PAYMENT, arguments: {'batch': true});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -363,7 +363,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 241, 205, 192)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkController>().connected.value &&
+                  if (Get.find<NetworkService>().connected.value &&
                       controller.enabledModules.contains('reports')) {
                     Get.toNamed(Routes.REPORTS);
                   }

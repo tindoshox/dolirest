@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
@@ -21,7 +21,7 @@ import 'package:get/get.dart';
 class CreateinvoiceController extends GetxController {
   final int? entityId = Get.arguments['entityId'];
   final StorageService storage = Get.find();
-  final NetworkController networkController = Get.find();
+  final NetworkService network = Get.find();
   final InvoiceRepository invoiceRepository = Get.find();
   final ProductRepository productRepository = Get.find();
   var moduleProductEnabled = false.obs;
@@ -47,11 +47,11 @@ class CreateinvoiceController extends GetxController {
 
   @override
   onInit() {
-    ever(networkController.connected, (_) {
-      connected = networkController.connected;
+    ever(network.connected, (_) {
+      connected = network.connected;
     });
 
-    connected = networkController.connected;
+    connected = network.connected;
     moduleProductEnabled.value = storage.settingsBox
         .get(SettingId.moduleSettingId)!
         .listValue!

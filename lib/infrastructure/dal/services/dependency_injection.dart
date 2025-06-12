@@ -1,6 +1,6 @@
 import 'package:dolirest/infrastructure/dal/services/controllers/auth_service.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
@@ -20,7 +20,7 @@ class DependencyInjection {
     Get.put<StorageService>(storageService, permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
     Get.lazyPut(() => DioService(), fenix: true);
-    Get.put<NetworkController>(NetworkController(), permanent: true);
+    Get.put<NetworkService>(NetworkService(), permanent: true);
     Get.put<ServerReachability>(ServerReachability(), permanent: true);
     Get.lazyPut<CustomerRepository>(() => CustomerRepository(), fenix: true);
     Get.lazyPut<InvoiceRepository>(() => InvoiceRepository(), fenix: true);

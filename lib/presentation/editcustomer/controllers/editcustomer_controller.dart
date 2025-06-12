@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_model.dart';
 import 'package:dolirest/infrastructure/dal/models/group/group_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/group_repository.dart';
@@ -18,7 +18,7 @@ import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
   StorageService storage = Get.find();
-  NetworkController networkController = Get.find();
+  NetworkService network = Get.find();
   CustomerRepository customerRepository = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
@@ -50,11 +50,11 @@ class EditCustomerController extends GetxController {
       customerToEdit.value = storage.customerBox.get(entityId!)!;
     }
 
-    ever(networkController.connected, (_) {
-      connected = networkController.connected;
+    ever(network.connected, (_) {
+      connected = network.connected;
     });
 
-    connected = networkController.connected;
+    connected = network.connected;
     if (entityId != null) {
       await _fetchCustomerById(entityId!);
     }

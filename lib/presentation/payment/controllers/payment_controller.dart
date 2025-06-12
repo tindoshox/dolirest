@@ -4,8 +4,8 @@ import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_model.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_contoller.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_controller.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
@@ -20,7 +20,7 @@ import 'package:get/get.dart';
 class PaymentController extends GetxController {
   final StorageService storage = Get.find();
   final InvoiceRepository repository = Get.find();
-  final NetworkController network = Get.find();
+  final NetworkService network = Get.find();
   final DataRefreshService data = Get.find();
 
   TextEditingController payDateController = TextEditingController();
@@ -238,8 +238,7 @@ class PaymentController extends GetxController {
   }
 
   _refreshInvoice(invoiceId) async {
-    final result = await repository.fetchInvoiceList(
-        customerId: customer.value.customerId);
+    final result = await repository.fetchInvoiceById(customer.value.customerId);
 
     result.fold((failure) {
       if (Get.isDialogOpen == true) {
@@ -248,7 +247,7 @@ class PaymentController extends GetxController {
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (invoices) {
-      storage.storeInvoices(invoices);
+      storage.storeInvoice(invoices);
     });
   }
 

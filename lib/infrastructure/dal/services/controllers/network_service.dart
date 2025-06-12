@@ -5,7 +5,7 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reach
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
-class NetworkController extends GetxService {
+class NetworkService extends GetxService {
   final ServerReachability reachablility = Get.put(ServerReachability());
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> subscription;
