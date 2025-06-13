@@ -29,12 +29,6 @@ class NetworkService extends GetxService {
     super.onReady();
   }
 
-  // @override
-  // dispose() {
-  //   subscription.cancel();
-  //   super.dispose();
-  // }
-
   Future<void> _updateConnectionStatus(
       List<ConnectivityResult> connectivityResult) async {
     if (connectivityResult.contains(ConnectivityResult.wifi) ||

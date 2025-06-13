@@ -95,7 +95,6 @@ class PaymentController extends GetxController {
     amountController.clear();
   }
 
-  /// Fetches customer and invoice data based on the given customer and invoice IDs.
   void fetchData(InvoiceEntity selectedInvoice) async {
     invoice.value = selectedInvoice;
     await _fetchCustomerById(selectedInvoice.socid);
@@ -120,14 +119,12 @@ class PaymentController extends GetxController {
   }
 
   void setPayDate() async {
-    /// Shows a date picker dialog to allow the user to select the payment date.
     DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
         initialDate: payDate.value,
         firstDate: DateTime(2000),
         lastDate: DateTime.now());
 
-    /// If a date is selected, updates the payment date and due date values and displays the selected date in the text fields.
     if (selectedDate != null) {
       payDate.value = selectedDate;
       payDateController.text = Utils.dateTimeToDMY(selectedDate);
@@ -137,14 +134,12 @@ class PaymentController extends GetxController {
   }
 
   setDueDate() async {
-    /// Shows a date picker dialog to allow the user to select the due date.
     DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
         initialDate: dueDate.value,
         firstDate: DateTime.now(),
         lastDate: DateTime(2050));
 
-    /// If a date is selected, updates the due date value and displays the selected date in the text field.
     if (selectedDate != null) {
       dueDate.value = selectedDate;
       dueDateController.text = Utils.dateTimeToDMY(selectedDate);
@@ -152,10 +147,8 @@ class PaymentController extends GetxController {
   }
 
   void validateAndSave() async {
-    /// Retrieves the form state from the payment form key.
     final FormState form = paymentFormKey.currentState!;
 
-    /// Validates the form and saves the payment data if the form is valid.
     if (form.validate()) {
       DialogHelper.showLoading('Processing payment...');
       String body = jsonEncode({
@@ -177,12 +170,10 @@ class PaymentController extends GetxController {
         "accepthigherpayment": false
       });
 
-      /// Processes the payment using the given payment data.
       await _processPayment(body);
     }
   }
 
-  /// Processes the payment using the given payment data.
   _processPayment(body) async {
     final result = await repository.addPayment(body: body);
 

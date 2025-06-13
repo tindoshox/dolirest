@@ -201,9 +201,10 @@ class HomeScreen extends GetView<HomeController> {
         Obx(() => getStatusIcon(
             connected: controller.connected.value,
             refreshing: controller.data.refreshing.value,
-            onPressed: () {
-              controller.forceRefresh();
-            })),
+            onPressed: controller.network.connected.value
+                ? () => controller.forceRefresh()
+                : () => controller.network.reachablility
+                    .checkServerReachability())),
         _buildPopupMenu(controller)
       ],
     );

@@ -135,12 +135,13 @@ class DataRefreshService extends GetxService {
         }
       }, (customers) async {
         if (customers.isNotEmpty) {
-          _storage.storeCustomers(customers);
-          if (customers.length < limit) {
-            hasMore = false;
-          } else {
-            page++;
-          }
+          await _storage.storeCustomers(customers);
+        }
+
+        if (customers.length < limit) {
+          hasMore = false;
+        } else {
+          page++;
         }
       });
     }
@@ -159,21 +160,6 @@ class DataRefreshService extends GetxService {
     }
   }
 
-  CustomerEntity upsertCustomer(
-      CustomerEntity customer, Box<CustomerEntity> box) {
-    final existing = box
-        .query(CustomerEntity_.customerId.equals(customer.customerId))
-        .build()
-        .findFirst();
-
-    if (existing != null) {
-      customer.id = existing.id;
-    }
-
-    box.put(customer);
-    return customer;
-  }
-
   fetchInvoices({String? customerId, String? dateModified}) async {
     const int limit = 100;
     int page = 0;
@@ -185,9 +171,9 @@ class DataRefreshService extends GetxService {
           limit: limit,
           customerId: customerId,
           dateModified: dateModified);
-      result.fold((e) {}, (invoices) {
+      result.fold((e) {}, (invoices) async {
         if (invoices.isNotEmpty) {
-          _storage.storeInvoices(invoices);
+          await _storage.storeInvoices(invoices);
         }
 
         if (invoices.length < limit) {
@@ -201,11 +187,7 @@ class DataRefreshService extends GetxService {
 
   Future<void> syncInvoices({String? customerId, String? dateModified}) async {
     if (_networkController.connected.value) {
-      if (customerId != null || dateModified != null) {
-        await fetchInvoices(customerId: customerId, dateModified: dateModified);
-      }
-    } else {
-      await fetchInvoices();
+      await fetchInvoices(customerId: customerId, dateModified: dateModified);
     }
   }
 

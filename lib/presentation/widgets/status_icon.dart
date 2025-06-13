@@ -39,7 +39,7 @@ Widget getStatusIcon({
           text: 'No connection',
           icon: Icons.cloud_off_outlined,
           color: Colors.red,
-          onPressed: () => SnackBarHelper.networkSnackbar());
+          onPressed: onPressed ?? () => SnackBarHelper.networkSnackbar());
     } else {
       return _makeIcon(
           text: 'Connected',
