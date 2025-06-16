@@ -28,7 +28,7 @@ class CustomActionButton extends StatelessWidget {
     this.buttonColor,
     this.onTap,
     this.maximumSize = const WidgetStatePropertyAll(Size(150, 40)),
-    this.minimumSize = const WidgetStatePropertyAll(Size(150, 40)),
+    this.minimumSize = const WidgetStatePropertyAll(Size(100, 40)),
   });
 
   final bool isCancel;

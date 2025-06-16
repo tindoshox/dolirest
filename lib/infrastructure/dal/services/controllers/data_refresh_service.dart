@@ -28,7 +28,6 @@ class DataRefreshService extends GetxService {
   var invoices = <InvoiceEntity>[].obs;
   var customers = <CustomerEntity>[].obs;
   var payments = <PaymentEntity>[].obs;
-  var noInvoiceCustomers = 0.obs;
   var cashflow = 0.obs;
   var refreshing = false.obs;
   bool _isRefreshing = false;
@@ -97,7 +96,7 @@ class DataRefreshService extends GetxService {
     String? invoiceDateModified =
         i == null ? null : Utils.intToYMD(i.dateModification);
 
-    Timer.periodic(const Duration(minutes: 5), (Timer timer) async {
+    Timer.periodic(const Duration(minutes: 10), (Timer timer) async {
       await forceRefresh(
           customerDateModified: customerDateModified,
           invoiceDateModified: invoiceDateModified);
@@ -171,13 +170,15 @@ class DataRefreshService extends GetxService {
           limit: limit,
           customerId: customerId,
           dateModified: dateModified);
-      result.fold((e) {}, (invoices) async {
+      result.fold((e) {
+        hasMore = false;
+      }, (invoices) async {
         if (invoices.isNotEmpty) {
           await _storage.storeInvoices(invoices);
         }
 
-        if (invoices.length < limit) {
-          hasMore == false;
+        if (invoices.length != limit) {
+          hasMore = false;
         } else {
           page++;
         }

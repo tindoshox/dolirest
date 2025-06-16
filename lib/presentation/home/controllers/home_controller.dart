@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
@@ -44,13 +45,17 @@ class HomeController extends GetxController {
     _updateModules();
     _updateCompany();
 
-    everAll([
-      data.noInvoiceCustomers,
-      data.cashflow,
-      data.invoices,
-      network.connected
-    ], (_) {
-      noInvoiceCustomers = data.noInvoiceCustomers;
+    everAll([data.customers, data.cashflow, data.invoices, network.connected],
+        (_) {
+      var nic = <CustomerEntity>[];
+      for (var customer in data.customers) {
+        var invoices =
+            data.invoices.where((i) => i.socid == customer.customerId);
+        if (invoices.isEmpty) {
+          nic.add(customer);
+        }
+      }
+      noInvoiceCustomers.value = nic.length;
       cashflow = data.cashflow;
       connected = network.connected;
 
@@ -92,7 +97,14 @@ class HomeController extends GetxController {
           .length;
     });
 
-    noInvoiceCustomers = data.noInvoiceCustomers;
+    var nic = <CustomerEntity>[];
+    for (var customer in data.customers) {
+      var invoices = data.invoices.where((i) => i.socid == customer.customerId);
+      if (invoices.isEmpty) {
+        nic.add(customer);
+      }
+    }
+    noInvoiceCustomers.value = nic.length;
     cashflow = data.cashflow;
     connected = network.connected;
 

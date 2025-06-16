@@ -28,6 +28,9 @@ class CustomerListController extends GetxController {
       customers = data.customers;
       invoices = data.invoices;
     });
+    customers = data.customers;
+    invoices = data.invoices;
+
     super.onInit();
   }
 

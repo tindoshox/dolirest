@@ -208,7 +208,7 @@ Widget invoiceDetailWidget(
                       children: [
                         buildTotalsText(text: Utils.amounts(invoice.totalTtc)),
                         buildTotalsText(
-                            text: (invoice.totalpaid.toString() == '0.0'
+                            text: (invoice.totalpaid.toString() == '0'
                                 ? '0'
                                 : invoice.totalpaid.toString())),
                         buildTotalsText(text: invoice.remaintopay.toString()),

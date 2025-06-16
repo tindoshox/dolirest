@@ -26,7 +26,16 @@ class DueTodayController extends GetxController {
           .toList();
       customers.value = data.customers;
     });
-
+    dueToday.value = data.invoices
+        .where((i) =>
+            i.type == DocumentType.invoice &&
+            i.remaintopay != "0" &&
+            i.paye == PaidStatus.unpaid &&
+            Utils.intToDateTime(i.dateLimReglement).day == DateTime.now().day &&
+            Utils.intToDateTime(i.dateLimReglement)
+                .isBefore(DateTime.now().add(Duration(days: 1))))
+        .toList();
+    customers.value = data.customers;
     super.onInit();
   }
 }

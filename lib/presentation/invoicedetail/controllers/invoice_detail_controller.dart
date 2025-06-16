@@ -171,7 +171,6 @@ class InvoiceDetailController extends GetxController
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
       storage.storeInvoice(invoice);
-      document.value = invoice;
     });
     DialogHelper.hideLoading();
   }

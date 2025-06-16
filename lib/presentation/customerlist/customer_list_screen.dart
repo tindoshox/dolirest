@@ -73,8 +73,8 @@ class CustomerListScreen extends GetView<CustomerListController> {
       var noInvoiceCustomers = <CustomerEntity>[];
       if (controller.noInvoiceCustomers == true) {
         for (var customer in controller.customers) {
-          final invoices = controller.data.invoices
-              .where((i) => i.socid == customer.customerId);
+          final invoices =
+              controller.invoices.where((i) => i.socid == customer.customerId);
           if (invoices.isEmpty) {
             (noInvoiceCustomers.add(customer));
           }

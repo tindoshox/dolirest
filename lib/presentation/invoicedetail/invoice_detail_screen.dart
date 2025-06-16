@@ -142,8 +142,8 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                         ? Get.toNamed(
                             Routes.PAYMENT,
                             arguments: {
-                              'invoiceId': controller.document.value.documentId,
-                              'socid': controller.customer.value.customerId,
+                              'entityId': document.id,
+                              'batch': false,
                             },
                           )
                         : SnackBarHelper.networkSnackbar(),

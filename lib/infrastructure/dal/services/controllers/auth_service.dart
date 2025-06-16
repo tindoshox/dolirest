@@ -11,7 +11,6 @@ class AuthService extends GetxService {
 
   @override
   onInit() async {
-    // Restore from storage (Hive, ObjectBox, SharedPrefs, etc.)
     url.value = await loadUrlFromStorage();
     token.value = await loadTokenFromStorage();
     super.onInit();

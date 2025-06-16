@@ -30,7 +30,7 @@ class PaymentController extends GetxController {
   TextEditingController invoiceController = TextEditingController();
 
   final int? entityId = Get.arguments['entityId'];
-  bool batch = true;
+  bool batch = Get.arguments['batch'] ?? true;
 
   GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
   GlobalKey<DropdownSearchState> dropdownKey = GlobalKey<DropdownSearchState>();
@@ -186,9 +186,9 @@ class PaymentController extends GetxController {
       DialogHelper.updateMessage('Reloading data ..');
       await _refreshPayments(invoice.value.documentId);
 
-      await _refreshInvoice(invoice.value.id);
+      await _refreshInvoice(invoice.value.documentId);
 
-      if (batch) {
+      if (batch == true) {
         DialogHelper.hideLoading();
 
         SnackBarHelper.successSnackbar(
@@ -229,7 +229,7 @@ class PaymentController extends GetxController {
   }
 
   _refreshInvoice(invoiceId) async {
-    final result = await repository.fetchInvoiceById(customer.value.customerId);
+    final result = await repository.fetchInvoiceById(invoiceId);
 
     result.fold((failure) {
       if (Get.isDialogOpen == true) {
@@ -237,8 +237,8 @@ class PaymentController extends GetxController {
       }
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
-    }, (invoices) {
-      storage.storeInvoice(invoices);
+    }, (invoice) {
+      storage.storeInvoice(invoice);
     });
   }
 

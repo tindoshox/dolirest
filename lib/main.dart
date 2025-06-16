@@ -11,8 +11,8 @@ import 'package:get/get.dart';
 import 'infrastructure/navigation/navigation.dart';
 
 void main() async {
-  DependencyInjection.init();
   WidgetsFlutterBinding.ensureInitialized();
+  await DependencyInjection.init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(Main());
@@ -25,7 +25,7 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthService auth = Get.find();
+    AuthService auth = Get.find<AuthService>();
     final initialRoute =
         auth.token.isEmpty || auth.url.isEmpty ? Routes.LOGIN : Routes.HOME;
 

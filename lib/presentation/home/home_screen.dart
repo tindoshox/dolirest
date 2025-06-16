@@ -30,7 +30,7 @@ class HomeScreen extends GetView<HomeController> {
               _buildUserInfo(context),
               _buildMainShortCuts(),
               _buildSecondaryShortCuts(),
-              if (controller.data.noInvoiceCustomers > 0)
+              if (controller.noInvoiceCustomers > 0)
                 _buildNoInvoiceCustomer(context),
               _buildInvoices(context),
               if (controller.cashflow.value > 0) _buildCashflow(context),
@@ -144,8 +144,6 @@ class HomeScreen extends GetView<HomeController> {
         barrierDismissible: false,
         confirm: CustomActionButton(
             onTap: () {
-              Get.back();
-
               Get.offAllNamed(Routes.LOGIN);
               controller.storage.clearAll();
             },

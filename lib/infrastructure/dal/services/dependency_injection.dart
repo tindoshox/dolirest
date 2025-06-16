@@ -15,13 +15,16 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reach
 import 'package:get/get.dart';
 
 class DependencyInjection {
-  static void init() async {
+  static Future<void> init() async {
     final storageService = await StorageService.create();
+
     Get.put<StorageService>(storageService, permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
+
     Get.lazyPut(() => DioService(), fenix: true);
-    Get.put<NetworkService>(NetworkService(), permanent: true);
-    Get.put<ServerReachability>(ServerReachability(), permanent: true);
+
+    Get.lazyPut<NetworkService>(() => NetworkService(), fenix: true);
+    Get.lazyPut<ServerReachability>(() => ServerReachability(), fenix: true);
     Get.lazyPut<CustomerRepository>(() => CustomerRepository(), fenix: true);
     Get.lazyPut<InvoiceRepository>(() => InvoiceRepository(), fenix: true);
     Get.lazyPut<ProductRepository>(() => ProductRepository(), fenix: true);
@@ -30,6 +33,6 @@ class DependencyInjection {
     Get.lazyPut<UserRepository>(() => UserRepository(), fenix: true);
     Get.lazyPut<DocumentRepository>(() => DocumentRepository(), fenix: true);
     Get.lazyPut<ModuleRepository>(() => ModuleRepository(), fenix: true);
-    Get.put<DataRefreshService>(DataRefreshService(), permanent: true);
+    Get.lazyPut<DataRefreshService>(() => DataRefreshService(), fenix: true);
   }
 }
