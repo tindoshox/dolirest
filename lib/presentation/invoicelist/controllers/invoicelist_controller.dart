@@ -78,12 +78,8 @@ class InvoicelistController extends GetxController {
   }
 
   refreshInvoiceList() async {
-    if (!data.refreshing.value) {
-      DialogHelper.showLoading('Syncing invoices');
-      await data.syncInvoices().then((i) => DialogHelper.hideLoading());
-    } else {
-      SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
-    }
+    SnackBarHelper.successSnackbar(message: 'Refreshing invoices');
+    await data.syncInvoices();
   }
 
   toggleSearch() {

@@ -20,7 +20,7 @@ class UserRepository extends DioService {
       final auth = {'DOLAPIKEY': token};
       dio.options.headers.addAll(auth);
     }
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response = await dio.get(
         ApiPath.users,
       );

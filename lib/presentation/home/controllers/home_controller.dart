@@ -1,16 +1,18 @@
 import 'dart:async';
 
-import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
+import 'package:dolirest/infrastructure/navigation/routes.dart';
+import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -25,9 +27,10 @@ class HomeController extends GetxController {
   final UserRepository userRepository = Get.find();
   final ModuleRepository moduleRepository = Get.find();
   final DataRefreshService data = Get.find();
+  final DioService dioService = Get.find();
 
   var isLoading = false.obs;
-  var connected = false.obs;
+  var connected = true.obs;
   var user = UserModel().obs;
   var company = ''.obs;
   var noInvoiceCustomers = 0.obs;
@@ -38,27 +41,28 @@ class HomeController extends GetxController {
   var overDueInvoices = 0.obs;
   var salesInvoices = 0.obs;
   var enabledModules = <String>[].obs;
+  var refreshing = false.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     _updateUser();
     _updateModules();
     _updateCompany();
 
-    everAll([data.customers, data.cashflow, data.invoices, network.connected],
-        (_) {
-      var nic = <CustomerEntity>[];
-      for (var customer in data.customers) {
-        var invoices =
-            data.invoices.where((i) => i.socid == customer.customerId);
-        if (invoices.isEmpty) {
-          nic.add(customer);
-        }
-      }
-      noInvoiceCustomers.value = nic.length;
+    everAll([
+      data.customers,
+      data.cashflow,
+      data.invoices,
+      network.connected,
+    ], (_) {
       cashflow = data.cashflow;
       connected = network.connected;
 
+      if ((storage.customerBox.getAll().isEmpty ||
+              storage.invoiceBox.getAll().isEmpty) &&
+          network.connected.value) {
+        forceRefresh();
+      }
       openInvoices.value = data.invoices
           .where((i) =>
               i.type == DocumentType.invoice &&
@@ -97,16 +101,8 @@ class HomeController extends GetxController {
           .length;
     });
 
-    var nic = <CustomerEntity>[];
-    for (var customer in data.customers) {
-      var invoices = data.invoices.where((i) => i.socid == customer.customerId);
-      if (invoices.isEmpty) {
-        nic.add(customer);
-      }
-    }
-    noInvoiceCustomers.value = nic.length;
     cashflow = data.cashflow;
-    connected = network.connected;
+    connected.value = await refreshConnection();
 
     openInvoices.value = data.invoices
         .where((i) =>
@@ -142,17 +138,44 @@ class HomeController extends GetxController {
                 Utils.dateOnly(DateTime.now()))
         .length;
 
+    noInvoiceCustomers
+        .bindStream(storage.customerBox.query().watch().map((query) {
+      int count = 0;
+      final customers = query.find();
+      for (var customer in customers) {
+        final invs = storage.invoiceBox
+            .query(InvoiceEntity_.socid.equals(customer.customerId))
+            .build()
+            .find();
+        if (invs.isEmpty) {
+          count++;
+        }
+      }
+      return count;
+    }));
+
+    noInvoiceCustomers.value = storage.customerBox.getAll().where((customer) {
+      final invoices = storage.invoiceBox
+          .query(InvoiceEntity_.socid.equals(customer.customerId))
+          .build()
+          .find()
+          .length;
+      return invoices == 0;
+    }).length;
+
+    company.bindStream(storage.companyBox
+        .query(CompanyModel_.id.equals(1))
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.findFirst()?.name ?? '';
+    }));
+
+    company.value = storage.companyBox.get(1)?.name ?? '';
     super.onInit();
   }
 
   @override
   void onReady() {
-    if ((storage.customerBox.getAll().isEmpty ||
-            storage.invoiceBox.getAll().isEmpty) &&
-        !data.refreshing.value) {
-      forceRefresh();
-    }
-
     if (enabledModules.isEmpty) {
       _refreshModules();
     }
@@ -164,12 +187,12 @@ class HomeController extends GetxController {
     if (storage.companyBox.get(1) == null) {
       _refreshCompanyData();
     }
-    company.value = storage.companyBox.get(1)?.name ?? '';
   }
 
   Future _refreshCompanyData() async {
     final result = await companyRepository.fetchCompany();
     result.fold((failure) {}, (entity) {
+      entity.id = 1;
       storage.companyBox.put(entity);
     });
   }
@@ -179,7 +202,7 @@ class HomeController extends GetxController {
   }
 
   void forceRefresh() async {
-    SnackBarHelper.successSnackbar(message: 'Refreshing data');
+    //  SnackBarHelper.successSnackbar(message: 'Refreshing data');
 
     data.forceRefresh();
   }
@@ -195,5 +218,25 @@ class HomeController extends GetxController {
       storage.settingsBox.put(SettingsModel(
           id: SettingId.moduleSettingId, name: 'modules', listValue: modules));
     });
+  }
+
+  Future<bool> refreshConnection() async {
+    bool result = await network.reachablility.checkServerReachability();
+    if (result == true) {
+      connected.value = true;
+    } else {
+      SnackBarHelper.errorSnackbar(message: 'Unable to reach server');
+    }
+    return result;
+  }
+
+  void logout() async {
+    storage.clearAll();
+    dioService.cancelAllRequests();
+    dioService.cancelRequest('sync-customers');
+    dioService.cancelRequest('sync-invoices');
+    dioService.configureDio(url: '', token: '');
+
+    Get.offAllNamed(Routes.LOGIN);
   }
 }

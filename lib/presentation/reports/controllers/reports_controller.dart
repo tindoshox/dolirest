@@ -18,6 +18,7 @@ import 'package:open_filex/open_filex.dart';
 class ReportsController extends GetxController {
   final NetworkService network = Get.find();
   final StorageService storage = Get.find();
+
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController endDateController = TextEditingController();
@@ -109,6 +110,10 @@ class ReportsController extends GetxController {
   /// Initializes the controller.
   @override
   void onInit() async {
+    ever(network.connected, (_) {
+      connected = network.connected;
+    });
+    connected = network.connected;
     if (Platform.isAndroid) {
       platform = TargetPlatform.android;
     } else {
@@ -159,7 +164,7 @@ class ReportsController extends GetxController {
       var requestModel = BuildReportRequestModel(
         reportid: selectedReport.value.reportid,
         groupid: selectedReport.value.hasGroupParam
-            ? selectedGroup.value.id.toString()
+            ? selectedGroup.value.groupId
             : '',
         salesperson:
             selectedReport.value.hasSalesParam ? salesperson.value : '',

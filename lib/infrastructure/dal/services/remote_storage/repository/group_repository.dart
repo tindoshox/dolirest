@@ -13,7 +13,7 @@ class GroupRepository extends DioService {
       "sqlfilters": "(t.active:=:1)",
     };
 
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response = await dio.get(
         ApiPath.groups,
         queryParameters: queryParameters,

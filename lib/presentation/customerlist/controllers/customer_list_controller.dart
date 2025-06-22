@@ -45,12 +45,9 @@ class CustomerListController extends GetxController {
   }
 
   refreshCustomerList() async {
-    DialogHelper.showLoading('Syncing customers');
-    if (!data.refreshing.value) {
-      await data.syncCustomers().then((v) => DialogHelper.hideLoading());
-    } else {
-      SnackBarHelper.errorSnackbar(message: 'Data refresh already running');
-    }
+    SnackBarHelper.successSnackbar(message: 'Refreshing customers');
+
+    await data.syncCustomers();
   }
 
   Future<void> deleteCustomer(String customerId, int entityId) async {

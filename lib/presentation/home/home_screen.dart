@@ -3,7 +3,6 @@ import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
-import 'package:dolirest/presentation/widgets/custom_action_button.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
@@ -135,22 +134,21 @@ class HomeScreen extends GetView<HomeController> {
     );
   }
 
-  _logout(HomeController controller) async {
-    Get.defaultDialog(
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        title: 'Logout',
-        middleText:
-            'Logging out will clear all locally stored data. You will need to enter your login details again. Would you like to continue?',
-        barrierDismissible: false,
-        confirm: CustomActionButton(
-            onTap: () {
-              Get.offAllNamed(Routes.LOGIN);
-              controller.storage.clearAll();
-            },
-            buttonText: 'Yes'),
-        cancel: CustomActionButton(
-            isCancel: true, buttonText: 'No', onTap: () => Get.back()));
-  }
+  // _logout(HomeController controller) async {
+  //   Get.defaultDialog(
+  //       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+  //       title: 'Logout',
+  //       middleText:
+  //           'Logging out will clear all locally stored data. You will need to enter your login details again. Would you like to continue?',
+  //       barrierDismissible: false,
+  //       confirm: CustomActionButton(
+  //           onTap: () {
+  //             controller.logout();
+  //           },
+  //           buttonText: 'Yes'),
+  //       cancel: CustomActionButton(
+  //           isCancel: true, buttonText: 'No', onTap: () => Get.back()));
+  // }
 
   Widget _buildPopupMenu(HomeController controller) {
     return PopupMenuButton(
@@ -160,14 +158,14 @@ class HomeScreen extends GetView<HomeController> {
           value: '#',
           child: _setThemeMode(controller),
         ),
-        _buildPopupMenuItem(
-          onTap: () => _logout(controller),
-          value: '/login',
-          child: ListTile(
-            title: Text('Logout'),
-            leading: Icon(Icons.logout),
-          ),
-        ),
+        // _buildPopupMenuItem(
+        //   onTap: () => _logout(controller),
+        //   value: '/login',
+        //   child: ListTile(
+        //     title: Text('Logout'),
+        //     leading: Icon(Icons.logout),
+        //   ),
+        // ),
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
@@ -198,11 +196,10 @@ class HomeScreen extends GetView<HomeController> {
       actions: [
         Obx(() => getStatusIcon(
             connected: controller.connected.value,
-            refreshing: controller.data.refreshing.value,
+            refreshing: controller.refreshing.value,
             onPressed: controller.network.connected.value
                 ? () => controller.forceRefresh()
-                : () => controller.network.reachablility
-                    .checkServerReachability())),
+                : () => controller.refreshConnection())),
         _buildPopupMenu(controller)
       ],
     );

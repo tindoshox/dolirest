@@ -490,7 +490,8 @@ class InvoiceDetailController extends GetxController
     final response = await invoiceRepository.addProduct(
         invoiceId: document.value.documentId, body: body);
 
-    response.fold((failure) {
+    response.fold((failure) async {
+      await refreshInvoiceData(document.value.documentId);
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (value) async {

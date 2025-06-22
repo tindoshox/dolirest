@@ -1,6 +1,5 @@
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 Widget _makeIcon(
     {required String text,
@@ -25,28 +24,18 @@ Widget getStatusIcon({
   bool refreshing = false,
   required bool connected,
 }) {
-  if (refreshing) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: const SpinKitThreeInOut(
-        color: Colors.blueAccent,
-        size: 10,
-      ),
-    );
+  if (!connected) {
+    return _makeIcon(
+        text: 'No connection',
+        icon: Icons.cloud_off_outlined,
+        color: Colors.red,
+        onPressed: onPressed ?? () => SnackBarHelper.networkSnackbar());
   } else {
-    if (!connected) {
-      return _makeIcon(
-          text: 'No connection',
-          icon: Icons.cloud_off_outlined,
-          color: Colors.red,
-          onPressed: onPressed ?? () => SnackBarHelper.networkSnackbar());
-    } else {
-      return _makeIcon(
-          text: 'Connected',
-          icon: Icons.cloud_done_outlined,
-          color: Colors.lightGreen,
-          onPressed: onPressed ??
-              () => SnackBarHelper.successSnackbar(message: 'Connected'));
-    }
+    return _makeIcon(
+        text: 'Connected',
+        icon: Icons.cloud_done_outlined,
+        color: Colors.lightGreen,
+        onPressed: onPressed ??
+            () => SnackBarHelper.successSnackbar(message: 'Connected'));
   }
 }

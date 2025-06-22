@@ -7,7 +7,7 @@ import 'package:fpdart/fpdart.dart';
 
 class ModuleRepository extends DioService {
   Future<Either<DolibarrApiError, List<String>>> fetchEnabledModules() {
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response = await dio.get(ApiPath.modules);
 
       if (response.data is List) {

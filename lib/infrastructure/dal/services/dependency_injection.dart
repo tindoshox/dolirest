@@ -20,19 +20,19 @@ class DependencyInjection {
 
     Get.put<StorageService>(storageService, permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
+    Get.put<NetworkService>(NetworkService(), permanent: true);
 
-    Get.lazyPut(() => DioService(), fenix: true);
+    Get.put(DioService(), permanent: true);
 
-    Get.lazyPut<NetworkService>(() => NetworkService(), fenix: true);
-    Get.lazyPut<ServerReachability>(() => ServerReachability(), fenix: true);
-    Get.lazyPut<CustomerRepository>(() => CustomerRepository(), fenix: true);
-    Get.lazyPut<InvoiceRepository>(() => InvoiceRepository(), fenix: true);
-    Get.lazyPut<ProductRepository>(() => ProductRepository(), fenix: true);
-    Get.lazyPut<GroupRepository>(() => GroupRepository(), fenix: true);
-    Get.lazyPut<CompanyRepository>(() => CompanyRepository(), fenix: true);
-    Get.lazyPut<UserRepository>(() => UserRepository(), fenix: true);
-    Get.lazyPut<DocumentRepository>(() => DocumentRepository(), fenix: true);
-    Get.lazyPut<ModuleRepository>(() => ModuleRepository(), fenix: true);
-    Get.lazyPut<DataRefreshService>(() => DataRefreshService(), fenix: true);
+    Get.put<ServerReachability>(ServerReachability(), permanent: true);
+    Get.put<CustomerRepository>(CustomerRepository(), permanent: true);
+    Get.put<InvoiceRepository>(InvoiceRepository(), permanent: true);
+    Get.put<ProductRepository>(ProductRepository(), permanent: true);
+    Get.put<GroupRepository>(GroupRepository(), permanent: true);
+    Get.put<CompanyRepository>(CompanyRepository(), permanent: true);
+    Get.put<UserRepository>(UserRepository(), permanent: true);
+    Get.put<DocumentRepository>(DocumentRepository(), permanent: true);
+    Get.put<ModuleRepository>(ModuleRepository(), permanent: true);
+    Get.put<DataRefreshService>(DataRefreshService(), permanent: true);
   }
 }

@@ -9,7 +9,7 @@ import 'package:fpdart/fpdart.dart';
 
 class CompanyRepository extends DioService {
   Future<Either<DolibarrApiError, CompanyModel>> fetchCompany() {
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response = await dio.get(ApiPath.company);
       return companyModelFromJson(jsonEncode(response.data));
     });

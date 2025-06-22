@@ -7,7 +7,6 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dio_safe_request.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/error/dolibarr_api_error.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/api_path.dart';
-
 import 'package:fpdart/fpdart.dart';
 
 class DocumentRepository extends DioService {
@@ -25,7 +24,7 @@ class DocumentRepository extends DioService {
 
   Future<Either<DolibarrApiError, BuildDucumentResponseModel>> _build(
       String url, String body) {
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response = await dio.put(url, data: body);
       return BuildDucumentResponseModel.fromJson(response.data);
     });

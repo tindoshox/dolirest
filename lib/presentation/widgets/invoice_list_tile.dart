@@ -21,9 +21,10 @@ Widget invoiceListTile({
         text: customer.name,
         size: 30,
       ),
-      trailing: invoice.status == ValidationStatus.validated
-          ? null
-          : IconButton(onPressed: onDeletePressed, icon: Icon(Icons.delete)),
+      trailing:
+          invoice.status == ValidationStatus.draft && invoice.totalpaid == 0
+              ? IconButton(onPressed: onDeletePressed, icon: Icon(Icons.delete))
+              : null,
       isThreeLine: true,
       onTap: () => Get.toNamed(Routes.INVOICEDETAIL,
           arguments: {'entityId': invoice.id}),

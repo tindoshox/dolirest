@@ -64,7 +64,8 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    if (storage.productBox.getAll().isEmpty) {
+    if (storage.productBox.getAll().isEmpty &&
+        moduleProductEnabled.value == true) {
       await _refreshProducts();
     }
 

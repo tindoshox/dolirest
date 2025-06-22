@@ -9,6 +9,7 @@ import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
@@ -23,18 +24,23 @@ class DataRefreshService extends GetxService {
 
   final CustomerRepository _customerRepository = Get.find();
   final InvoiceRepository _invoiceRepository = Get.find();
-  final NetworkService _networkController = Get.find();
+  final NetworkService _network = Get.find();
+  final DioService _dioService = Get.find();
 
   var invoices = <InvoiceEntity>[].obs;
   var customers = <CustomerEntity>[].obs;
   var payments = <PaymentEntity>[].obs;
   var cashflow = 0.obs;
-  var refreshing = false.obs;
   bool _isRefreshing = false;
+  var connected = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    ever(_network.connected, (_) {
+      connected = _network.connected;
+    });
+    connected = _network.connected;
 
     _dataRefreshSchedule();
     invoices.bindStream(_storage.invoiceBox
@@ -105,49 +111,59 @@ class DataRefreshService extends GetxService {
 
   Future forceRefresh(
       {String? customerDateModified, String? invoiceDateModified}) async {
-    if (_isRefreshing || !_networkController.connected.value) {
+    if (_isRefreshing || !connected.value) {
       return;
     }
     _isRefreshing = true;
+    SnackBarHelper.successSnackbar(message: 'Refreshing data');
 
-    if (_networkController.connected.value) {
-      await syncCustomers(dateModified: customerDateModified).then(
-          (customers) async =>
-              await syncInvoices(dateModified: invoiceDateModified));
-    }
+    // if (_networkController.connected.value) {
+    await syncCustomers(dateModified: customerDateModified).then(
+        (customers) async =>
+            await syncInvoices(dateModified: invoiceDateModified));
+    //  }
 
     _isRefreshing = false;
   }
 
-  fetchCustomers({String? dateModified}) async {
+  Future<void> fetchCustomers({String? dateModified}) async {
     const int limit = 100;
     int page = 0;
     bool hasMore = true;
 
-    while (hasMore == true) {
+    final token = _dioService.createToken('sync-customers');
+
+    while (hasMore) {
+      if (token.isCancelled) {
+        debugPrint("Cancelled at page $page");
+        break;
+      }
+
       final result = await _customerRepository.fetchCustomerList(
-          page: page, limit: limit, dateModified: dateModified);
+        page: page,
+        limit: limit,
+        dateModified: dateModified,
+        cancelToken: token,
+      );
 
-      result.fold((failure) {
-        if (!kReleaseMode) {
-          debugPrint(failure.message);
-        }
-      }, (customers) async {
-        if (customers.isNotEmpty) {
+      final shouldContinue = await result.fold<Future<bool>>(
+        (error) async {
+          debugPrint("Error: ${error.message}");
+          return false;
+        },
+        (customers) async {
           await _storage.storeCustomers(customers);
-        }
+          return customers.length == limit; // continue only if full batch
+        },
+      );
 
-        if (customers.length < limit) {
-          hasMore = false;
-        } else {
-          page++;
-        }
-      });
+      hasMore = shouldContinue;
+      page++;
     }
   }
 
   Future<void> syncCustomers({String? dateModified}) async {
-    if (_networkController.connected.value) {
+    if (_network.connected.value) {
       try {
         await fetchCustomers(dateModified: dateModified);
       } on Exception catch (e) {
@@ -159,35 +175,44 @@ class DataRefreshService extends GetxService {
     }
   }
 
-  fetchInvoices({String? customerId, String? dateModified}) async {
+  Future<void> fetchInvoices({String? customerId, String? dateModified}) async {
     const int limit = 100;
     int page = 0;
     bool hasMore = true;
 
-    while (hasMore == true) {
-      final result = await _invoiceRepository.fetchInvoiceList(
-          page: page,
-          limit: limit,
-          customerId: customerId,
-          dateModified: dateModified);
-      result.fold((e) {
-        hasMore = false;
-      }, (invoices) async {
-        if (invoices.isNotEmpty) {
-          await _storage.storeInvoices(invoices);
-        }
+    final token = _dioService.createToken('sync-invoices');
 
-        if (invoices.length != limit) {
-          hasMore = false;
-        } else {
-          page++;
-        }
-      });
+    while (hasMore) {
+      if (token.isCancelled) {
+        debugPrint("Cancelled at page $page");
+        break;
+      }
+
+      final result = await _invoiceRepository.fetchInvoiceList(
+        page: page,
+        limit: limit,
+        dateModified: dateModified,
+        cancelToken: token,
+      );
+
+      final shouldContinue = await result.fold<Future<bool>>(
+        (error) async {
+          debugPrint("Error: ${error.message}");
+          return false;
+        },
+        (invoices) async {
+          await _storage.storeInvoices(invoices);
+          return invoices.length == limit; // continue only if full batch
+        },
+      );
+
+      hasMore = shouldContinue;
+      page++;
     }
   }
 
   Future<void> syncInvoices({String? customerId, String? dateModified}) async {
-    if (_networkController.connected.value) {
+    if (_network.connected.value) {
       await fetchInvoices(customerId: customerId, dateModified: dateModified);
     }
   }

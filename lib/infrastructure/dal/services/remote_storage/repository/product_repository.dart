@@ -13,7 +13,7 @@ class ProductRepository extends DioService {
       "sortorder": "ASC",
     };
 
-    return dio.safeRequest(() async {
+    return dio.safeRequest((token) async {
       final response =
           await dio.get(ApiPath.products, queryParameters: queryParameters);
 
