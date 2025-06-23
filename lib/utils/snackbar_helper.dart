@@ -32,8 +32,10 @@ class SnackBarHelper {
   static void successSnackbar({
     String? title,
     String? message,
+    Duration duration = const Duration(seconds: 5),
   }) {
     showSnackbar(
+      duration: duration,
       title: title,
       message: message ?? 'Operation was successful.',
       icon: Icons.thumb_up_off_alt_sharp,
@@ -46,8 +48,10 @@ class SnackBarHelper {
   static void errorSnackbar({
     String? title,
     String? message,
+    Duration duration = const Duration(seconds: 5),
   }) {
     showSnackbar(
+      duration: duration,
       title: title,
       message: message ?? 'An error occurred.',
       icon: Icons.error,
@@ -58,8 +62,10 @@ class SnackBarHelper {
   static void networkSnackbar({
     String? title,
     String? message,
+    Duration duration = const Duration(seconds: 5),
   }) {
     showSnackbar(
+      duration: duration,
       title: title,
       message: message ?? 'No connection to server',
       icon: Icons.network_locked,

@@ -11,6 +11,7 @@ Card buildCustomerListTile(
     void Function()? onDeletePressed}) {
   return Card(
     child: ListTile(
+      isThreeLine: true,
       onTap: () => Get.toNamed(Routes.CUSTOMERDETAIL, arguments: {
         'entityId': customer.id,
       }),
@@ -32,14 +33,29 @@ Card buildCustomerListTile(
           ),
         ],
       ),
-      subtitle: Row(
+      subtitle: Column(
         children: [
-          Flexible(
-            child: Text(
-              '${customer.address} ${customer.town}'.trim(),
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  '${customer.address} ${customer.town}'.trim(),
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  customer.codeClient,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
           ),
         ],
       ),

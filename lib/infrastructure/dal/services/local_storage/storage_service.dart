@@ -58,10 +58,6 @@ class StorageService extends GetxService {
     return payment;
   }
 
-  void storePayment(PaymentEntity payment) async {
-    paymentBox.put(_upsertPayment(payment));
-  }
-
   Future<List<PaymentEntity>> storePayments(
       List<PaymentEntity> payments) async {
     var cleaned = <PaymentEntity>[];
@@ -73,7 +69,8 @@ class StorageService extends GetxService {
     return cleaned;
   }
 
-  void cleanupPayments(List<PaymentEntity> apiPayments, String invoiceId) {
+  Future<void> cleanupPayments(
+      List<PaymentEntity> apiPayments, String invoiceId) async {
     final existingIds = paymentBox
         .query(PaymentEntity_.invoiceId.equals(invoiceId))
         .build()
@@ -132,7 +129,7 @@ class StorageService extends GetxService {
     return cleaned;
   }
 
-  void cleanupInvoices(List<InvoiceEntity> apiInvoices) {
+  Future<void> cleanupInvoices(List<InvoiceEntity> apiInvoices) async {
     final existingIds = invoiceBox.getAll().map((i) => i.documentId).toList();
     final apiIds = apiInvoices.map((i) => i.documentId).toList();
     var idsToDelete = <int>[];
@@ -192,7 +189,7 @@ class StorageService extends GetxService {
     return cleaned;
   }
 
-  void cleanupCustomers(List<CustomerEntity> apiCustomers) {
+  Future<void> cleanupCustomers(List<CustomerEntity> apiCustomers) async {
     final existingIds = customerBox.getAll().map((c) => c.customerId).toList();
     final apiIds = apiCustomers.map((c) => c.customerId).toList();
     var idsToDelete = <int>[];

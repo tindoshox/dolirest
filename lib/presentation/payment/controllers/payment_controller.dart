@@ -222,9 +222,11 @@ class PaymentController extends GetxController {
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
-      for (var payment in payments) {
-        storage.storePayment(payment);
-      }
+      storage.storePayments(payments).then((apiPayments) {
+        if (apiPayments.isNotEmpty) {
+          storage.cleanupPayments(apiPayments, invoiceId);
+        }
+      });
     });
   }
 

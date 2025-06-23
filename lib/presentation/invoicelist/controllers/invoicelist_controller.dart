@@ -101,7 +101,8 @@ class InvoicelistController extends GetxController {
       if (failure.code == 404) {
         storage.invoiceBox.remove(entityId);
 
-        SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+        SnackBarHelper.errorSnackbar(
+            message: 'Invoice Deleted', duration: Duration(seconds: 1));
       } else {
         SnackBarHelper.errorSnackbar(message: 'Failed to delete draft');
       }
@@ -109,7 +110,8 @@ class InvoicelistController extends GetxController {
       DialogHelper.hideLoading();
       storage.invoiceBox.remove(entityId);
 
-      SnackBarHelper.errorSnackbar(message: 'Invoice Deleted');
+      SnackBarHelper.errorSnackbar(
+          message: 'Invoice Deleted', duration: Duration(seconds: 1));
     });
   }
 }

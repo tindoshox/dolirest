@@ -99,50 +99,54 @@ class DataRefreshService extends GetxService {
       return;
     }
     _isRefreshing = true;
-    // SnackBarHelper.successSnackbar(message: 'Refreshing data');
 
-    // if (_networkController.connected.value) {
     await syncCustomers().then((customers) async => await syncInvoices());
-    //  }
 
     _isRefreshing = false;
   }
 
   Future<void> fetchCustomers() async {
-    const int limit = 0;
+    var apiCustomers = <CustomerEntity>[];
+    const int limit = 1000;
     int page = 0;
-    //bool hasMore = true;
+    bool hasMore = true;
 
     final token = _dioService.createToken('sync-customers');
 
-    //  while (hasMore) {
-    // if (token.isCancelled) {
-    //   debugPrint("Cancelled at page $page");
-    //   break;
-    // }
+    while (hasMore) {
+      if (token.isCancelled) {
+        debugPrint("Cancelled at page $page");
+        break;
+      }
 
-    final result = await _customerRepository.fetchCustomerList(
-      page: page,
-      limit: limit,
-      cancelToken: token,
-    );
+      final result = await _customerRepository.fetchCustomerList(
+        page: page,
+        limit: limit,
+        cancelToken: token,
+      );
 
-    await result.fold<Future<bool>>(
-      (error) async {
-        debugPrint("Error: ${error.message}");
-        return false;
-      },
-      (customers) async {
-        await _storage
-            .storeCustomers(customers)
-            .then((apiCustomers) => _storage.cleanupCustomers(apiCustomers));
-        return customers.length == limit;
-      },
-    );
+      final shouldContinue = await result.fold<Future<bool>>(
+        (error) async {
+          debugPrint("Error: ${error.message}");
+          return false;
+        },
+        (customers) async {
+          await _storage.storeCustomers(customers).then((c) {
+            if (c.isNotEmpty) {
+              apiCustomers.addAll(c);
+            }
+          });
+          return customers.length == limit;
+        },
+      );
+      debugPrint(shouldContinue.toString());
+      hasMore = shouldContinue;
+      page++;
 
-    //hasMore = shouldContinue;
-    //page++;
-    // }
+      if (!hasMore && apiCustomers.isNotEmpty) {
+        await _storage.cleanupCustomers(apiCustomers);
+      }
+    }
   }
 
   Future<void> syncCustomers() async {
@@ -157,43 +161,48 @@ class DataRefreshService extends GetxService {
   }
 
   Future<void> fetchInvoices({String? customerId}) async {
-    const int limit = 0;
+    var apiInvoices = <InvoiceEntity>[];
+    const int limit = 1000;
     int page = 0;
-    // bool hasMore = true;
+    bool hasMore = true;
 
     final token = _dioService.createToken('sync-invoices');
 
-    // while (hasMore) {
-    //   if (token.isCancelled) {
-    //     debugPrint("Cancelled at page $page");
-    //     break;
-    //   }
+    while (hasMore) {
+      if (token.isCancelled) {
+        debugPrint("Cancelled at page $page");
+        break;
+      }
 
-    final result = await _invoiceRepository.fetchInvoiceList(
-      customerId: customerId,
-      page: page,
-      limit: limit,
-      cancelToken: token,
-    );
+      final result = await _invoiceRepository.fetchInvoiceList(
+        customerId: customerId,
+        page: page,
+        limit: limit,
+        cancelToken: token,
+      );
 
-    result.fold<Future<bool>>(
-      (error) async {
-        debugPrint("Error: ${error.message}");
-        return false;
-      },
-      (invoices) async {
-        await _storage.storeInvoices(invoices).then((apiInvoices) {
-          if (customerId == null && apiInvoices.isNotEmpty) {
-            _storage.cleanupInvoices(apiInvoices);
-          }
-        });
-        return invoices.length == limit; // continue only if full batch
-      },
-    );
+      final shouldContinue = await result.fold<Future<bool>>(
+        (error) async {
+          debugPrint("Error: ${error.message}");
+          return false;
+        },
+        (invoices) async {
+          await _storage.storeInvoices(invoices).then((i) {
+            if (i.isNotEmpty) {
+              apiInvoices.addAll(i);
+            }
+          });
+          return invoices.length == limit;
+        },
+      );
+      debugPrint(shouldContinue.toString());
+      hasMore = shouldContinue;
 
-    //  hasMore = shouldContinue;
-    //   page++;
-    // }
+      page++;
+      if (!hasMore && customerId == null && apiInvoices.isNotEmpty) {
+        await _storage.cleanupInvoices(apiInvoices);
+      }
+    }
   }
 
   Future<void> syncInvoices({
@@ -212,8 +221,11 @@ class DataRefreshService extends GetxService {
           final res = await _invoiceRepository.fetchPaymentsByInvoice(
               invoiceId: invoice.documentId);
           res.fold((failure) => null, (ps) {
-            _storage.storePayments(ps).then((apiPayments) =>
-                _storage.cleanupPayments(apiPayments, invoice.documentId));
+            _storage.storePayments(ps).then((apiPayments) async {
+              if (apiPayments.isNotEmpty) {
+                await _storage.cleanupPayments(apiPayments, invoice.documentId);
+              }
+            });
           });
         }
       }

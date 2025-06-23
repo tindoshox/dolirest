@@ -59,7 +59,8 @@ class CustomerListController extends GetxController {
         if (failure.code == 404) {
           storage.customerBox.remove(entityId);
 
-          SnackBarHelper.successSnackbar(message: 'Customer deleted');
+          SnackBarHelper.successSnackbar(
+              message: 'Customer deleted', duration: Duration(seconds: 1));
         } else {
           SnackBarHelper.errorSnackbar(message: failure.message);
         }
