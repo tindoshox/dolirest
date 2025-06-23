@@ -42,7 +42,7 @@ class StorageService extends GetxService {
     return StorageService._create(store);
   }
 
-  _upsertPayment(PaymentEntity payment) {
+  PaymentEntity _upsertPayment(PaymentEntity payment) {
     final existing = paymentBox
         .query(PaymentEntity_.invoiceId
             .equals(payment.invoiceId)
@@ -54,12 +54,46 @@ class StorageService extends GetxService {
       payment.id = existing.id;
     }
 
-    paymentBox.put(payment);
+    // paymentBox.put(payment);
     return payment;
   }
 
   void storePayment(PaymentEntity payment) async {
-    _upsertPayment(payment);
+    paymentBox.put(_upsertPayment(payment));
+  }
+
+  Future<List<PaymentEntity>> storePayments(
+      List<PaymentEntity> payments) async {
+    var cleaned = <PaymentEntity>[];
+
+    for (var payment in payments) {
+      cleaned.add(_upsertPayment(payment));
+    }
+    paymentBox.putManyAsync(cleaned);
+    return cleaned;
+  }
+
+  void cleanupPayments(List<PaymentEntity> apiPayments, String invoiceId) {
+    final existingIds = paymentBox
+        .query(PaymentEntity_.invoiceId.equals(invoiceId))
+        .build()
+        .find()
+        .map((p) => p.ref);
+    final apiIds = apiPayments.map((i) => i.ref).toList();
+    var idsToDelete = <int>[];
+
+    for (var e in existingIds) {
+      if (!apiIds.contains(e)) {
+        idsToDelete.add(paymentBox
+            .query(PaymentEntity_.ref
+                .equals(e)
+                .and(PaymentEntity_.invoiceId.equals(invoiceId)))
+            .build()
+            .findFirst()!
+            .id);
+      }
+    }
+    paymentBox.removeManyAsync(idsToDelete);
   }
 
   InvoiceEntity _upsertInvoice(InvoiceEntity invoice) {
@@ -69,7 +103,6 @@ class StorageService extends GetxService {
         .findFirst();
 
     if (existing != null) {
-      // Fix: Use = for assignment instead of == for comparison
       invoice.id = existing.id;
 
       final linesToRemove = lineBox
@@ -79,38 +112,55 @@ class StorageService extends GetxService {
       lineBox.removeMany(linesToRemove.map((e) => e.id).toList());
     }
 
-    // Store the invoice first to ensure it has an ID
-    invoiceBox.put(invoice);
-
     return invoice;
   }
 
-  storeInvoice(InvoiceEntity invoice) {
-    return _upsertInvoice(invoice);
+  void storeInvoice(InvoiceEntity invoice) {
+    invoiceBox.put(_upsertInvoice(invoice));
   }
 
-  storeInvoices(List<InvoiceEntity> invoices) {
-    if (invoices.isNotEmpty) {
-      for (var invoice in invoices) {
-        _upsertInvoice(invoice);
+  Future<List<InvoiceEntity>> storeInvoices(
+      List<InvoiceEntity> invoices) async {
+    if (invoices.isEmpty) return [];
+
+    var cleaned = <InvoiceEntity>[];
+    for (var invoice in invoices) {
+      cleaned.add(_upsertInvoice(invoice));
+    }
+
+    invoiceBox.putManyAsync(cleaned);
+    return cleaned;
+  }
+
+  void cleanupInvoices(List<InvoiceEntity> apiInvoices) {
+    final existingIds = invoiceBox.getAll().map((i) => i.documentId).toList();
+    final apiIds = apiInvoices.map((i) => i.documentId).toList();
+    var idsToDelete = <int>[];
+    for (var e in existingIds) {
+      if (!apiIds.contains(e)) {
+        idsToDelete.add(invoiceBox
+            .query(InvoiceEntity_.documentId.equals(e))
+            .build()
+            .findFirst()!
+            .id);
       }
     }
-    return invoices;
+    invoiceBox.removeManyAsync(idsToDelete);
   }
 
-  deleteInvoice(int id) {
+  bool deleteInvoice(int id) {
     return invoiceBox.remove(id);
   }
 
-  deleteAllInvoices(List<int> ids) {
+  int deleteAllInvoices(List<int> ids) {
     return invoiceBox.removeMany(ids);
   }
 
-  deleteAllPayments(List<int> ids) {
+  int deleteAllPayments(List<int> ids) {
     return paymentBox.removeMany(ids);
   }
 
-  _upsertCustomer(CustomerEntity customer) {
+  CustomerEntity _upsertCustomer(CustomerEntity customer) {
     final existing = customerBox
         .query(CustomerEntity_.customerId.equals(customer.customerId))
         .build()
@@ -120,23 +170,42 @@ class StorageService extends GetxService {
       customer.id = existing.id;
     }
 
-    customerBox.put(customer);
+    // customerBox.put(customer);
     return customer;
   }
 
   void storeCustomer(CustomerEntity customer) {
-    _upsertCustomer(customer);
+    customerBox.put(_upsertCustomer(customer));
   }
 
-  storeCustomers(List<CustomerEntity> customers) {
-    if (customers.isNotEmpty) {
-      for (var customer in customers) {
-        _upsertCustomer(
-          customer,
-        );
+  Future<List<CustomerEntity>> storeCustomers(
+      List<CustomerEntity> customers) async {
+    if (customers.isEmpty) return [];
+
+    var cleaned = <CustomerEntity>[];
+
+    for (var customer in customers) {
+      cleaned.add(_upsertCustomer(customer));
+    }
+
+    customerBox.putManyAsync(cleaned);
+    return cleaned;
+  }
+
+  void cleanupCustomers(List<CustomerEntity> apiCustomers) {
+    final existingIds = customerBox.getAll().map((c) => c.customerId).toList();
+    final apiIds = apiCustomers.map((c) => c.customerId).toList();
+    var idsToDelete = <int>[];
+    for (var e in existingIds) {
+      if (!apiIds.contains(e)) {
+        idsToDelete.add(customerBox
+            .query(CustomerEntity_.customerId.equals(e))
+            .build()
+            .findFirst()!
+            .id);
       }
     }
-    return customers;
+    customerBox.removeManyAsync(idsToDelete);
   }
 
   CustomerEntity? getCustomer(String customerId) {
@@ -150,15 +219,15 @@ class StorageService extends GetxService {
     return customerBox.getAll();
   }
 
-  deleteCustomer(int id) {
+  bool deleteCustomer(int id) {
     return customerBox.remove(id);
   }
 
-  deleteManyCustomer(ids) {
+  int deleteManyCustomer(List<int> ids) {
     return customerBox.removeMany(ids);
   }
 
-  storeSetting(SettingsModel setting) {
+  int storeSetting(SettingsModel setting) {
     return settingsBox.put(setting);
   }
 
@@ -166,15 +235,11 @@ class StorageService extends GetxService {
     return settingsBox.get(id);
   }
 
-  watchSetting(id) {
-    return settingsBox.get(id);
-  }
-
-  clearSetting(id) {
+  bool clearSetting(int id) {
     return settingsBox.remove(id);
   }
 
-  _upsertGroup(GroupEntity group) {
+  GroupEntity _upsertGroup(GroupEntity group) {
     final existing = groupBox
         .query(GroupEntity_.groupId.equals(group.groupId!))
         .build()
@@ -188,7 +253,7 @@ class StorageService extends GetxService {
     return group;
   }
 
-  storeGroup(GroupEntity group) {
+  dynamic storeGroup(GroupEntity group) {
     return _upsertGroup(group);
   }
 
@@ -200,7 +265,7 @@ class StorageService extends GetxService {
     }
   }
 
-  GroupEntity? getGroup(id) {
+  GroupEntity? getGroup(int id) {
     return groupBox.get(id);
   }
 
@@ -208,7 +273,7 @@ class StorageService extends GetxService {
     return groupBox.getAll();
   }
 
-  _upsertProduct(ProductEntity product) {
+  void _upsertProduct(ProductEntity product) {
     final existing = productBox
         .query(ProductEntity_.productId.equals(product.productId!))
         .build()

@@ -73,16 +73,16 @@ class InvoicelistController extends GetxController {
     super.onClose();
   }
 
-  search({String searchText = ""}) {
+  void search({String searchText = ""}) {
     searchString.value = searchText;
   }
 
-  refreshInvoiceList() async {
+  Future refreshInvoiceList() async {
     SnackBarHelper.successSnackbar(message: 'Refreshing invoices');
     await data.syncInvoices();
   }
 
-  toggleSearch() {
+  void toggleSearch() {
     if (searchController.text.isEmpty) {
       searchIcon.value = !searchIcon.value;
     }

@@ -89,7 +89,7 @@ class Utils {
   }
 
   /// Returns a [TextStyle] object with a red color if the due date is in the past, or null if the due date is in the future or present.
-  static overDueStyle(int dueDate) {
+  static MaterialColor? overDueStyle(int dueDate) {
     return intToDateTime(dueDate).isBefore(DateUtils.dateOnly(DateTime.now()))
         ? Colors.red
         : null;

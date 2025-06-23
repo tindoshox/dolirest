@@ -101,7 +101,7 @@ class PaymentController extends GetxController {
     await _fetchPayments(selectedInvoice.documentId);
   }
 
-  Future _fetchPayments(invoiceId) async {
+  Future _fetchPayments(String invoiceId) async {
     List<PaymentEntity> list = storage.paymentBox
         .query(PaymentEntity_.invoiceId.equals(invoiceId))
         .build()
@@ -114,7 +114,7 @@ class PaymentController extends GetxController {
         list.map((payment) => Utils.dateTimeToDMY(payment.date)).toList();
   }
 
-  _fetchCustomerById(String customerId) {
+  Future _fetchCustomerById(String customerId) async {
     customer.value = storage.getCustomer(customerId)!;
   }
 
@@ -133,7 +133,7 @@ class PaymentController extends GetxController {
     }
   }
 
-  setDueDate() async {
+  Future<void> setDueDate() async {
     DateTime? selectedDate = await showDatePicker(
         context: Get.context!,
         initialDate: dueDate.value,
@@ -174,7 +174,7 @@ class PaymentController extends GetxController {
     }
   }
 
-  _processPayment(body) async {
+  Future<void> _processPayment(String body) async {
     final result = await repository.addPayment(body: body);
 
     result.fold((failure) {
@@ -216,7 +216,7 @@ class PaymentController extends GetxController {
     await repository.updateInvoice(invoiceId: invoiceId, body: body);
   }
 
-  _refreshPayments(invoiceId) async {
+  Future<void> _refreshPayments(String invoiceId) async {
     final result =
         await (repository.fetchPaymentsByInvoice(invoiceId: invoiceId));
     result.fold(
@@ -228,7 +228,7 @@ class PaymentController extends GetxController {
     });
   }
 
-  _refreshInvoice(invoiceId) async {
+  Future<void> _refreshInvoice(String invoiceId) async {
     final result = await repository.fetchInvoiceById(invoiceId);
 
     result.fold((failure) {
@@ -242,7 +242,7 @@ class PaymentController extends GetxController {
     });
   }
 
-  fetchInvoices() {
+  List<InvoiceEntity> fetchInvoices() {
     var openInvoices = storage.invoiceBox
         .query(InvoiceEntity_.paye
             .equals(PaidStatus.unpaid)

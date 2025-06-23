@@ -40,7 +40,7 @@ class Main extends StatelessWidget {
   }
 }
 
-_getThmeMode() {
+ThemeMode _getThmeMode() {
   String? mode = Get.find<StorageService>()
       .settingsBox
       .get(SettingId.themeModeId)

@@ -40,11 +40,11 @@ class CustomerListController extends GetxController {
     super.onClose();
   }
 
-  search({String searchText = ""}) {
+  void search({String searchText = ""}) {
     searchString.value = searchText;
   }
 
-  refreshCustomerList() async {
+  Future<void> refreshCustomerList() async {
     SnackBarHelper.successSnackbar(message: 'Refreshing customers');
 
     await data.syncCustomers();

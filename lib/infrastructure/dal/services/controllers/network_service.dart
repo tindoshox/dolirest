@@ -38,10 +38,11 @@ class NetworkService extends GetxService {
   }
 
   // Start a periodic check to see if the server is reachable
-  void _startServerReachabilityCheck() {
+  void _startServerReachabilityCheck() async {
+    connected.value = await reachablility.checkServerReachability();
     _serverCheckTimer?.cancel(); // Cancel any existing timer
     _serverCheckTimer =
-        Timer.periodic(const Duration(minutes: 1), (timer) async {
+        Timer.periodic(const Duration(seconds: 30), (timer) async {
       connected.value = await reachablility.checkServerReachability();
     });
   }

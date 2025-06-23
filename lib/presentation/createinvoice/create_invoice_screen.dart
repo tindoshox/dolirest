@@ -125,7 +125,7 @@ class CreateinvoiceScreen extends GetView<CreateinvoiceController> {
         ),
         items: (String searchString, l) async {
           List<CustomerEntity> customers =
-              await controller.searchCustomer(searchString: searchString);
+              controller.searchCustomer(searchString: searchString);
           return customers;
         },
         compareFn: (item1, item2) => item1.id == item2.id,

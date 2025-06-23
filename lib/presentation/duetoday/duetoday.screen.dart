@@ -23,7 +23,7 @@ class DueTodayScreen extends GetView<DueTodayController> {
     );
   }
 
-  buildDueToday(BuildContext context) {
+  Obx buildDueToday(BuildContext context) {
     ScrollController scrollController = ScrollController();
     return Obx(() {
       var invoices = controller.dueToday;

@@ -23,18 +23,18 @@ class HomeScreen extends GetView<HomeController> {
       body: DoubleBack(
         message: 'Press back again to exit',
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildUserInfo(context),
-              _buildMainShortCuts(),
-              _buildSecondaryShortCuts(),
-              if (controller.noInvoiceCustomers > 0)
-                _buildNoInvoiceCustomer(context),
-              _buildInvoices(context),
-              if (controller.cashflow.value > 0) _buildCashflow(context),
-            ],
-          ),
+          child: Obx(() => Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildUserInfo(context),
+                  _buildMainShortCuts(),
+                  _buildSecondaryShortCuts(),
+                  if (controller.noInvoiceCustomers.value > 0)
+                    _buildNoInvoiceCustomer(context),
+                  _buildInvoices(context),
+                  if (controller.cashflow.value > 0) _buildCashflow(context),
+                ],
+              )),
         ),
       ),
     );
@@ -67,7 +67,7 @@ class HomeScreen extends GetView<HomeController> {
     );
   }
 
-  _setThemeMode(HomeController controller) {
+  PopupMenuButton<String> _setThemeMode(HomeController controller) {
     return PopupMenuButton(
       onSelected: (value) => Get.back(),
       child: ListTile(
@@ -328,7 +328,7 @@ class HomeScreen extends GetView<HomeController> {
     );
   }
 
-  _buildSecondaryShortCuts() {
+  SizedBox _buildSecondaryShortCuts() {
     return SizedBox(
       height: 150,
       child: Card(
@@ -377,110 +377,103 @@ class HomeScreen extends GetView<HomeController> {
     );
   }
 
-  _buildInvoices(BuildContext context) {
-    return Obx(() {
-      return Column(
-        children: [
-          if (controller.draftInvoices.value > 0)
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.inventory_outlined),
-                title: Text(
-                  "Draft Invoices: ${controller.draftInvoices.value}",
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                subtitle: controller.draftInvoices.value == 0
-                    ? null
-                    : Text('Tap to View',
-                        style: Theme.of(context).textTheme.bodySmall),
-                onTap: () => controller.draftInvoices.value == 0
-                    ? null
-                    : Get.toNamed(Routes.INVOICELIST, arguments: {
-                        'drafts': controller.draftInvoices.value,
-                      }),
-              ),
-            ),
+  Column _buildInvoices(BuildContext context) {
+    return Column(
+      children: [
+        if (controller.draftInvoices.value > 0)
           Card(
             child: ListTile(
               leading: const Icon(Icons.inventory_outlined),
               title: Text(
-                "Open Invoices: ${controller.openInvoices.value}",
+                "Draft Invoices: ${controller.draftInvoices.value}",
                 style: Theme.of(context).textTheme.titleSmall,
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Overdue: ${controller.overDueInvoices.value}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  Text(
-                    "Items Sold This Month: ${controller.salesInvoices.value}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
+              subtitle: controller.draftInvoices.value == 0
+                  ? null
+                  : Text('Tap to View',
+                      style: Theme.of(context).textTheme.bodySmall),
+              onTap: () => controller.draftInvoices.value == 0
+                  ? null
+                  : Get.toNamed(Routes.INVOICELIST, arguments: {
+                      'drafts': controller.draftInvoices.value,
+                    }),
             ),
           ),
-          if (controller.dueTodayInvoices.value > 0)
-            Card(
-              child: ListTile(
-                onTap: () => Get.toNamed(Routes.DUETODAY),
-                leading: const Icon(Icons.inventory_outlined),
-                title: Text(
-                  "Invoices Due Today: ${controller.dueTodayInvoices.value}",
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                subtitle: Text(
-                  'Tap to View',
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.inventory_outlined),
+            title: Text(
+              "Open Invoices: ${controller.openInvoices.value}",
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Overdue: ${controller.overDueInvoices.value}",
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+                Text(
+                  "Items Sold This Month: ${controller.salesInvoices.value}",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (controller.dueTodayInvoices.value > 0)
+          Card(
+            child: ListTile(
+              onTap: () => Get.toNamed(Routes.DUETODAY),
+              leading: const Icon(Icons.inventory_outlined),
+              title: Text(
+                "Invoices Due Today: ${controller.dueTodayInvoices.value}",
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              subtitle: Text(
+                'Tap to View',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
-        ],
-      );
-    });
+          ),
+      ],
+    );
   }
 
-  _buildNoInvoiceCustomer(BuildContext context) {
-    return Obx(() {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.person_outline),
-          title: Text(
-            "Customers Without Invoices: ${controller.noInvoiceCustomers}",
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          subtitle: controller.noInvoiceCustomers.value == 0
-              ? null
-              : Text('Tap to View',
-                  style: Theme.of(context).textTheme.bodySmall),
-          onTap: () => controller.noInvoiceCustomers.value == 0
-              ? null
-              : Get.toNamed(Routes.CUSTOMERLIST, arguments: {
-                  'noInvoiceCustomers': true,
-                }),
+  Card _buildNoInvoiceCustomer(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.person_outline),
+        title: Text(
+          "Customers Without Invoices: ${controller.noInvoiceCustomers}",
+          style: Theme.of(context).textTheme.titleSmall,
         ),
-      );
-    });
+        subtitle: controller.noInvoiceCustomers.value == 0
+            ? null
+            : Text('Tap to View', style: Theme.of(context).textTheme.bodySmall),
+        onTap: () => controller.noInvoiceCustomers.value == 0
+            ? null
+            : Get.toNamed(Routes.CUSTOMERLIST, arguments: {
+                'noInvoiceCustomers': true,
+              }),
+      ),
+    );
   }
 
-  _buildCashflow(BuildContext context) {
-    return Obx(() {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.money_outlined),
-          title: Text(
-            "Collected today: R${controller.cashflow}",
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          subtitle: Text(
-            'Tap to View',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          onTap: () => Get.toNamed(Routes.CASHFLOW),
+  Card _buildCashflow(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.money_outlined),
+        title: Text(
+          "Collected today: R${controller.cashflow}",
+          style: Theme.of(context).textTheme.titleSmall,
         ),
-      );
-    });
+        subtitle: Text(
+          'Tap to View',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        onTap: () => Get.toNamed(Routes.CASHFLOW),
+      ),
+    );
   }
 }

@@ -115,7 +115,7 @@ class LoginScreen extends GetView<LoginController> {
     );
   }
 
-  Padding _buildLoginButton(context) {
+  Padding _buildLoginButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(

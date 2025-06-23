@@ -2,7 +2,6 @@
 //
 //     final settingsModel = settingsModelFromJson(jsonString);
 
-import 'package:objectbox/objectbox.dart';
 import 'dart:convert';
 
 SettingsModel settingsModelFromJson(String str) =>
@@ -10,9 +9,7 @@ SettingsModel settingsModelFromJson(String str) =>
 
 String settingsModelToJson(SettingsModel data) => json.encode(data.toJson());
 
-@Entity()
 class SettingsModel {
-  @Id(assignable: true)
   int id;
   String name;
   String? strValue;

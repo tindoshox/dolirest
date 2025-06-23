@@ -193,8 +193,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
           showSearchBox: true,
         ),
         items: (String searchString, l) async {
-          List<GroupEntity> groups =
-              await controller.getGroups(search: searchString);
+          List<GroupEntity> groups = controller.getGroups(search: searchString);
           return groups;
         },
       ),

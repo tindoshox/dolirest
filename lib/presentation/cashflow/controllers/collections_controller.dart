@@ -21,7 +21,7 @@ class CashflowController extends GetxController {
     super.onInit();
   }
 
-  refreshPayments() async {
+  Future<void> refreshPayments() async {
     var invoices = data.invoices;
     for (InvoiceEntity invoice in invoices) {
       final result = await repository.fetchPaymentsByInvoice(

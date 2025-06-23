@@ -95,7 +95,7 @@ class CreateinvoiceController extends GetxController {
     customer(CustomerEntity());
   }
 
-  _refreshProducts() async {
+  Future<void> _refreshProducts() async {
     final result = await productRepository.fetchProducts();
     result.fold((failure) {
       SnackBarHelper.errorSnackbar(message: 'Unable to load products');
@@ -120,7 +120,7 @@ class CreateinvoiceController extends GetxController {
     return product;
   }
 
-  fetchCustomerById(int customerId) {
+  void fetchCustomerById(int customerId) {
     customer.value = storage.customerBox.get(customerId)!;
   }
 
@@ -268,7 +268,7 @@ class CreateinvoiceController extends GetxController {
 
   ///
   ///Customer search for DropDown
-  searchCustomer({String searchString = ""}) {
+  List<CustomerEntity> searchCustomer({String searchString = ""}) {
     List<CustomerEntity> customers = [];
 
     if (searchString == "") {
@@ -291,7 +291,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   ///Product search for DropDown
-  searchProduct({String searchString = ""}) {
+  List<ProductEntity> searchProduct({String searchString = ""}) {
     List<ProductEntity> products = [];
 
     if (searchString == "") {

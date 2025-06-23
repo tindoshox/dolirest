@@ -263,7 +263,7 @@ class PaymentScreen extends GetView<PaymentController> {
                 const Center(child: Text('Invoice not found'))),
             showSearchBox: true),
         items: (filter, loadProps) async {
-          return await controller.fetchInvoices();
+          return controller.fetchInvoices();
         },
         filterFn: (invoice, filter) =>
             invoice.name.contains(filter) || invoice.ref.contains(filter),

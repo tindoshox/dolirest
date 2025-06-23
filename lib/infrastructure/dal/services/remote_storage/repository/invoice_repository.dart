@@ -14,7 +14,6 @@ import 'package:fpdart/fpdart.dart';
 class InvoiceRepository extends DioService {
   Future<Either<DolibarrApiError, List<InvoiceEntity>>> fetchInvoiceList({
     String? customerId,
-    String? dateModified,
     String? status,
     String? type,
     required int page,
@@ -35,7 +34,6 @@ class InvoiceRepository extends DioService {
           if (status != null) "status": status,
           if (type != null) "type": type,
           if (customerId != null) "thirdparty_ids": customerId,
-          if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
         };
 
         final response = await dio.get(ApiPath.invoices,

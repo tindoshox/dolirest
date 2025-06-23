@@ -3,7 +3,6 @@ import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/auth_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -18,7 +17,6 @@ class LoginController extends GetxController {
   final StorageService storage = Get.find();
   final UserRepository userRepositoty = Get.find();
   final auth = Get.find<AuthService>();
-  final dio = Get.find<DioService>();
   var serverUrl = ''.obs;
   var token = ''.obs;
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();

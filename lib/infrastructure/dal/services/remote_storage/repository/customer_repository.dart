@@ -8,9 +8,8 @@ import 'package:fpdart/fpdart.dart';
 
 class CustomerRepository extends DioService {
   Future<Either<DolibarrApiError, List<CustomerEntity>>> fetchCustomerList({
-    required page,
-    required limit,
-    String? dateModified,
+    required int page,
+    required int limit,
     CancelToken? cancelToken,
   }) {
     final properties =
@@ -25,7 +24,6 @@ class CustomerRepository extends DioService {
           "limit": limit,
           "page": page,
           "properties": properties,
-          if (dateModified != null) "sqlfilters": "(t.tms:>=:'$dateModified')",
         };
 
         final response = await dio.get(ApiPath.customers,

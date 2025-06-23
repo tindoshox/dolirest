@@ -56,7 +56,7 @@ List<CustomerEntity> parseCustomerListFromJson(List<dynamic> jsonList) {
   }).toList();
 }
 
-CustomerEntity parseCustomerFromJson(customerJson) {
+CustomerEntity parseCustomerFromJson(Map<String, dynamic> customerJson) {
   final CustomerEntity customer = CustomerEntity(
     customerId: customerJson["id"] ?? '',
     stateId: customerJson["state_id"] ?? '',

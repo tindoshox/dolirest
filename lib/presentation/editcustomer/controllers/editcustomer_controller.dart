@@ -94,7 +94,7 @@ class EditCustomerController extends GetxController {
     });
   }
 
-  getGroups({String search = ""}) {
+  RxList<GroupEntity> getGroups({String search = ""}) {
     if (search.isNotEmpty) {
       groups.value = storage.groupBox
           .getAll()
@@ -106,7 +106,7 @@ class EditCustomerController extends GetxController {
     return groups;
   }
 
-  _refreshGroups() async {
+  Future<void> _refreshGroups() async {
     final result = await groupRepository.fetchGroups();
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
@@ -156,7 +156,7 @@ class EditCustomerController extends GetxController {
     });
   }
 
-  Future<int> _fetchNewCustomer(id) async {
+  Future<int> _fetchNewCustomer(String id) async {
     final result = await customerRepository.fetchCustomerById(id);
 
     result.fold((failure) {

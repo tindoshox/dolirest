@@ -138,7 +138,7 @@ class InvoiceDetailController extends GetxController
     customerController.dispose();
   }
 
-  _loadPayments() async {
+  Future<void> _loadPayments() async {
     List<int> amounts =
         payments.map((payment) => Utils.intAmounts(payment.amount)).toList();
     int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
@@ -205,7 +205,7 @@ class InvoiceDetailController extends GetxController
     DialogHelper.hideLoading();
   }
 
-  setDueDate() async {
+  Future<void> setDueDate() async {
     DateTime? newDueDate = await showDatePicker(
         context: Get.context!,
         initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -225,7 +225,7 @@ class InvoiceDetailController extends GetxController
     }
   }
 
-  _updateDueDate(int selectedDate) async {
+  Future<void> _updateDueDate(int selectedDate) async {
     DialogHelper.showLoading('Updating Due Date...');
 
     var update = InvoiceModel(dateLimReglement: selectedDate).toJson();
@@ -244,7 +244,7 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  createCreditNote({required bool productReturned}) async {
+  Future<void> createCreditNote({required bool productReturned}) async {
     DialogHelper.showLoading('Returning item');
 
     DialogHelper.updateMessage('Preparing line item...');
@@ -310,7 +310,7 @@ class InvoiceDetailController extends GetxController
   ///
   /// Invoice validation
   /// Validate draft
-  validateDocument(
+  Future<String> validateDocument(
       {required String id, required bool invoiceValidation}) async {
     String body = '''{
       "idwarehouse": 1,
@@ -335,7 +335,7 @@ class InvoiceDetailController extends GetxController
     return id;
   }
 
-  _markAsCreditAvailable({required String creditNoteId}) async {
+  Future<String> _markAsCreditAvailable({required String creditNoteId}) async {
     final result = await invoiceRepository.markAsCreditAvailable(
         creditNoteId: creditNoteId);
 
@@ -348,7 +348,7 @@ class InvoiceDetailController extends GetxController
     return creditNoteId;
   }
 
-  _fetchDiscount({required String creditNoteId}) async {
+  Future<String> _fetchDiscount({required String creditNoteId}) async {
     String discountId = '';
     final result =
         await invoiceRepository.fetchDiscount(creditNoteId: creditNoteId);
@@ -364,7 +364,7 @@ class InvoiceDetailController extends GetxController
     return discountId;
   }
 
-  _applyDiscount(
+  Future<void> _applyDiscount(
       {required String invoiceId, required String discountId}) async {
     final result = await invoiceRepository.useCreditNote(
         invoiceId: invoiceId, discountId: discountId);
@@ -378,7 +378,7 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  _classifyPaid({required String invoiceId}) async {
+  Future<void> _classifyPaid({required String invoiceId}) async {
     final result = await invoiceRepository.classifyPaid(
         invoiceId: document.value.documentId);
     result.fold((failure) {
@@ -395,7 +395,7 @@ class InvoiceDetailController extends GetxController
     });
   }
 
-  closeCreditNote() async {
+  Future<void> closeCreditNote() async {
     if (document.value.paye == PaidStatus.paid) {
       await _fetchDiscount(creditNoteId: document.value.documentId)
           .then((discountId) async {
@@ -430,7 +430,7 @@ class InvoiceDetailController extends GetxController
   }
 
   ///Product search for DropDown
-  searchProduct({String searchString = ""}) {
+  List<ProductEntity> searchProduct({String searchString = ""}) {
     List<ProductEntity> products = [];
 
     if (searchString == "") {
@@ -472,7 +472,7 @@ class InvoiceDetailController extends GetxController
     // DialogHelper.hideLoading();
   }
 
-  _addProduct() async {
+  Future<void> _addProduct() async {
     var line = Line(
             qty: '1',
             subprice: priceController.text,

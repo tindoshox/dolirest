@@ -36,7 +36,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
     );
   }
 
-  _getMenu() {
+  PopupMenuButton _getMenu() {
     return PopupMenuButton(
       onSelected: (item) {},
       itemBuilder: (context) => [
@@ -111,7 +111,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
           );
   }
 
-  _buildDateForm(BuildContext context) {
+  Future _buildDateForm(BuildContext context) {
     return Get.defaultDialog(
       title: 'Customer Statement',
       content: Form(

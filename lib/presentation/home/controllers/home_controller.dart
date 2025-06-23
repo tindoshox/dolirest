@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
+import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
@@ -11,12 +13,13 @@ import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/c
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
-import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
-import 'package:get/get.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:get/get.dart' hide Rx;
+import 'package:rxdart/rxdart.dart';
 
 class HomeController extends GetxController {
   final NetworkService network = Get.find();
@@ -45,6 +48,7 @@ class HomeController extends GetxController {
 
   @override
   Future<void> onInit() async {
+    connected.value = await refreshConnection();
     _updateUser();
     _updateModules();
     _updateCompany();
@@ -58,11 +62,6 @@ class HomeController extends GetxController {
       cashflow = data.cashflow;
       connected = network.connected;
 
-      if ((storage.customerBox.getAll().isEmpty ||
-              storage.invoiceBox.getAll().isEmpty) &&
-          network.connected.value) {
-        forceRefresh();
-      }
       openInvoices.value = data.invoices
           .where((i) =>
               i.type == DocumentType.invoice &&
@@ -102,7 +101,6 @@ class HomeController extends GetxController {
     });
 
     cashflow = data.cashflow;
-    connected.value = await refreshConnection();
 
     openInvoices.value = data.invoices
         .where((i) =>
@@ -138,30 +136,26 @@ class HomeController extends GetxController {
                 Utils.dateOnly(DateTime.now()))
         .length;
 
-    noInvoiceCustomers
-        .bindStream(storage.customerBox.query().watch().map((query) {
-      int count = 0;
-      final customers = query.find();
-      for (var customer in customers) {
-        final invs = storage.invoiceBox
-            .query(InvoiceEntity_.socid.equals(customer.customerId))
-            .build()
-            .find();
-        if (invs.isEmpty) {
-          count++;
-        }
-      }
-      return count;
-    }));
-
-    noInvoiceCustomers.value = storage.customerBox.getAll().where((customer) {
-      final invoices = storage.invoiceBox
-          .query(InvoiceEntity_.socid.equals(customer.customerId))
-          .build()
-          .find()
-          .length;
-      return invoices == 0;
-    }).length;
+    noInvoiceCustomers.bindStream(
+      Rx.combineLatest2(
+        storage.customerBox.query().watch(triggerImmediately: true),
+        storage.invoiceBox.query().watch(triggerImmediately: true),
+        (Query<CustomerEntity> customerQuery, Query<InvoiceEntity> _) {
+          int count = 0;
+          final customers = customerQuery.find();
+          for (var customer in customers) {
+            final invs = storage.invoiceBox
+                .query(InvoiceEntity_.socid.equals(customer.customerId))
+                .build()
+                .find();
+            if (invs.isEmpty) {
+              count++;
+            }
+          }
+          return count;
+        },
+      ),
+    );
 
     company.bindStream(storage.companyBox
         .query(CompanyModel_.id.equals(1))
@@ -176,6 +170,13 @@ class HomeController extends GetxController {
 
   @override
   void onReady() {
+    if (storage.customerBox.getAll().isEmpty ||
+        storage.invoiceBox.getAll().isEmpty) {
+      debugPrint('forcing');
+
+      forceRefresh();
+    }
+
     if (enabledModules.isEmpty) {
       _refreshModules();
     }
@@ -201,10 +202,10 @@ class HomeController extends GetxController {
     user.value = storage.userBox.get(1) ?? UserModel();
   }
 
-  void forceRefresh() async {
+  Future forceRefresh() async {
     //  SnackBarHelper.successSnackbar(message: 'Refreshing data');
-
-    data.forceRefresh();
+    refreshing.value = true;
+    await data.forceRefresh().then((value) => refreshing.value = false);
   }
 
   void _updateModules() {
@@ -230,13 +231,13 @@ class HomeController extends GetxController {
     return result;
   }
 
-  void logout() async {
-    storage.clearAll();
-    dioService.cancelAllRequests();
-    dioService.cancelRequest('sync-customers');
-    dioService.cancelRequest('sync-invoices');
-    dioService.configureDio(url: '', token: '');
+  // void logout() async {
+  //   storage.clearAll();
+  //   dioService.cancelAllRequests();
+  //   dioService.cancelRequest('sync-customers');
+  //   dioService.cancelRequest('sync-invoices');
+  //   dioService.configureDio(url: '', token: '');
 
-    Get.offAllNamed(Routes.LOGIN);
-  }
+  //   Get.offAllNamed(Routes.LOGIN);
+  // }
 }

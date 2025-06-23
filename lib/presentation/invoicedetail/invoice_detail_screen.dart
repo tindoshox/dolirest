@@ -61,7 +61,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
     );
   }
 
-  _buildAppBar() {
+  AppBar _buildAppBar() {
     final document = controller.document.value;
     return AppBar(
       title: const Text('Invoice Detail'),
@@ -80,7 +80,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
     );
   }
 
-  _getMenu() {
+  PopupMenuButton _getMenu() {
     return PopupMenuButton(
       onSelected: (item) {},
       itemBuilder: (context) => [
@@ -96,7 +96,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
     );
   }
 
-  _buildFooterButtons(BuildContext context) {
+  List<Row> _buildFooterButtons(BuildContext context) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -168,7 +168,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
     ];
   }
 
-  _addProduct(BuildContext context) {
+  Future _addProduct(BuildContext context) {
     return Get.defaultDialog(
         title: 'Add Product',
         content: Form(
