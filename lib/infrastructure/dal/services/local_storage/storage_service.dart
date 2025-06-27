@@ -297,7 +297,6 @@ class StorageService extends GetxService {
 
   void clearAll() {
     addressBox.removeAll();
-
     companyBox.removeAll();
     customerBox.removeAll();
     groupBox.removeAll();

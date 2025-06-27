@@ -20,10 +20,9 @@ class DependencyInjection {
 
     Get.put<StorageService>(storageService, permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
-    Get.put<NetworkService>(NetworkService(), permanent: true);
 
     Get.put(DioService(), permanent: true);
-
+    Get.put<NetworkService>(NetworkService(), permanent: true);
     Get.put<ServerReachability>(ServerReachability(), permanent: true);
     Get.put<CustomerRepository>(CustomerRepository(), permanent: true);
     Get.put<InvoiceRepository>(InvoiceRepository(), permanent: true);

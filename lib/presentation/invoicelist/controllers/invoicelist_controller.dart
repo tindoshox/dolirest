@@ -11,9 +11,9 @@ import 'package:get/get.dart';
 
 class InvoicelistController extends GetxController {
   int drafts = Get.arguments['drafts'] ?? 0;
-  final StorageService storage = Get.find();
-  final DataRefreshService data = Get.find();
-  final InvoiceRepository invoiceRepository = Get.find();
+  final StorageService _storage = Get.find();
+  final DataRefreshService _data = Get.find();
+  final InvoiceRepository _invoiceRepository = Get.find();
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
@@ -26,12 +26,12 @@ class InvoicelistController extends GetxController {
 
   @override
   void onInit() {
-    everAll([data.invoices, data.customers], (_) {
+    everAll([_data.invoices, _data.customers], (_) {
       invoices.value = drafts != 0
-          ? data.invoices
+          ? _data.invoices
               .where((invoice) => invoice.status == ValidationStatus.draft)
               .toList()
-          : data.invoices
+          : _data.invoices
               .where((invoice) =>
                   invoice.type == DocumentType.invoice &&
                   invoice.remaintopay != "0" &&
@@ -39,7 +39,7 @@ class InvoicelistController extends GetxController {
                   invoice.paye == PaidStatus.unpaid)
               .toList();
 
-      customers = data.customers;
+      customers = _data.customers;
       for (var invoice in invoices) {
         invoice.name =
             customers.firstWhere((c) => c.customerId == invoice.socid).name;
@@ -47,10 +47,10 @@ class InvoicelistController extends GetxController {
     });
 
     invoices.value = drafts != 0
-        ? data.invoices
+        ? _data.invoices
             .where((invoice) => invoice.status == ValidationStatus.draft)
             .toList()
-        : data.invoices
+        : _data.invoices
             .where((invoice) =>
                 invoice.type == DocumentType.invoice &&
                 invoice.remaintopay != "0" &&
@@ -58,7 +58,7 @@ class InvoicelistController extends GetxController {
                 invoice.paye == PaidStatus.unpaid)
             .toList();
 
-    customers = data.customers;
+    customers = _data.customers;
     for (var invoice in invoices) {
       invoice.name =
           customers.firstWhere((c) => c.customerId == invoice.socid).name;
@@ -79,7 +79,7 @@ class InvoicelistController extends GetxController {
 
   Future refreshInvoiceList() async {
     SnackBarHelper.successSnackbar(message: 'Refreshing invoices');
-    await data.syncInvoices();
+    await _data.syncInvoices();
   }
 
   void toggleSearch() {
@@ -95,11 +95,11 @@ class InvoicelistController extends GetxController {
   void deleteDraft({required String documentId, required int entityId}) async {
     DialogHelper.showLoading('Deleting Invoice');
     final result =
-        await invoiceRepository.deleteInvoice(documentId: documentId);
+        await _invoiceRepository.deleteInvoice(documentId: documentId);
     result.fold((failure) {
       DialogHelper.hideLoading();
       if (failure.code == 404) {
-        storage.invoiceBox.remove(entityId);
+        _storage.invoiceBox.remove(entityId);
 
         SnackBarHelper.errorSnackbar(
             message: 'Invoice Deleted', duration: Duration(seconds: 1));
@@ -108,7 +108,7 @@ class InvoicelistController extends GetxController {
       }
     }, (deleted) {
       DialogHelper.hideLoading();
-      storage.invoiceBox.remove(entityId);
+      _storage.invoiceBox.remove(entityId);
 
       SnackBarHelper.errorSnackbar(
           message: 'Invoice Deleted', duration: Duration(seconds: 1));

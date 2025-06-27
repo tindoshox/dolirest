@@ -18,7 +18,6 @@ Widget invoiceList({
             context: context,
             customer: customer,
             invoice: invoices[index],
-            storage: controller.storage,
           );
         }),
   );

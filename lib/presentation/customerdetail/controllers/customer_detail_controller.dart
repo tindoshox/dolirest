@@ -7,9 +7,7 @@ import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -21,12 +19,10 @@ import 'package:open_filex/open_filex.dart';
 
 class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final NetworkService network = Get.find();
-  final StorageService storage = Get.find();
-  final InvoiceRepository invoiceRepository = Get.find();
-  final CustomerRepository customerRepository = Get.find();
-  final DocumentRepository documentRepository = Get.find();
-  final DataRefreshService data = Get.find();
+  final NetworkService _network = Get.find();
+  final StorageService _storage = Get.find();
+  final DocumentRepository _documentRepository = Get.find();
+  final DataRefreshService _data = Get.find();
   var customer = CustomerEntity().obs;
   var invoices = <InvoiceEntity>[].obs;
   var moduleEnabledStatement = false.obs;
@@ -43,19 +39,19 @@ class CustomerDetailController extends GetxController
   ];
   RxInt tabIndex = 0.obs;
   late TabController tabController;
-  late TargetPlatform? platform;
-  late bool permissionReady;
+  late TargetPlatform? _platform;
+  late bool _permissionReady;
   RxBool isLoading = false.obs;
 
   @override
   void onInit() async {
-    ever(network.connected, (_) {
-      connected = network.connected;
+    ever(_network.connected, (_) {
+      connected = _network.connected;
     });
 
-    connected = network.connected;
+    connected = _network.connected;
 
-    customer.bindStream(storage.customerBox
+    customer.bindStream(_storage.customerBox
         .query(CustomerEntity_.id.equals(Get.arguments['entityId']))
         .watch()
         .map((query) {
@@ -63,20 +59,20 @@ class CustomerDetailController extends GetxController
     }));
 
     customer.value =
-        data.customers.firstWhere((c) => c.id == Get.arguments['entityId']);
+        _data.customers.firstWhere((c) => c.id == Get.arguments['entityId']);
 
-    invoices.value = data.invoices
+    invoices.value = _data.invoices
         .where((i) => i.socid == customer.value.customerId)
         .toList();
     if (Platform.isAndroid) {
-      platform = TargetPlatform.android;
+      _platform = TargetPlatform.android;
     } else {
-      platform = TargetPlatform.iOS;
+      _platform = TargetPlatform.iOS;
     }
     tabController = TabController(length: customerTabs.length, vsync: this);
     startDateController.text = Utils.dateTimeToDMY(startDate.value);
     endDateController.text = Utils.dateTimeToDMY(endDate.value);
-    moduleEnabledStatement.value = storage.settingsBox
+    moduleEnabledStatement.value = _storage.settingsBox
         .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('customerstatement');
@@ -106,12 +102,12 @@ class CustomerDetailController extends GetxController
   // Fetch invoice data from server
   Future<void> refreshCustomerInvoiceData() async {
     isLoading.value = true;
-    await data.syncInvoices(customerId: customer.value.customerId);
+    await _data.syncInvoices(customerId: customer.value.customerId);
     isLoading.value = false;
   }
 
   Future generateStatement() async {
-    permissionReady = await Utils.checkPermission(platform);
+    _permissionReady = await Utils.checkPermission(_platform);
     Get.back();
     DialogHelper.showLoading('Downloading document...');
     final params = BuildStatementRequestModel(
@@ -122,8 +118,8 @@ class CustomerDetailController extends GetxController
 
     String body = jsonEncode(params);
 
-    if (permissionReady) {
-      final result = await documentRepository.buildStatement(body);
+    if (_permissionReady) {
+      final result = await _documentRepository.buildStatement(body);
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);

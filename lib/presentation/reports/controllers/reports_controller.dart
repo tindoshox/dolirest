@@ -16,20 +16,20 @@ import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsController extends GetxController {
-  final NetworkService network = Get.find();
-  final StorageService storage = Get.find();
+  final NetworkService _network = Get.find();
+  final StorageService _storage = Get.find();
 
-  final GroupRepository groupRepository = Get.find();
+  final GroupRepository _groupRepository = Get.find();
   GlobalKey<FormState> reportFormKey = GlobalKey<FormState>();
   TextEditingController endDateController = TextEditingController();
   TextEditingController toEndController = TextEditingController();
   TextEditingController startReceiptController = TextEditingController();
   TextEditingController endReceiptController = TextEditingController();
   RxList<GroupEntity> groups = List<GroupEntity>.empty().obs;
-  final DocumentRepository repository = Get.find();
+  final DocumentRepository _repository = Get.find();
 
-  late bool permissionReady;
-  late TargetPlatform? platform;
+  late bool _permissionReady;
+  late TargetPlatform? _platform;
 
   var startPeriod = ''.obs;
   var endPeriod = ''.obs;
@@ -110,17 +110,17 @@ class ReportsController extends GetxController {
   /// Initializes the controller.
   @override
   void onInit() async {
-    ever(network.connected, (_) {
-      connected = network.connected;
+    ever(_network.connected, (_) {
+      connected = _network.connected;
     });
-    connected = network.connected;
+    connected = _network.connected;
     if (Platform.isAndroid) {
-      platform = TargetPlatform.android;
+      _platform = TargetPlatform.android;
     } else {
-      platform = TargetPlatform.iOS;
+      _platform = TargetPlatform.iOS;
     }
 
-    List<GroupEntity> list = storage.getGroupList();
+    List<GroupEntity> list = _storage.getGroupList();
 
     if (list.length < 50) {
       await refreshGroups();
@@ -134,23 +134,23 @@ class ReportsController extends GetxController {
 
   Future getGroups({String search = ""}) async {
     if (search.isNotEmpty) {
-      groups.value = storage
+      groups.value = _storage
           .getGroupList()
           .where((group) => group.name!.contains(search))
           .toList();
     } else {
-      groups.value = storage.getGroupList();
+      groups.value = _storage.getGroupList();
     }
     return groups;
   }
 
   Future<List<GroupEntity>> refreshGroups() async {
-    final result = await groupRepository.fetchGroups();
+    final result = await _groupRepository.fetchGroups();
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
       for (GroupEntity group in groups) {
-        storage.storeGroup(group);
+        _storage.storeGroup(group);
       }
     });
 
@@ -192,12 +192,12 @@ class ReportsController extends GetxController {
 
   /// Generates the report if the form is valid.
   Future _generateReport(String body) async {
-    permissionReady = await Utils.checkPermission(platform);
-    if (permissionReady) {
+    _permissionReady = await Utils.checkPermission(_platform);
+    if (_permissionReady) {
       DialogHelper.showLoading(
           'Fetching ${selectedReport.value.displayName} report...');
 
-      final result = await repository.buildReport(body);
+      final result = await _repository.buildReport(body);
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);

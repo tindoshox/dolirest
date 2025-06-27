@@ -11,10 +11,8 @@ import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/product_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
@@ -27,13 +25,11 @@ import 'package:open_filex/open_filex.dart';
 
 class InvoiceDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final StorageService storage = Get.find();
-  final NetworkService network = Get.find();
-  final InvoiceRepository invoiceRepository = Get.find();
-  final CustomerRepository customerRepository = Get.find();
-  final DocumentRepository documentRepository = Get.find();
-  final ProductRepository productRepository = Get.find();
-  final DataRefreshService data = Get.find();
+  final StorageService _storage = Get.find();
+  final NetworkService _network = Get.find();
+  final InvoiceRepository _invoiceRepository = Get.find();
+  final DocumentRepository _documentRepository = Get.find();
+  final DataRefreshService _data = Get.find();
   final List<Tab> invoiceTabs = [
     const Tab(text: 'Details'),
     const Tab(text: 'Payments')
@@ -59,55 +55,53 @@ class InvoiceDetailController extends GetxController
 
   RxBool isLoading = false.obs;
 
-  // int entityId = Get.arguments['entityId'] ?? '';
-  // String customerId = Get.arguments['customerId'] ?? '';
   Rx<DateTime> selectedDate = DateTime.now().obs;
 
   late TabController tabController;
-  late TargetPlatform? platform;
-  late bool permissionReady;
+  late TargetPlatform? _platform;
+  late bool _permissionReady;
 
   @override
   void onInit() {
     everAll([
-      network.connected,
+      _network.connected,
       payments,
       customer,
     ], (_) {
-      connected = network.connected;
+      connected = _network.connected;
     });
-    connected = network.connected;
+    connected = _network.connected;
 
-    document.bindStream(storage.invoiceBox
+    document.bindStream(_storage.invoiceBox
         .query(InvoiceEntity_.id.equals(Get.arguments['entityId']))
         .watch(triggerImmediately: true)
         .map((query) {
       return query.findUnique()!;
     }));
 
-    document.value = storage.invoiceBox.get(Get.arguments['entityId'])!;
+    document.value = _storage.invoiceBox.get(Get.arguments['entityId'])!;
     customer.value =
-        data.customers.firstWhere((c) => c.customerId == document.value.socid);
+        _data.customers.firstWhere((c) => c.customerId == document.value.socid);
 
-    payments.bindStream(storage.paymentBox
+    payments.bindStream(_storage.paymentBox
         .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
         .watch()
         .map((query) {
       return query.find();
     }));
 
-    payments.value = storage.paymentBox
+    payments.value = _storage.paymentBox
         .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
         .build()
         .find();
 
     if (Platform.isAndroid) {
-      platform = TargetPlatform.android;
+      _platform = TargetPlatform.android;
     } else {
-      platform = TargetPlatform.iOS;
+      _platform = TargetPlatform.iOS;
     }
     tabController = TabController(length: invoiceTabs.length, vsync: this);
-    moduleProductEnabled.value = storage.settingsBox
+    moduleProductEnabled.value = _storage.settingsBox
         .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('product');
@@ -144,14 +138,14 @@ class InvoiceDetailController extends GetxController
     int total = amounts.isEmpty ? 0 : amounts.reduce((a, b) => a + b);
 
     if (document.value.totalpaid != total) {
-      if (Get.find<NetworkService>().connected.value) {
+      if (connected.value) {
         await _refreshPaymentData();
       } else {
         SnackBarHelper.errorSnackbar(message: 'Unable to load payments');
       }
     }
 
-    payments.value = storage.paymentBox
+    payments.value = _storage.paymentBox
         .query(PaymentEntity_.invoiceId.equals(document.value.documentId))
         .build()
         .find();
@@ -159,24 +153,24 @@ class InvoiceDetailController extends GetxController
 
   Future _refreshPaymentData() async {
     isLoading.value = true;
-    await data.refreshPaymentData([document.value]);
+    await _data.refreshPaymentData([document.value]);
     isLoading.value = false;
   }
 
   Future refreshInvoiceData(String invoiceId) async {
     DialogHelper.showLoading('Refreshing Invoice');
-    final result = await invoiceRepository.fetchInvoiceById(invoiceId);
+    final result = await _invoiceRepository.fetchInvoiceById(invoiceId);
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
-      storage.storeInvoice(invoice);
+      _storage.storeInvoice(invoice);
     });
     DialogHelper.hideLoading();
   }
 
   Future generatePDF() async {
-    permissionReady = await Utils.checkPermission(platform);
+    _permissionReady = await Utils.checkPermission(_platform);
 
     DialogHelper.showLoading('Downloading document...');
     String body = json.encode(BuildDocumentRequestModel(
@@ -184,8 +178,8 @@ class InvoiceDetailController extends GetxController
       originalFile: '${document.value.ref}/${document.value.ref}.pdf',
     ));
 
-    if (permissionReady) {
-      final result = await documentRepository.buildDocument(body);
+    if (_permissionReady) {
+      final result = await _documentRepository.buildDocument(body);
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);
@@ -233,7 +227,7 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(update);
 
-    final result = await invoiceRepository.updateInvoice(
+    final result = await _invoiceRepository.updateInvoice(
         invoiceId: document.value.documentId, body: body);
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
@@ -278,7 +272,7 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(credit);
 
-    final result = await invoiceRepository.createInvoice(body: body);
+    final result = await _invoiceRepository.createInvoice(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -318,7 +312,7 @@ class InvoiceDetailController extends GetxController
       }''';
 
     final result =
-        await invoiceRepository.validateInvoice(body: body, docId: id);
+        await _invoiceRepository.validateInvoice(body: body, docId: id);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: 'Validation: ${failure.message}');
@@ -336,7 +330,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future<String> _markAsCreditAvailable({required String creditNoteId}) async {
-    final result = await invoiceRepository.markAsCreditAvailable(
+    final result = await _invoiceRepository.markAsCreditAvailable(
         creditNoteId: creditNoteId);
 
     result.fold((failure) {
@@ -351,7 +345,7 @@ class InvoiceDetailController extends GetxController
   Future<String> _fetchDiscount({required String creditNoteId}) async {
     String discountId = '';
     final result =
-        await invoiceRepository.fetchDiscount(creditNoteId: creditNoteId);
+        await _invoiceRepository.fetchDiscount(creditNoteId: creditNoteId);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -366,7 +360,7 @@ class InvoiceDetailController extends GetxController
 
   Future<void> _applyDiscount(
       {required String invoiceId, required String discountId}) async {
-    final result = await invoiceRepository.useCreditNote(
+    final result = await _invoiceRepository.useCreditNote(
         invoiceId: invoiceId, discountId: discountId);
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -379,7 +373,7 @@ class InvoiceDetailController extends GetxController
   }
 
   Future<void> _classifyPaid({required String invoiceId}) async {
-    final result = await invoiceRepository.classifyPaid(
+    final result = await _invoiceRepository.classifyPaid(
         invoiceId: document.value.documentId);
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -434,10 +428,10 @@ class InvoiceDetailController extends GetxController
     List<ProductEntity> products = [];
 
     if (searchString == "") {
-      products = storage.productBox.getAll();
+      products = _storage.productBox.getAll();
       products.sort((a, b) => a.label!.compareTo(b.label!));
     } else {
-      products = storage.productBox
+      products = _storage.productBox
           .getAll()
           .where((product) => product.ref!.contains(searchString))
           .toList();
@@ -487,7 +481,7 @@ class InvoiceDetailController extends GetxController
 
     String body = jsonEncode(line);
 
-    final response = await invoiceRepository.addProduct(
+    final response = await _invoiceRepository.addProduct(
         invoiceId: document.value.documentId, body: body);
 
     response.fold((failure) async {

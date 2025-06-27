@@ -6,31 +6,27 @@ import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
 import 'package:dolirest/infrastructure/dal/models/user_model.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
+import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/company_repository.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/invoice_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/module_repository.dart';
-import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/user_repository.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/server_reachablility.dart';
 import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:get/get.dart' hide Rx;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rxdart/rxdart.dart';
 
 class HomeController extends GetxController {
-  final NetworkService network = Get.find();
-  final StorageService storage = Get.find();
-  final CustomerRepository customerRepository = Get.find();
-  final InvoiceRepository invoiceRepository = Get.find();
-  final CompanyRepository companyRepository = Get.find();
-  final UserRepository userRepository = Get.find();
-  final ModuleRepository moduleRepository = Get.find();
-  final DataRefreshService data = Get.find();
-  final DioService dioService = Get.find();
+  final NetworkService _network = Get.find();
+  final StorageService _storage = Get.find();
+  final CompanyRepository _companyRepository = Get.find();
+  final ModuleRepository _moduleRepository = Get.find();
+  final DataRefreshService _data = Get.find();
+  final ServerReachability _reachability = Get.find();
 
   var isLoading = false.obs;
   var connected = true.obs;
@@ -45,34 +41,35 @@ class HomeController extends GetxController {
   var salesInvoices = 0.obs;
   var enabledModules = <String>[].obs;
   var refreshing = false.obs;
+  late PackageInfo packageInfo;
 
   @override
   Future<void> onInit() async {
-    connected.value = await refreshConnection();
+    packageInfo = await _packageInfo();
     _updateUser();
     _updateModules();
     _updateCompany();
 
     everAll([
-      data.customers,
-      data.cashflow,
-      data.invoices,
-      network.connected,
+      _data.customers,
+      _data.cashflow,
+      _data.invoices,
+      _network.connected,
     ], (_) {
-      cashflow = data.cashflow;
-      connected = network.connected;
+      cashflow = _data.cashflow;
+      connected = _network.connected;
 
-      openInvoices.value = data.invoices
+      openInvoices.value = _data.invoices
           .where((i) =>
               i.type == DocumentType.invoice &&
               i.paye == PaidStatus.unpaid &&
               i.remaintopay != "0" &&
               i.status == ValidationStatus.validated)
           .length;
-      draftInvoices.value = data.invoices
+      draftInvoices.value = _data.invoices
           .where((invoice) => invoice.status == ValidationStatus.draft)
           .length;
-      overDueInvoices.value = data.invoices
+      overDueInvoices.value = _data.invoices
           .where((i) =>
               i.type == DocumentType.invoice &&
               i.paye == PaidStatus.unpaid &&
@@ -82,13 +79,13 @@ class HomeController extends GetxController {
                   .isBefore(DateTime.now().subtract(Duration(days: 31))))
           .length;
 
-      salesInvoices.value = data.invoices
+      salesInvoices.value = _data.invoices
           .where((invoice) =>
               Utils.isSameMonth(
                   Utils.intToDateTime(invoice.date), DateTime.now()) &&
               invoice.type == DocumentType.invoice)
           .length;
-      dueTodayInvoices.value = data.invoices
+      dueTodayInvoices.value = _data.invoices
           .where((i) =>
               i.type == DocumentType.invoice &&
               i.remaintopay != "0" &&
@@ -100,19 +97,20 @@ class HomeController extends GetxController {
           .length;
     });
 
-    cashflow = data.cashflow;
-
-    openInvoices.value = data.invoices
+    cashflow = _data.cashflow;
+    _network.connected.value = await _reachability.checkServerReachability();
+    connected = _network.connected;
+    openInvoices.value = _data.invoices
         .where((i) =>
             i.type == DocumentType.invoice &&
             i.paye == PaidStatus.unpaid &&
             i.remaintopay != "0" &&
             i.status == ValidationStatus.validated)
         .length;
-    draftInvoices.value = data.invoices
+    draftInvoices.value = _data.invoices
         .where((invoice) => invoice.status == ValidationStatus.draft)
         .length;
-    overDueInvoices.value = data.invoices
+    overDueInvoices.value = _data.invoices
         .where((i) =>
             i.type == DocumentType.invoice &&
             i.paye == PaidStatus.unpaid &&
@@ -122,13 +120,13 @@ class HomeController extends GetxController {
                 .isBefore(DateTime.now().subtract(Duration(days: 31))))
         .length;
 
-    salesInvoices.value = data.invoices
+    salesInvoices.value = _data.invoices
         .where((invoice) =>
             Utils.isSameMonth(
                 Utils.intToDateTime(invoice.date), DateTime.now()) &&
             invoice.type == DocumentType.invoice)
         .length;
-    dueTodayInvoices.value = data.invoices
+    dueTodayInvoices.value = _data.invoices
         .where((i) =>
             i.type == DocumentType.invoice &&
             i.remaintopay != "0" &&
@@ -138,13 +136,13 @@ class HomeController extends GetxController {
 
     noInvoiceCustomers.bindStream(
       Rx.combineLatest2(
-        storage.customerBox.query().watch(triggerImmediately: true),
-        storage.invoiceBox.query().watch(triggerImmediately: true),
+        _storage.customerBox.query().watch(triggerImmediately: true),
+        _storage.invoiceBox.query().watch(triggerImmediately: true),
         (Query<CustomerEntity> customerQuery, Query<InvoiceEntity> _) {
           int count = 0;
           final customers = customerQuery.find();
           for (var customer in customers) {
-            final invs = storage.invoiceBox
+            final invs = _storage.invoiceBox
                 .query(InvoiceEntity_.socid.equals(customer.customerId))
                 .build()
                 .find();
@@ -157,21 +155,21 @@ class HomeController extends GetxController {
       ),
     );
 
-    company.bindStream(storage.companyBox
+    company.bindStream(_storage.companyBox
         .query(CompanyModel_.id.equals(1))
         .watch(triggerImmediately: true)
         .map((query) {
       return query.findFirst()?.name ?? '';
     }));
 
-    company.value = storage.companyBox.get(1)?.name ?? '';
+    company.value = _storage.companyBox.get(1)?.name ?? '';
     super.onInit();
   }
 
   @override
   void onReady() {
-    if (storage.customerBox.getAll().isEmpty ||
-        storage.invoiceBox.getAll().isEmpty) {
+    if (_storage.customerBox.getAll().isEmpty ||
+        _storage.invoiceBox.getAll().isEmpty) {
       debugPrint('forcing');
 
       forceRefresh();
@@ -185,44 +183,44 @@ class HomeController extends GetxController {
   }
 
   void _updateCompany() {
-    if (storage.companyBox.get(1) == null) {
+    if (_storage.companyBox.get(1) == null) {
       _refreshCompanyData();
     }
   }
 
   Future _refreshCompanyData() async {
-    final result = await companyRepository.fetchCompany();
+    final result = await _companyRepository.fetchCompany();
     result.fold((failure) {}, (entity) {
       entity.id = 1;
-      storage.companyBox.put(entity);
+      _storage.companyBox.put(entity);
     });
   }
 
   void _updateUser() {
-    user.value = storage.userBox.get(1) ?? UserModel();
+    user.value = _storage.userBox.get(1) ?? UserModel();
   }
 
   Future forceRefresh() async {
     //  SnackBarHelper.successSnackbar(message: 'Refreshing data');
     refreshing.value = true;
-    await data.forceRefresh().then((value) => refreshing.value = false);
+    await _data.forceRefresh().then((value) => refreshing.value = false);
   }
 
   void _updateModules() {
     enabledModules.value =
-        storage.settingsBox.get(SettingId.moduleSettingId)?.listValue ?? [];
+        _storage.settingsBox.get(SettingId.moduleSettingId)?.listValue ?? [];
   }
 
   Future<void> _refreshModules() async {
-    final result = await moduleRepository.fetchEnabledModules();
+    final result = await _moduleRepository.fetchEnabledModules();
     result.fold((failure) {}, (modules) {
-      storage.settingsBox.put(SettingsModel(
+      _storage.settingsBox.put(SettingsModel(
           id: SettingId.moduleSettingId, name: 'modules', listValue: modules));
     });
   }
 
   Future<bool> refreshConnection() async {
-    bool result = await network.reachablility.checkServerReachability();
+    bool result = await _network.reachablility.checkServerReachability();
     if (result == true) {
       connected.value = true;
     } else {
@@ -231,13 +229,12 @@ class HomeController extends GetxController {
     return result;
   }
 
-  // void logout() async {
-  //   storage.clearAll();
-  //   dioService.cancelAllRequests();
-  //   dioService.cancelRequest('sync-customers');
-  //   dioService.cancelRequest('sync-invoices');
-  //   dioService.configureDio(url: '', token: '');
+  void saveThemeSetting(String strValue) {
+    _storage.settingsBox.put(SettingsModel(
+        id: SettingId.themeModeId, name: StorageKey.theme, strValue: strValue));
+  }
 
-  //   Get.offAllNamed(Routes.LOGIN);
-  // }
+  Future<PackageInfo> _packageInfo() async {
+    return await PackageInfo.fromPlatform();
+  }
 }

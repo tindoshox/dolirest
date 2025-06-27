@@ -110,7 +110,6 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                 }
 
                 if (index < invoices.length) {
-                  // ignore: unused_local_variable
                   final customer = controller.customers
                       .firstWhere((c) => c.customerId == invoices[index].socid);
                   return invoiceListTile(
@@ -120,7 +119,6 @@ class InvoicelistScreen extends GetView<InvoicelistController> {
                         documentId: invoices[index].documentId,
                         entityId: invoices[index].id),
                     invoice: invoices[index],
-                    storage: controller.storage,
                   );
                 } else {
                   return const Padding(

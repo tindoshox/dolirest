@@ -1,5 +1,4 @@
 import 'package:dolirest/infrastructure/dal/models/product/product_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/invoicedetail/components/invoice_detail_widget.dart';
 import 'package:dolirest/presentation/invoicedetail/components/payment_list.dart';
@@ -34,7 +33,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                   invoiceDetailWidget(
                       context: context,
                       onPressed: () {
-                        if (Get.find<NetworkService>().connected.value) {
+                        if (controller.connected.value) {
                           controller.setDueDate();
                         }
                       },
@@ -102,7 +101,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Obx(() {
-            var connected = Get.find<NetworkService>().connected.value;
+            var connected = controller.connected.value;
             var document = controller.document.value;
             return Row(
               children: [
@@ -156,7 +155,7 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
                     document.status == ValidationStatus.validated)
                   CustomActionButton(
                     buttonText: 'Statement',
-                    onTap: () => Get.find<NetworkService>().connected.value
+                    onTap: () => controller.connected.value
                         ? controller.generatePDF()
                         : SnackBarHelper.networkSnackbar(),
                   ),

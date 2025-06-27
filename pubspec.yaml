@@ -1,7 +1,7 @@
 name: dolirest
 description: "A Dolibarr Rest API client."
 publish_to: 'none'
-version: 0.2.0
+version: 0.2.1
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -41,6 +41,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.1
   flutter_launcher_icons: ^0.14.1
   objectbox_generator: ^4.2.0
+  dart_code_metrics_presets: ^2.22.0
   
 
 

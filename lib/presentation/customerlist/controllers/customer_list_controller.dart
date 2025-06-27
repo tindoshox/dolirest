@@ -13,10 +13,10 @@ class CustomerListController extends GetxController {
 
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
-  final StorageService storage = Get.find();
+  final StorageService _storage = Get.find();
 
-  final CustomerRepository customerRepository = Get.find();
-  final DataRefreshService data = Get.find();
+  final CustomerRepository _customerRepository = Get.find();
+  final DataRefreshService _data = Get.find();
   var customers = <CustomerEntity>[].obs;
   var invoices = <InvoiceEntity>[].obs;
   var searchIconVisible = true.obs;
@@ -24,12 +24,12 @@ class CustomerListController extends GetxController {
 
   @override
   void onInit() {
-    everAll([data.customers, data.invoices], (_) {
-      customers = data.customers;
-      invoices = data.invoices;
+    everAll([_data.customers, _data.invoices], (_) {
+      customers = _data.customers;
+      invoices = _data.invoices;
     });
-    customers = data.customers;
-    invoices = data.invoices;
+    customers = _data.customers;
+    invoices = _data.invoices;
 
     super.onInit();
   }
@@ -47,17 +47,17 @@ class CustomerListController extends GetxController {
   Future<void> refreshCustomerList() async {
     SnackBarHelper.successSnackbar(message: 'Refreshing customers');
 
-    await data.syncCustomers();
+    await _data.syncCustomers();
   }
 
   Future<void> deleteCustomer(String customerId, int entityId) async {
     DialogHelper.showLoading('Deleting customer...');
-    final result = await customerRepository.deleteCustomer(customerId);
+    final result = await _customerRepository.deleteCustomer(customerId);
     result.fold(
       (failure) {
         DialogHelper.hideLoading();
         if (failure.code == 404) {
-          storage.customerBox.remove(entityId);
+          _storage.customerBox.remove(entityId);
 
           SnackBarHelper.successSnackbar(
               message: 'Customer deleted', duration: Duration(seconds: 1));
@@ -67,7 +67,7 @@ class CustomerListController extends GetxController {
       },
       (res) {
         DialogHelper.hideLoading();
-        storage.customerBox.remove(entityId);
+        _storage.customerBox.remove(entityId);
 
         SnackBarHelper.successSnackbar(message: 'Customer deleted');
       },

@@ -1,6 +1,5 @@
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/utils/string_manager.dart';
 import 'package:dolirest/utils/utils.dart';
@@ -12,7 +11,6 @@ Widget invoiceListTile({
   required BuildContext context,
   required InvoiceEntity invoice,
   required CustomerEntity customer,
-  required StorageService storage,
   void Function()? onDeletePressed,
 }) {
   return Card(

@@ -2,11 +2,9 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
-import 'package:dolirest/objectbox.g.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../infrastructure/dal/services/local_storage/storage_service.dart';
 import '../../utils/utils.dart';
 import 'controllers/collections_controller.dart';
 
@@ -29,7 +27,7 @@ class CashflowScreen extends GetView<CashflowController> {
   }
 
   DataTable2 _buildCashflow(BuildContext context) {
-    final StorageService storage = controller.storage;
+    // final StorageService storage = controller._storage;
 
     //Day Cashflow
     List<PaymentEntity> dayCashflow = controller.dayCashflow;
@@ -64,14 +62,10 @@ class CashflowScreen extends GetView<CashflowController> {
     List<DataRow2> buildDataRow() {
       List<DataRow2> rows = <DataRow2>[];
       for (PaymentEntity payment in dayCashflow) {
-        final InvoiceEntity invoice = storage.invoiceBox
-            .query(InvoiceEntity_.documentId.equals(payment.invoiceId))
-            .build()
-            .findFirst()!;
-        final CustomerEntity customer = storage.customerBox
-            .query(CustomerEntity_.customerId.equals(invoice.socid))
-            .build()
-            .findFirst()!;
+        final InvoiceEntity invoice = controller.invoices
+            .firstWhere((i) => i.documentId == payment.invoiceId);
+        final CustomerEntity customer = controller.customers
+            .firstWhere((c) => c.customerId == invoice.socid);
         rows.add(DataRow2(
           cells: [
             buildCell(invoice.ref),

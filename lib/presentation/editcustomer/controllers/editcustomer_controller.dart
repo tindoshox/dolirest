@@ -17,9 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class EditCustomerController extends GetxController {
-  StorageService storage = Get.find();
-  NetworkService network = Get.find();
-  CustomerRepository customerRepository = Get.find();
+  final StorageService _storage = Get.find();
+  final NetworkService _network = Get.find();
+  final CustomerRepository _customerRepository = Get.find();
   final GroupRepository groupRepository = Get.find();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
@@ -47,22 +47,22 @@ class EditCustomerController extends GetxController {
   @override
   void onInit() async {
     if (entityId != null) {
-      customerToEdit.value = storage.customerBox.get(entityId!)!;
+      customerToEdit.value = _storage.customerBox.get(entityId!)!;
     }
 
-    ever(network.connected, (_) {
-      connected = network.connected;
+    ever(_network.connected, (_) {
+      connected = _network.connected;
     });
 
-    connected = network.connected;
+    connected = _network.connected;
     if (entityId != null) {
       await _fetchCustomerById(entityId!);
     }
 
-    if (storage.groupBox.getAll().isEmpty) {
+    if (_storage.groupBox.getAll().isEmpty) {
       _refreshGroups();
     } else {
-      groups.value = storage.groupBox.getAll();
+      groups.value = _storage.groupBox.getAll();
     }
     // Watch for changes to selectedTown and rebind query
     ever(selectedTown, (_) => bindAddressStream());
@@ -83,7 +83,7 @@ class EditCustomerController extends GetxController {
 
   void bindAddressStream() {
     _addressSub?.cancel(); // cleanup old sub
-    _addressSub = storage.addressBox
+    _addressSub = _storage.addressBox
         .query(AddressModel_.town.equals(selectedTown.value))
         .watch(triggerImmediately: true)
         .map((q) =>
@@ -96,12 +96,12 @@ class EditCustomerController extends GetxController {
 
   RxList<GroupEntity> getGroups({String search = ""}) {
     if (search.isNotEmpty) {
-      groups.value = storage.groupBox
+      groups.value = _storage.groupBox
           .getAll()
           .where((group) => group.name!.contains(search))
           .toList();
     } else {
-      groups.value = storage.groupBox.getAll();
+      groups.value = _storage.groupBox.getAll();
     }
     return groups;
   }
@@ -112,7 +112,7 @@ class EditCustomerController extends GetxController {
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (groups) {
       for (GroupEntity group in groups) {
-        storage.groupBox.put(group);
+        _storage.groupBox.put(group);
       }
     });
   }
@@ -144,7 +144,7 @@ class EditCustomerController extends GetxController {
   }
 
   Future _createCustomer(String body) async {
-    final result = await customerRepository.createCustomer(body);
+    final result = await _customerRepository.createCustomer(body);
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: failure.message);
@@ -157,14 +157,14 @@ class EditCustomerController extends GetxController {
   }
 
   Future<int> _fetchNewCustomer(String id) async {
-    final result = await customerRepository.fetchCustomerById(id);
+    final result = await _customerRepository.fetchCustomerById(id);
 
     result.fold((failure) {
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) {
-      storage.customerBox.put(customer);
+      _storage.customerBox.put(customer);
     });
-    return storage.customerBox
+    return _storage.customerBox
         .query(CustomerEntity_.customerId.equals(id))
         .build()
         .findFirst()!
@@ -172,7 +172,7 @@ class EditCustomerController extends GetxController {
   }
 
   Future _fetchCustomerById(int id) async {
-    customerToEdit.value = storage.customerBox.get(id)!;
+    customerToEdit.value = _storage.customerBox.get(id)!;
     nameController.text = customerToEdit.value.name;
     addressController.text = customerToEdit.value.address;
     townController.text = customerToEdit.value.town;
@@ -181,13 +181,13 @@ class EditCustomerController extends GetxController {
   }
 
   Future _updateCustomer(String body, String id) async {
-    final result = await customerRepository.updateCustomer(body, id);
+    final result = await _customerRepository.updateCustomer(body, id);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (customer) async {
-      storage.storeCustomer(customer);
+      _storage.storeCustomer(customer);
       DialogHelper.hideLoading();
       Get.offAndToNamed(Routes.CUSTOMERDETAIL,
           arguments: {'entityId': customer.id});
@@ -197,5 +197,14 @@ class EditCustomerController extends GetxController {
 
   void clearGroup() {
     selectedGroup(GroupEntity());
+  }
+
+  List<String> loadTowns() {
+    return _storage.addressBox
+        .getAll()
+        .map((a) => a.town.toUpperCase())
+        .toSet()
+        .toList()
+      ..sort();
   }
 }

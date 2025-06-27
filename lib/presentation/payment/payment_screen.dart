@@ -256,7 +256,6 @@ class PaymentScreen extends GetView<PaymentController> {
                 customer: controller.customers
                     .firstWhere((c) => c.customerId == invoice.socid),
                 invoice: invoice,
-                storage: controller.storage,
               );
             },
             emptyBuilder: ((context, searchEntry) =>

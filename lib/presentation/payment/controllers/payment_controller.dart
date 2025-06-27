@@ -18,10 +18,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class PaymentController extends GetxController {
-  final StorageService storage = Get.find();
-  final InvoiceRepository repository = Get.find();
-  final NetworkService network = Get.find();
-  final DataRefreshService data = Get.find();
+  final StorageService _storage = Get.find();
+  final InvoiceRepository _repository = Get.find();
+  final NetworkService _network = Get.find();
+  final DataRefreshService _data = Get.find();
 
   TextEditingController payDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
@@ -51,24 +51,24 @@ class PaymentController extends GetxController {
 
   @override
   void onInit() {
-    everAll([network.connected, data.invoices, data.customers], (_) {
-      connected = network.connected;
-      invoice.value = data.invoices.firstWhere((i) => i.id == entityId);
-      customer.value =
-          data.customers.firstWhere((c) => c.customerId == invoice.value.socid);
-      customers = data.customers;
-      invoices = data.invoices;
+    everAll([_network.connected, _data.invoices, _data.customers], (_) {
+      connected = _network.connected;
+      invoice.value = _data.invoices.firstWhere((i) => i.id == entityId);
+      customer.value = _data.customers
+          .firstWhere((c) => c.customerId == invoice.value.socid);
+      customers = _data.customers;
+      invoices = _data.invoices;
     });
 
-    connected = network.connected;
+    connected = _network.connected;
     if (entityId == null) {
-      customers = data.customers;
-      invoices = data.invoices;
+      customers = _data.customers;
+      invoices = _data.invoices;
     }
     if (entityId != null) {
-      invoice.value = data.invoices.firstWhere((i) => i.id == entityId);
-      customer.value =
-          data.customers.firstWhere((c) => c.customerId == invoice.value.socid);
+      invoice.value = _data.invoices.firstWhere((i) => i.id == entityId);
+      customer.value = _data.customers
+          .firstWhere((c) => c.customerId == invoice.value.socid);
     }
     payDateController.text = Utils.dateTimeToDMY(payDate.value);
     dueDateController.text = Utils.dateTimeToDMY(dueDate.value);
@@ -102,7 +102,7 @@ class PaymentController extends GetxController {
   }
 
   Future _fetchPayments(String invoiceId) async {
-    List<PaymentEntity> list = storage.paymentBox
+    List<PaymentEntity> list = _storage.paymentBox
         .query(PaymentEntity_.invoiceId.equals(invoiceId))
         .build()
         .find();
@@ -115,7 +115,7 @@ class PaymentController extends GetxController {
   }
 
   Future _fetchCustomerById(String customerId) async {
-    customer.value = storage.getCustomer(customerId)!;
+    customer.value = _storage.getCustomer(customerId)!;
   }
 
   void setPayDate() async {
@@ -175,7 +175,7 @@ class PaymentController extends GetxController {
   }
 
   Future<void> _processPayment(String body) async {
-    final result = await repository.addPayment(body: body);
+    final result = await _repository.addPayment(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -213,25 +213,25 @@ class PaymentController extends GetxController {
 
     String body = jsonEncode(update);
 
-    await repository.updateInvoice(invoiceId: invoiceId, body: body);
+    await _repository.updateInvoice(invoiceId: invoiceId, body: body);
   }
 
   Future<void> _refreshPayments(String invoiceId) async {
     final result =
-        await (repository.fetchPaymentsByInvoice(invoiceId: invoiceId));
+        await (_repository.fetchPaymentsByInvoice(invoiceId: invoiceId));
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (payments) {
-      storage.storePayments(payments).then((apiPayments) {
+      _storage.storePayments(payments).then((apiPayments) {
         if (apiPayments.isNotEmpty) {
-          storage.cleanupPayments(apiPayments, invoiceId);
+          _storage.cleanupPayments(apiPayments, invoiceId);
         }
       });
     });
   }
 
   Future<void> _refreshInvoice(String invoiceId) async {
-    final result = await repository.fetchInvoiceById(invoiceId);
+    final result = await _repository.fetchInvoiceById(invoiceId);
 
     result.fold((failure) {
       if (Get.isDialogOpen == true) {
@@ -240,12 +240,12 @@ class PaymentController extends GetxController {
       Get.back();
       SnackBarHelper.errorSnackbar(message: failure.message);
     }, (invoice) {
-      storage.storeInvoice(invoice);
+      _storage.storeInvoice(invoice);
     });
   }
 
   List<InvoiceEntity> fetchInvoices() {
-    var openInvoices = storage.invoiceBox
+    var openInvoices = _storage.invoiceBox
         .query(InvoiceEntity_.paye
             .equals(PaidStatus.unpaid)
             .and(InvoiceEntity_.type.equals(DocumentType.invoice))
@@ -254,7 +254,7 @@ class PaymentController extends GetxController {
         .find();
 
     for (var i in openInvoices) {
-      final CustomerEntity? c = storage.customerBox
+      final CustomerEntity? c = _storage.customerBox
           .query(CustomerEntity_.customerId.equals(i.socid))
           .build()
           .findFirst();

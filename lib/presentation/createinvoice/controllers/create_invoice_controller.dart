@@ -20,10 +20,10 @@ import 'package:get/get.dart';
 
 class CreateinvoiceController extends GetxController {
   final int? entityId = Get.arguments['entityId'];
-  final StorageService storage = Get.find();
-  final NetworkService network = Get.find();
-  final InvoiceRepository invoiceRepository = Get.find();
-  final ProductRepository productRepository = Get.find();
+  final StorageService _storage = Get.find();
+  final NetworkService _network = Get.find();
+  final InvoiceRepository _invoiceRepository = Get.find();
+  final ProductRepository _productRepository = Get.find();
   var moduleProductEnabled = false.obs;
   var customer = CustomerEntity().obs;
 
@@ -47,12 +47,12 @@ class CreateinvoiceController extends GetxController {
 
   @override
   onInit() {
-    ever(network.connected, (_) {
-      connected = network.connected;
+    ever(_network.connected, (_) {
+      connected = _network.connected;
     });
 
-    connected = network.connected;
-    moduleProductEnabled.value = storage.settingsBox
+    connected = _network.connected;
+    moduleProductEnabled.value = _storage.settingsBox
         .get(SettingId.moduleSettingId)!
         .listValue!
         .contains('product');
@@ -64,7 +64,7 @@ class CreateinvoiceController extends GetxController {
 
   @override
   void onReady() async {
-    if (storage.productBox.getAll().isEmpty &&
+    if (_storage.productBox.getAll().isEmpty &&
         moduleProductEnabled.value == true) {
       await _refreshProducts();
     }
@@ -96,12 +96,12 @@ class CreateinvoiceController extends GetxController {
   }
 
   Future<void> _refreshProducts() async {
-    final result = await productRepository.fetchProducts();
+    final result = await _productRepository.fetchProducts();
     result.fold((failure) {
       SnackBarHelper.errorSnackbar(message: 'Unable to load products');
     }, (products) {
       for (ProductEntity product in products) {
-        storage.productBox.put(product);
+        _storage.productBox.put(product);
       }
     });
   }
@@ -121,7 +121,7 @@ class CreateinvoiceController extends GetxController {
   }
 
   void fetchCustomerById(int customerId) {
-    customer.value = storage.customerBox.get(customerId)!;
+    customer.value = _storage.customerBox.get(customerId)!;
   }
 
   ///
@@ -210,7 +210,7 @@ class CreateinvoiceController extends GetxController {
 
     // Submit for draft creation
 
-    final result = await invoiceRepository.createInvoice(body: body);
+    final result = await _invoiceRepository.createInvoice(body: body);
 
     result.fold((failure) {
       DialogHelper.hideLoading();
@@ -234,7 +234,7 @@ class CreateinvoiceController extends GetxController {
       }''';
 
     final result =
-        await invoiceRepository.validateInvoice(body: body, docId: invoiceId);
+        await _invoiceRepository.validateInvoice(body: body, docId: invoiceId);
     result.fold((failure) {
       _getNewInvoice(invoiceId);
       DialogHelper.hideLoading();
@@ -252,14 +252,14 @@ class CreateinvoiceController extends GetxController {
 
 //Update local data with new invoice
   Future<int> _getNewInvoice(String invoiceId) async {
-    final result = await invoiceRepository.fetchInvoiceById(invoiceId);
+    final result = await _invoiceRepository.fetchInvoiceById(invoiceId);
 
     result.fold(
         (failure) => SnackBarHelper.errorSnackbar(message: failure.message),
         (invoice) {
-      storage.storeInvoice(invoice);
+      _storage.storeInvoice(invoice);
     });
-    return storage.invoiceBox
+    return _storage.invoiceBox
         .query(InvoiceEntity_.documentId.equals(invoiceId))
         .build()
         .findFirst()!
@@ -272,10 +272,10 @@ class CreateinvoiceController extends GetxController {
     List<CustomerEntity> customers = [];
 
     if (searchString == "") {
-      customers = storage.getCustomerList();
+      customers = _storage.getCustomerList();
       customers.sort((a, b) => a.name.compareTo(b.name));
     } else {
-      customers = storage
+      customers = _storage
           .getCustomerList()
           .where((customer) =>
               customer.name.contains(searchString) ||
@@ -295,10 +295,10 @@ class CreateinvoiceController extends GetxController {
     List<ProductEntity> products = [];
 
     if (searchString == "") {
-      products = storage.productBox.getAll();
+      products = _storage.productBox.getAll();
       products.sort((a, b) => a.label!.compareTo(b.label!));
     } else {
-      products = storage.productBox
+      products = _storage.productBox
           .getAll()
           .where((product) => product.ref!.contains(searchString))
           .toList();

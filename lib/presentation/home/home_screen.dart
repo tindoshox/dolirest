@@ -1,11 +1,7 @@
 import 'package:change_case/change_case.dart';
-import 'package:dolirest/infrastructure/dal/models/settings_model.dart';
-import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
-import 'package:dolirest/infrastructure/dal/services/local_storage/storage_key.dart';
 import 'package:dolirest/infrastructure/navigation/routes.dart';
 import 'package:dolirest/presentation/widgets/status_icon.dart';
 import 'package:dolirest/utils/snackbar_helper.dart';
-import 'package:dolirest/utils/string_manager.dart';
 import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
@@ -78,10 +74,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.light);
-            controller.storage.settingsBox.put(SettingsModel(
-                id: SettingId.themeModeId,
-                name: StorageKey.theme,
-                strValue: 'light'));
+            controller.saveThemeSetting('light');
           },
           value: '#',
           child: ListTile(
@@ -92,10 +85,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.dark);
-            controller.storage.settingsBox.put(SettingsModel(
-                id: SettingId.themeModeId,
-                name: StorageKey.theme,
-                strValue: 'dark'));
+            controller.saveThemeSetting('dark');
           },
           value: '#',
           child: ListTile(
@@ -106,10 +96,7 @@ class HomeScreen extends GetView<HomeController> {
         _buildPopupMenuItem(
           onTap: () {
             Get.changeThemeMode(ThemeMode.system);
-            controller.storage.settingsBox.put(SettingsModel(
-                id: SettingId.themeModeId,
-                name: StorageKey.theme,
-                strValue: 'system'));
+            controller.saveThemeSetting('system');
           },
           value: '#',
           child: ListTile(
@@ -122,33 +109,18 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   void _showAboutDialog(BuildContext context) {
+    final packageInfo = controller.packageInfo;
     Get.dialog(
       barrierDismissible: false,
       AboutDialog(
-        applicationVersion: '0.1.8',
-        applicationName: 'DoliREST',
+        applicationVersion: packageInfo.version,
+        applicationName: packageInfo.packageName,
         applicationLegalese: "© Copyright SMBI 2024",
         applicationIcon: _appIcon(context),
         children: [Text('A Restful API client for Dolibarr CRM.')],
       ),
     );
   }
-
-  // _logout(HomeController controller) async {
-  //   Get.defaultDialog(
-  //       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-  //       title: 'Logout',
-  //       middleText:
-  //           'Logging out will clear all locally stored data. You will need to enter your login details again. Would you like to continue?',
-  //       barrierDismissible: false,
-  //       confirm: CustomActionButton(
-  //           onTap: () {
-  //             controller.logout();
-  //           },
-  //           buttonText: 'Yes'),
-  //       cancel: CustomActionButton(
-  //           isCancel: true, buttonText: 'No', onTap: () => Get.back()));
-  // }
 
   Widget _buildPopupMenu(HomeController controller) {
     return PopupMenuButton(
@@ -158,14 +130,6 @@ class HomeScreen extends GetView<HomeController> {
           value: '#',
           child: _setThemeMode(controller),
         ),
-        // _buildPopupMenuItem(
-        //   onTap: () => _logout(controller),
-        //   value: '/login',
-        //   child: ListTile(
-        //     title: Text('Logout'),
-        //     leading: Icon(Icons.logout),
-        //   ),
-        // ),
         _buildPopupMenuItem(
           onTap: () => _showAboutDialog(context),
           value: '/about',
@@ -197,7 +161,7 @@ class HomeScreen extends GetView<HomeController> {
         Obx(() => getStatusIcon(
             connected: controller.connected.value,
             refreshing: controller.refreshing.value,
-            onPressed: controller.network.connected.value
+            onPressed: controller.connected.value
                 ? () => controller.forceRefresh()
                 : () => controller.refreshConnection())),
         _buildPopupMenu(controller)
@@ -279,7 +243,7 @@ class HomeScreen extends GetView<HomeController> {
           children: [
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkService>().connected.value) {
+                  if (controller.connected.value) {
                     Get.toNamed(Routes.EDITCUSTOMER, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -294,7 +258,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 228, 253, 199)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkService>().connected.value) {
+                  if (controller.connected.value) {
                     Get.toNamed(Routes.CREATEINVOICE, arguments: {});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -309,7 +273,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 127, 197, 255)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkService>().connected.value) {
+                  if (controller.connected.value) {
                     Get.toNamed(Routes.PAYMENT, arguments: {'batch': true});
                   } else {
                     SnackBarHelper.networkSnackbar();
@@ -359,7 +323,7 @@ class HomeScreen extends GetView<HomeController> {
                 color: const Color.fromARGB(255, 241, 205, 192)),
             shortcutItem(
                 onTap: () {
-                  if (Get.find<NetworkService>().connected.value &&
+                  if (controller.connected.value &&
                       controller.enabledModules.contains('reports')) {
                     Get.toNamed(Routes.REPORTS);
                   }

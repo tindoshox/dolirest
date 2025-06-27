@@ -81,7 +81,7 @@ class CustomerListScreen extends GetView<CustomerListController> {
         }
       }
       var list = !controller.noInvoiceCustomers
-          ? controller.data.customers
+          ? controller.customers
           : noInvoiceCustomers;
 
       String search = controller.searchString.value;

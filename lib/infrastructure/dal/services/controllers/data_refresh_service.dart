@@ -4,6 +4,7 @@ import 'package:dolirest/infrastructure/dal/models/address_model.dart';
 import 'package:dolirest/infrastructure/dal/models/customer/customer_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/models/payment/payment_entity.dart';
+import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/dio_service.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
@@ -16,6 +17,7 @@ import 'package:get/get.dart';
 
 class DataRefreshService extends GetxService {
   final StorageService _storage = Get.find();
+  final NetworkService _network = Get.find();
 
   final CustomerRepository _customerRepository = Get.find();
   final InvoiceRepository _invoiceRepository = Get.find();
@@ -32,6 +34,11 @@ class DataRefreshService extends GetxService {
   @override
   void onInit() {
     super.onInit();
+
+    ever(_network.connected, (_) {
+      connected = _network.connected;
+    });
+    connected = _network.connected;
 
     _dataRefreshSchedule();
     invoices.bindStream(_storage.invoiceBox
@@ -95,9 +102,10 @@ class DataRefreshService extends GetxService {
   }
 
   Future forceRefresh() async {
-    if (_isRefreshing) {
+    if (_isRefreshing || !connected.value) {
       return;
     }
+
     _isRefreshing = true;
 
     await syncCustomers().then((customers) async => await syncInvoices());
@@ -214,6 +222,9 @@ class DataRefreshService extends GetxService {
   }
 
   Future refreshPaymentData(List<InvoiceEntity> invs) async {
+    if (!connected.value) {
+      return;
+    }
     if (invs.isNotEmpty) {
       for (var invoice in invs) {
         if (invoice.type == DocumentType.invoice &&

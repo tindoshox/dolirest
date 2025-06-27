@@ -14,9 +14,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
-  final StorageService storage = Get.find();
-  final UserRepository userRepositoty = Get.find();
-  final auth = Get.find<AuthService>();
+  final StorageService _storage = Get.find();
+  final UserRepository _userRepositoty = Get.find();
+  final _auth = Get.find<AuthService>();
   var serverUrl = ''.obs;
   var token = ''.obs;
   GlobalKey<FormState> serverFormKey = GlobalKey<FormState>();
@@ -46,32 +46,32 @@ class LoginController extends GetxController {
       final newUrl = 'https://${urlController.text.trim()}';
       final newToken = apiController.text.trim();
 
-      auth.updateCredentials(newUrl, newToken);
+      _auth.updateCredentials(newUrl, newToken);
 
       _writeStore(newUrl, newToken);
-      final result = await userRepositoty.login(url: newUrl, token: newToken);
+      final result = await _userRepositoty.login(url: newUrl, token: newToken);
 
       result.fold((failure) {
         DialogHelper.hideLoading();
         SnackBarHelper.errorSnackbar(message: failure.message);
         _clearStorage();
       }, (user) async {
-        storage.userBox.put(user);
+        _storage.userBox.put(user);
         DialogHelper.hideLoading();
-        Get.toNamed(Routes.HOME);
+        Get.offAndToNamed(Routes.HOME);
       });
     }
   }
 
   void _writeStore(String url, String token) {
-    storage.settingsBox.put(SettingsModel(
+    _storage.settingsBox.put(SettingsModel(
         id: SettingId.urlSettingId, name: StorageKey.url, strValue: url));
-    storage.settingsBox.put(SettingsModel(
+    _storage.settingsBox.put(SettingsModel(
         id: SettingId.tokenSettingId, name: StorageKey.token, strValue: token));
   }
 
   void _clearStorage() {
-    storage.clearAll();
+    _storage.clearAll();
   }
 
   void getClipboardApiKey() async {

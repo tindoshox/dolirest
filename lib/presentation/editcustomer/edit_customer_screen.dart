@@ -67,12 +67,7 @@ class EditCustomerScreen extends GetView<EditCustomerController> {
   }
 
   Widget _buildCityAutocomplete() {
-    final towns = controller.storage.addressBox
-        .getAll()
-        .map((a) => a.town.toUpperCase())
-        .toSet()
-        .toList()
-      ..sort();
+    final towns = controller.loadTowns();
 
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
