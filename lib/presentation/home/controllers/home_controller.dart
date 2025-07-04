@@ -47,7 +47,6 @@ class HomeController extends GetxController {
   Future<void> onInit() async {
     packageInfo = await _packageInfo();
     _updateUser();
-    _updateModules();
     _updateCompany();
 
     everAll([
@@ -164,6 +163,16 @@ class HomeController extends GetxController {
 
     company.value = _storage.companyBox.get(1)?.name ?? '';
     super.onInit();
+
+    enabledModules.bindStream(_storage.settingsBox
+        .query(SettingsModel_.id.equals(SettingId.moduleSettingId))
+        .watch(triggerImmediately: true)
+        .map((query) {
+      return query.findFirst()?.listValue ?? [];
+    }));
+
+    enabledModules.value =
+        _storage.settingsBox.get(SettingId.moduleSettingId)?.listValue ?? [];
   }
 
   @override
