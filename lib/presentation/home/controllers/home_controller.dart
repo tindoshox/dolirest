@@ -210,14 +210,8 @@ class HomeController extends GetxController {
   }
 
   Future forceRefresh() async {
-    //  SnackBarHelper.successSnackbar(message: 'Refreshing data');
     refreshing.value = true;
     await _data.forceRefresh().then((value) => refreshing.value = false);
-  }
-
-  void _updateModules() {
-    enabledModules.value =
-        _storage.settingsBox.get(SettingId.moduleSettingId)?.listValue ?? [];
   }
 
   Future<void> _refreshModules() async {
