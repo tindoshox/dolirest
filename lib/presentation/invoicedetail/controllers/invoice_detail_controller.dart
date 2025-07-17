@@ -114,10 +114,12 @@ class InvoiceDetailController extends GetxController
   }
 
   @override
-  void onReady() {
-    if (payments.isEmpty) {
-      _loadPayments();
+  void onReady() async {
+    if (connected.value) {
+      await refreshInvoiceData(document.value.documentId);
+      await _loadPayments();
     }
+
     super.onReady();
   }
 

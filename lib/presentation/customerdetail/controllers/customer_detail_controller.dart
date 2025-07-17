@@ -7,6 +7,7 @@ import 'package:dolirest/infrastructure/dal/models/invoice/invoice_entity.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/data_refresh_service.dart';
 import 'package:dolirest/infrastructure/dal/services/controllers/network_service.dart';
 import 'package:dolirest/infrastructure/dal/services/local_storage/storage_service.dart';
+import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/customer_repository.dart';
 import 'package:dolirest/infrastructure/dal/services/remote_storage/repository/document_repository.dart';
 import 'package:dolirest/objectbox.g.dart';
 import 'package:dolirest/utils/dialog_helper.dart';
@@ -21,6 +22,7 @@ class CustomerDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final NetworkService _network = Get.find();
   final StorageService _storage = Get.find();
+  final CustomerRepository _customerRepository = Get.find();
   final DocumentRepository _documentRepository = Get.find();
   final DataRefreshService _data = Get.find();
   var customer = CustomerEntity().obs;
@@ -85,10 +87,11 @@ class CustomerDetailController extends GetxController
   }
 
   @override
-  void onReady() {
-    if (invoices.isEmpty) {
-      refreshCustomerInvoiceData();
+  void onReady() async {
+    if (connected.value) {
+      await refreshData();
     }
+
     super.onReady();
   }
 
@@ -100,9 +103,11 @@ class CustomerDetailController extends GetxController
   }
 
   // Fetch invoice data from server
-  Future<void> refreshCustomerInvoiceData() async {
+  Future<void> refreshData() async {
     isLoading.value = true;
+    await _customerRepository.fetchCustomerById(customer.value.customerId);
     await _data.syncInvoices(customerId: customer.value.customerId);
+
     isLoading.value = false;
   }
 

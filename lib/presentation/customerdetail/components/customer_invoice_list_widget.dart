@@ -10,7 +10,7 @@ Widget invoiceList({
   required CustomerDetailController controller,
 }) {
   return RefreshIndicator(
-    onRefresh: () => controller.refreshCustomerInvoiceData(),
+    onRefresh: () => controller.refreshData(),
     child: ListView.builder(
         itemCount: invoices.length,
         itemBuilder: (context, index) {

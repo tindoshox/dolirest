@@ -24,7 +24,7 @@ class CustomerDetailScreen extends GetView<CustomerDetailController> {
         actions: [
           getStatusIcon(
             connected: controller.connected.value,
-            onPressed: () => controller.refreshCustomerInvoiceData(),
+            onPressed: () => controller.refreshData(),
           ),
           if (controller.moduleEnabledStatement.value) _getMenu()
         ],
