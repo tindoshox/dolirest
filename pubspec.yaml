@@ -1,7 +1,7 @@
 name: dolirest
 description: "A Dolibarr Rest API client."
 publish_to: 'none'
-version: 0.2.1
+version: 0.2.2
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
