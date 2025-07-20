@@ -4,12 +4,16 @@
 
 import 'dart:convert';
 
+import 'package:objectbox/objectbox.dart';
+
 SettingsModel settingsModelFromJson(String str) =>
     SettingsModel.fromJson(json.decode(str));
 
 String settingsModelToJson(SettingsModel data) => json.encode(data.toJson());
 
+@Entity()
 class SettingsModel {
+  @Id(assignable: true)
   int id;
   String name;
   String? strValue;
@@ -23,7 +27,7 @@ class SettingsModel {
   });
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) => SettingsModel(
-        id: json['id'] != null ? int.parse(json['id']) : 0,
+        id: json['id'],
         name: json['name'] ?? '',
         strValue: json['str_value'],
         listValue: json['list_value'] != null
