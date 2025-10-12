@@ -3,7 +3,7 @@
 A REST API client for Dolibarr CRM
 
 Requires 
-- PHP8.2+
+- Dolibarr v20+ with PHP8.2+
 
 Optional
 - Custom module for https://github.com/tindoshox/dolibarr_reports
