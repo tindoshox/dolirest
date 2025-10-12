@@ -195,35 +195,33 @@ class InvoiceDetailScreen extends GetView<InvoiceDetailController> {
           title: Text('Product Type'),
           leading: Icon(Icons.delivery_dining),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Flexible(
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(0),
-                leading: Radio(
-                    value: '1',
-                    groupValue: controller.productType.value,
-                    onChanged: (value) {
-                      controller.setStockType(value.toString());
-                    }),
-                title: const Text('Free Text'),
-              ),
-            ),
-            if (controller.moduleProductEnabled.value)
+        RadioGroup(
+          onChanged: (value) => controller.setStockType(value.toString()),
+          groupValue: controller.productType.value,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
               Flexible(
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(0),
                   leading: Radio(
-                      value: '0',
-                      groupValue: controller.productType.value,
-                      onChanged: (value) {
-                        controller.setStockType(value.toString());
-                      }),
-                  title: const Text('Predefined'),
+                    value: '1',
+                  ),
+                  title: const Text('Free Text'),
                 ),
               ),
-          ],
+              if (controller.moduleProductEnabled.value)
+                Flexible(
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(0),
+                    leading: Radio(
+                      value: '0',
+                    ),
+                    title: const Text('Predefined'),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );

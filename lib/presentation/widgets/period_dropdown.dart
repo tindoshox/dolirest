@@ -39,7 +39,7 @@ class PeriodDropdown extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         validator: validator,
         decoration: InputDecoration(
           labelText: 'Report',
