@@ -31,7 +31,7 @@ class Main extends StatelessWidget {
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      themeMode: _getThmeMode(),
+      themeMode: _getThemeMode(),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       initialRoute: initialRoute,
@@ -40,7 +40,7 @@ class Main extends StatelessWidget {
   }
 }
 
-ThemeMode _getThmeMode() {
+ThemeMode _getThemeMode() {
   String? mode = Get.find<StorageService>()
       .settingsBox
       .get(SettingId.themeModeId)
